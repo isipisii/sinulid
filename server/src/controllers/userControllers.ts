@@ -81,7 +81,7 @@ export const logIn: RequestHandler<unknown, unknown, LogInBody, unknown> = async
                 throw createHttpError(401, "Invalid credentials")
             }
 
-            // this token will be sent to the client once the creation of user is done
+            // this token will be sent to the client once the user logged in
             jwt.sign({ userId: user._id}, env.JWT_SECRET, { expiresIn: "1h" }, (error, token) => {
                 if(error) next(error)
                 res.status(201).json({ token })

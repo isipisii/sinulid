@@ -21,7 +21,7 @@ const postSchema = new Schema({
     likedBy: [
         {
             type: Schema.Types.ObjectId,
-            ref: "Users"
+            ref: "User"
         },
     ],
 },

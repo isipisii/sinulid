@@ -22,6 +22,7 @@ type UserIdParam = {
     userId: string
 }
 
+
 // create post
 export const createPost: RequestHandler<unknown, unknown, CreatePostBody, unknown> = async (req, res, next) => {
     const { creator, content, image  } = req.body

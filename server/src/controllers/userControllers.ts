@@ -52,7 +52,7 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
             // this token will be sent to the client once the creation of user is done
             jwt.sign({ userId: newUser._id}, env.JWT_SECRET, { expiresIn: "1h" }, (error, token) => {
                 if(error) next(error)
-                res.status(201).json({ token })
+                res.status(201).json({ token: token })
             })
 
     } catch (error) {
@@ -84,7 +84,7 @@ export const logIn: RequestHandler<unknown, unknown, LogInBody, unknown> = async
             // this token will be sent to the client once the user logged in
             jwt.sign({ userId: user._id}, env.JWT_SECRET, { expiresIn: "1h" }, (error, token) => {
                 if(error) next(error)
-                res.status(201).json({ token })
+                res.status(201).json({ token: token })
             })
 
         } catch (error) {

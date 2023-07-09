@@ -12,14 +12,16 @@ import postRoutes from "./routes/postRoutes"
 import userRoutes from "./routes/userRoutes"
 import  jwt, {VerifyErrors} from "jsonwebtoken"
 import env from "./util/validateEnv"
+import cors from "cors"
 
 export interface CustomRequest extends Request {
   userId?: string; // adding the userId property to the Request interface
 }
 
 // Middlewares
-
 const app: Application = express();
+
+app.use(cors())
 
 app.use(morgan("dev"));
 

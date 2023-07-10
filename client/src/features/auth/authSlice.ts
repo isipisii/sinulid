@@ -4,27 +4,27 @@ import { User } from '../../types/types'
 
 export interface IAuthState {
   user: User | null
-  token: string | null
+  token: string
 }
 
 const initialState: IAuthState = {
   user: null,
-  token: localStorage.getItem("token") || null
+  token: localStorage.getItem("token") || ""
 }
 
 export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    getToken: (state, action: PayloadAction<string>) => {
+    setToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload
     },
-    getUser: (state, action: PayloadAction<User>) => {
+    setUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload
     }   
   },
 })
 
-export const { getToken, getUser } = authSlice.actions
+export const { setToken, setUser } = authSlice.actions
 
 export default authSlice.reducer

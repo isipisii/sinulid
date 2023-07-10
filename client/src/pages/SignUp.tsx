@@ -1,8 +1,10 @@
 import { FC, useState, ChangeEvent, FormEvent } from 'react'
 import { SignUpCredential } from '../types/types'
+import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 const SignUp: FC = () => {
-
+    const navigate = useNavigate()
     const [signUpCredentials, setSignUpCredentials] = useState<SignUpCredential>({
         username: "",
         email: "",
@@ -27,33 +29,52 @@ const SignUp: FC = () => {
                 },
                 body: JSON.stringify(signUpCredentials)
             })
-            const data = await response.json()
-            localStorage.setItem("token", data.token)
+            if(response.ok){
+                const data = await response.json()
+                localStorage.setItem("token", data.token)
+                navigate("/")
+            }
         } catch (error) {
             console.error
-        }finally{
-            console.log("success")
         }
     }
 
-    
+    const signUpFields = [
+        {
+            inputName: "username",
+            placeholder:"Username",
+            inputType: "text"
+        },
+        {
+            inputName: "email",
+            placeholder: "Email",
+            inputType: "email"
+        },
+        {
+            inputName: "password",
+            placeholder: "Password",
+            inputType: "password",
+        },
+        {
+            inputName: "password",
+            placeholder: "Confirm password",
+            inputType: "password",
+        }
+    ]
 
 return (
-    <div className='h-[100vh] flex items-center justify-center'>
-        <form className='flex items-center justify-center flex-col auto gap-4 border border-slate-600 p-5' onSubmit={handleSignUp}>
-            <label htmlFor="username">Username</label>
-            <input name="username" type="text" id='username' className='border'onChange={handleOnChange} />
-
-            <label htmlFor="email">Email</label>
-            <input name="email" type="email" id='email' className='border'onChange={handleOnChange} />
-
-            <label htmlFor="password">Password</label>
-            <input name="password" type="password" id='password' className='border' onChange={handleOnChange} />
-
-            <button type='submit'>Sign Up</button>
+    <div className='h-[100vh] flex items-center justify-center bg-matteBlack'>
+        <form className='flex items-center justify-center flex-col gap-6 border border-slate-600 p-5 rounded-md w-[400px]' onSubmit={handleSignUp}>
+            <h1 className='text-white font-semibold text-[1.5rem] self-start'>Join Sinulid today</h1>
+            <div className='flex items-center justify-center flex-col gap-3 w-full'>
+            {signUpFields.map((field, index) => (
+                <input name={field.inputName} onFocus={e => e.target.style.borderColor = '#ffffff81'} type={field.inputType} placeholder={field.placeholder} className='focus:border-[#ffffff81] text-sm border border-[#d3d3d354] text-white rounded-sm bg-[transparent] w-full p-2' onChange={handleOnChange} key={index}/>
+            ))}
+            </div>  
+            <button type='submit' className='bg-cta w-full p-2 rounded-sm text-matteBlack font-bold text-sm'>Sign Up</button>
+            <p className='text-lightText text-xs'>Got an account?  <Link to="/login" className='text-cta'>Log in</Link></p>
         </form>
     </div>
-  )
-}
+)}
 
 export default SignUp

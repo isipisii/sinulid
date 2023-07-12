@@ -17,9 +17,21 @@ const userSchema = new Schema({
         required: true, 
         select: false 
     },
-    profilePic: {
+    bio: {
         type: String,
-        required: false,
+        required: false
+    },
+    displayed_picture:{
+        url: {
+            type: String
+        },
+        cloudinary_id: {
+            type: String
+        }
+    },
+    link: {
+        type: String,
+        required: false
     },
     following: [
         {

@@ -11,16 +11,21 @@ const postSchema = new Schema({
         required: false
     },
     image: {
-        type: String,
+        url: {
+            type: String
+        },
+        cloudinary_id: {
+            type: String
+        }
     },
     likes: {
         type: Number,
         default: 0
     },
-    likedBy: [
+    liked_by: [
         {
             type: Schema.Types.ObjectId,
-            ref: "User"
+            ref: "User",
         },
     ],
 },

@@ -13,6 +13,7 @@ import userRoutes from "./routes/userRoutes"
 import  jwt, {VerifyErrors} from "jsonwebtoken"
 import env from "./util/validateEnv"
 import cors from "cors"
+import cloudinary from "cloudinary"
 
 export interface CustomRequest extends Request {
   userId?: string; // adding the userId property to the Request interface
@@ -22,9 +23,7 @@ export interface CustomRequest extends Request {
 const app: Application = express();
 
 app.use(cors())
-
 app.use(morgan("dev"));
-
 // for verifying the token returned by the client
 app.use((req: CustomRequest, res: Response, next: NextFunction) => {
   const token = req.header("Authorization")?.split(" ")[1];
@@ -41,11 +40,16 @@ app.use((req: CustomRequest, res: Response, next: NextFunction) => {
     next()
   }
 })
-
 app.use(express.json())
 
-app.use("/posts", postRoutes)
+cloudinary.v2.config({ 
+  cloud_name: env.CLOUD_NAME, 
+  api_key: env.CLOUDINARY_API_KEY, 
+  api_secret: env.CLOUDINARY_SECRET 
+});
 
+
+app.use("/posts", postRoutes)
 app.use("/users", userRoutes)
 
 app.use((res, req, next) => {

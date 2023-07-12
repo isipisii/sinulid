@@ -1,12 +1,12 @@
 import { InferSchemaType, Schema, model } from "mongoose";
 
 const repostSchema = new Schema({
-    repostCreator: {
+    repost_creator: {
         type: Schema.Types.ObjectId, 
         required: true, 
         ref: "User" 
     },
-    post: {
+    post_id: {
         type: Schema.Types.ObjectId, 
         required: true,
         ref: "Post"

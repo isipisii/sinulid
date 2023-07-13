@@ -10,6 +10,7 @@ import morgan from "morgan";
 import "dotenv/config"
 import postRoutes from "./routes/postRoutes"
 import userRoutes from "./routes/userRoutes"
+import repostRoutes from "./routes/repostRoutes"
 import  jwt, {VerifyErrors} from "jsonwebtoken"
 import env from "./util/validateEnv"
 import cors from "cors"
@@ -24,6 +25,7 @@ const app: Application = express();
 
 app.use(cors())
 app.use(morgan("dev"));
+
 // for verifying the token returned by the client
 app.use((req: CustomRequest, res: Response, next: NextFunction) => {
   const token = req.header("Authorization")?.split(" ")[1];
@@ -48,9 +50,9 @@ cloudinary.v2.config({
   api_secret: env.CLOUDINARY_SECRET 
 });
 
-
 app.use("/posts", postRoutes)
 app.use("/users", userRoutes)
+app.use("/reposts", repostRoutes)
 
 app.use((res, req, next) => {
   next(createHttpError(404, "Endpoint not found"));

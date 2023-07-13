@@ -5,8 +5,7 @@ import bcrypt from "bcrypt";
 import  jwt from "jsonwebtoken"
 import env from "../util/validateEnv"
 import { CustomRequest } from "../app";
-import cloudinary from "cloudinary"
-import post from "../models/post";
+import cloudinary from "cloudinary";
 
 type SignUpBody = { 
     username: string
@@ -32,7 +31,6 @@ type UpdateUserInfoBody = {
 export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = async (req, res, next) => {
     const { username, email, password: rawPassword } = req.body
     
-
     try {   
             // error handlers
             if(!username || !email || !rawPassword){

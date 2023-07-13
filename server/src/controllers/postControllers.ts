@@ -40,16 +40,19 @@ export const createPost: RequestHandler<unknown, unknown, CreatePostBody, unknow
     }
 
     try {
+        let image = null;
 
-        const imageResult: any = await cloudinary.v2.uploader.upload(req.file.path)
-
-        const newPost = await PostModel.create({
-            creator: creator,
-            content: content,
-            image: {
+        if (req.file) {
+            const imageResult: any = await cloudinary.v2.uploader.upload(req.file.path);
+            image = {
                 url: imageResult.secure_url,
-                cloudinary_id: imageResult.public_id
-            }
+                cloudinary_id: imageResult.public_id,
+            };
+        }
+        const newPost = await PostModel.create({
+            creator,
+            content,
+            image
         })
 
         res.status(201).json(newPost);
@@ -68,12 +71,12 @@ export const getPosts: RequestHandler = async (req, res, next) => {
         }
 }
 
+
 // get user's post
 export const getUserPosts: RequestHandler<UserIdParam, unknown, unknown, unknown> = async (req, res, next) => {
     const userId = req.params.userId
 
     try {
-
         if(!userId){
             throw createHttpError(400, "Bad request, missing params")
         }
@@ -85,7 +88,6 @@ export const getUserPosts: RequestHandler<UserIdParam, unknown, unknown, unknown
         }  
         
         res.status(200).json(userPosts)
-
     } catch (error) {
         next(error)
     }
@@ -171,7 +173,7 @@ export const likePost: RequestHandler<PostParam, unknown, LikePostBody, unknown>
             throw createHttpError(404, "Post not found")
         }
 
-        const didLike = post.liked_by.some((user) => user.equals(new mongoose.Types.ObjectId(userId)));
+        const didLike = post.liked_by.some((user) => user.equals(userId));
     
         if(didLike){
             throw createHttpError(400, "User already liked the post")

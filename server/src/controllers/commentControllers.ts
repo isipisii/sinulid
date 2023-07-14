@@ -19,7 +19,7 @@ export const createComment: RequestHandler<createCommentParams, unknown,  create
 
     try {
 
-        if(creator || postId) {
+        if(!creator || !postId) {
             throw createHttpError(400, "Bad request, either you missed the post id or the creator id")
         }
 

@@ -6,13 +6,13 @@ const router = express.Router()
 
 router.post("/", upload.single("image"), PostControllers.createPost);
 
-router.patch("/:postId", upload.single("image"), PostControllers.updatePost)
+router.patch("/update/:postId", upload.single("image"), PostControllers.updatePost)
 
 router.get("/user-posts/:userId", PostControllers.getUserPosts)
 
 router.get("/", PostControllers.getPosts)
 
-router.delete("/:postId", PostControllers.deletePost)
+router.delete("/remove/:postId", PostControllers.deletePost)
 
 router.get("/likes/:postId", PostControllers.checkIfUserLikes)
 

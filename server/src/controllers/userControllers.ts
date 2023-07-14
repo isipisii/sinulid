@@ -22,9 +22,10 @@ type UpdateUserInfoParam = {
     userId: string
 }
 
-type UpdateUserInfoBody = {
+export type UpdateUserInfoBody = {
     bio: string
     link: string
+    username: string
 }
 
 // account sign up
@@ -103,21 +104,28 @@ export const logIn: RequestHandler<unknown, unknown, LogInBody, unknown> = async
 
 // this will get the user info once their is a token
 export const getUserInfo: RequestHandler = async(req: CustomRequest, res, next) => {
+    const authenticatedUserId = req.userId
+
     try {
-        const user = await UserModel.findById(req.userId).exec()
+        if(!authenticatedUserId){
+            throw createHttpError(403, "Forbidden, unauthorized to get user info")
+        }
+        const user = await UserModel.findById(authenticatedUserId).exec()
         res.status(201).json(user)
     } catch (error) {
         next()
     }
 }
 
-export const updateUserInfo: RequestHandler<UpdateUserInfoParam, unknown, UpdateUserInfoBody, unknown> = async (req: any, res, next) => {
+export const updateUserInfo: RequestHandler<UpdateUserInfoParam> = async (req , res, next) => {
     const { userId } = req.params
-    const { bio, link } = req.body
+    const { bio, link, username } = req.body as UpdateUserInfoBody
     const newImageFile = req.file?.path
     let newImageResult: any;
 
     try {
+        let image = null
+
         const user = await UserModel.findById(userId).exec()
         const currentCloudinaryId = user?.displayed_picture?.cloudinary_id
 
@@ -125,18 +133,29 @@ export const updateUserInfo: RequestHandler<UpdateUserInfoParam, unknown, Update
             throw createHttpError(404, "User not found!")
         }
 
-        if(currentCloudinaryId && newImageFile){
-            await cloudinary.v2.api.delete_resources([currentCloudinaryId]);
-            newImageResult = await cloudinary.v2.uploader.upload(newImageFile)
-        } else if(newImageFile){
-            newImageResult = await cloudinary.v2.uploader.upload(newImageFile)
+        if(req.file){
+            if(currentCloudinaryId && newImageFile){
+                await cloudinary.v2.api.delete_resources([currentCloudinaryId]);
+                newImageResult = await cloudinary.v2.uploader.upload(newImageFile)
+                image = {
+                    url: newImageResult.secure_url,
+                    cloudinary_id: newImageResult.public_id
+                }
+            } else if(newImageFile){
+                newImageResult = await cloudinary.v2.uploader.upload(newImageFile)
+                image = {
+                    url: newImageResult.secure_url,
+                    cloudinary_id: newImageResult.public_id
+                }
+            }
         }
 
-        user.bio = bio
-        user.link = link
+        user.username = username || user.username
+        user.bio = bio || user.bio
+        user.link = link || user.link
         user.displayed_picture = {
-            url: newImageResult.secure_url || user.displayed_picture?.url,
-            cloudinary_id: newImageResult.public_id || user.displayed_picture?.cloudinary_id
+            url: image?.url || user.displayed_picture?.url,
+            cloudinary_id: image?.cloudinary_id || user.displayed_picture?.cloudinary_id
         }
 
         const updatedUser = await user.save()

@@ -3,7 +3,6 @@ import express, {
   Response,
   NextFunction,
   Application,
-
 } from "express";
 import createHttpError, { isHttpError } from "http-errors";
 import morgan from "morgan";
@@ -15,6 +14,8 @@ import  jwt, {VerifyErrors} from "jsonwebtoken"
 import env from "./util/validateEnv"
 import cors from "cors"
 import cloudinary from "cloudinary"
+import { CreatePostBody, UpdatePostBody } from "./controllers/postControllers";
+import { UpdateUserInfoBody } from "./controllers/userControllers";
 
 export interface CustomRequest extends Request {
   userId?: string; // adding the userId property to the Request interface
@@ -26,7 +27,7 @@ const app: Application = express();
 app.use(cors())
 app.use(morgan("dev"));
 
-// for verifying the token returned by the client
+//jwt middleware for verifying the token returned by the client
 app.use((req: CustomRequest, res: Response, next: NextFunction) => {
   const token = req.header("Authorization")?.split(" ")[1];
 

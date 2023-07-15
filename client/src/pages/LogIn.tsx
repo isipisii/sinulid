@@ -2,11 +2,14 @@ import { FC, useState, ChangeEvent, FormEvent } from "react";
 import { LogInCredentials } from "../types/types";
 import { useNavigate, Link } from "react-router-dom";
 import { useAppDispatch } from "../features/app/hooks";
+import { useLogInMutation } from "../services/authApi";
 import { setToken } from "../features/auth/authSlice";
+import { logInFields } from "../constants";
 
 const LogIn: FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch()
+  const [logIn] = useLogInMutation()
   const [logInCredentials, setLogInCredentials] = useState<LogInCredentials>({
     email: "",
     password: "",
@@ -22,38 +25,21 @@ const LogIn: FC = () => {
 
   async function handleLogIn(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
-    try {
-      const response = await fetch("http://localhost:5000/users/log-in", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(logInCredentials),
-      });
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("token", data.token);
-        dispatch(setToken(data.token))
-        navigate("/");
+    try {
+      const payload = await logIn(logInCredentials).unwrap()
+    
+      if(payload){
+        localStorage.setItem("token", payload.token)
+        dispatch(setToken(payload.token))
+        navigate("/")
       }
     } catch (error) {
-      console.log(error);
+      console.error(error)
     }
   }
 
-  const logInFields = [
-    {
-      inputName: "email",
-      placeholder: "Email",
-      inputType: "email",
-    },
-    {
-      inputName: "password",
-      placeholder: "Password",
-      inputType: "password",
-    }
-  ]
+
 
   return (
 

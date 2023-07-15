@@ -117,8 +117,8 @@ export const getUserInfo: RequestHandler = async(req: CustomRequest, res, next) 
     }
 }
 
-export const updateUserInfo: RequestHandler<UpdateUserInfoParam> = async (req , res, next) => {
-    const { userId } = req.params
+export const updateUserInfo: RequestHandler<UpdateUserInfoParam> = async (req: CustomRequest , res, next) => {
+    const authenticatedUserId = req.userId
     const { bio, link, username } = req.body as UpdateUserInfoBody
     const newImageFile = req.file?.path
     let newImageResult: any;
@@ -126,7 +126,10 @@ export const updateUserInfo: RequestHandler<UpdateUserInfoParam> = async (req , 
     try {
         let image = null
 
-        const user = await UserModel.findById(userId).exec()
+        if(!authenticatedUserId){
+            throw createHttpError(403, "Forbidden, unauthorized to update user info")
+        }
+        const user = await UserModel.findById(authenticatedUserId).exec()
         const currentCloudinaryId = user?.displayed_picture?.cloudinary_id
 
         if(!user){

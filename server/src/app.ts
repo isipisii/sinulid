@@ -14,8 +14,6 @@ import  jwt, {VerifyErrors} from "jsonwebtoken"
 import env from "./util/validateEnv"
 import cors from "cors"
 import cloudinary from "cloudinary"
-import { CreatePostBody, UpdatePostBody } from "./controllers/postControllers";
-import { UpdateUserInfoBody } from "./controllers/userControllers";
 
 export interface CustomRequest extends Request {
   userId?: string; // adding the userId property to the Request interface

@@ -4,12 +4,12 @@ import upload from "../util/multer"
 
 const router = express.Router();
 
-router.post("/sign-in", UserControllers.signUp)
+router.post("/signup", UserControllers.signUp)
 
 router.get("/", UserControllers.getUserInfo)
 
-router.post("/log-in", UserControllers.logIn)
+router.post("/login", UserControllers.logIn)
 
-router.patch("/update/:userId", upload.single("image"), UserControllers.updateUserInfo)
+router.patch("/update", upload.single("image"), UserControllers.updateUserInfo)
 
 export default router

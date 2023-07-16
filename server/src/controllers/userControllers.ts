@@ -98,7 +98,7 @@ export const logIn: RequestHandler<unknown, unknown, LogInBody, unknown> = async
             })
 
         } catch (error) {
-            next(next)
+            next(error)
         }
 }
 
@@ -113,7 +113,7 @@ export const getUserInfo: RequestHandler = async(req: CustomRequest, res, next) 
         const user = await UserModel.findById(authenticatedUserId).exec()
         res.status(201).json(user)
     } catch (error) {
-        next()
+        next(error)
     }
 }
 

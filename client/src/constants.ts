@@ -11,7 +11,6 @@ export const logInFields = [
     },
 ];
 
-
 export const signUpFields = [
     {
         inputName: "username",
@@ -29,7 +28,7 @@ export const signUpFields = [
         inputType: "password",
     },
     {
-        inputName: "password",
+        inputName: "confirmPassword",
         placeholder: "Confirm password",
         inputType: "password",
     }

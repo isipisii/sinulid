@@ -8,8 +8,8 @@ import { logInFields } from "../constants";
 
 const LogIn: FC = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch()
-  const [logIn] = useLogInMutation()
+  const dispatch = useAppDispatch();
+  const [logIn] = useLogInMutation();
   const [logInCredentials, setLogInCredentials] = useState<LogInCredentials>({
     email: "",
     password: "",
@@ -27,22 +27,18 @@ const LogIn: FC = () => {
     e.preventDefault();
 
     try {
-      const payload = await logIn(logInCredentials).unwrap()
-    
-      if(payload){
-        localStorage.setItem("token", payload.token)
-        dispatch(setToken(payload.token))
-        navigate("/")
+      const payload = await logIn(logInCredentials).unwrap();
+      if (payload) {
+        localStorage.setItem("token", payload.token);
+        dispatch(setToken(payload.token));
+        navigate("/");
       }
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
   }
 
-
-
   return (
-
     <div className="h-[100vh] flex items-center justify-center bg-matteBlack">
       <form
         className="flex items-center justify-center flex-col gap-6 border border-slate-600 p-5 rounded-md w-[400px]"
@@ -58,7 +54,8 @@ const LogIn: FC = () => {
               onFocus={(e) => (e.target.style.borderColor = "#ffffff81")}
               type={field.inputType}
               placeholder={field.placeholder}
-              className="focus:border-[#ffffff81] text-sm border border-[#d3d3d354] text-white rounded-sm bg-[transparent] w-full p-2"
+              className=" placeholder:text-[#726e6e] text-white block w-full border border-[#d3d3d354] rounded-sm p-2 shadow-sm 
+              focus:outline-none focus:border-none focus:ring-cta focus:ring-1 sm:text-sm bg-transparent"
               onChange={handleOnChange}
               key={index}
             />

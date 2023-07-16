@@ -16,12 +16,10 @@ export type UpdateUserInfo = {
     image: File | null
 }
 
-
-
 export type User = {
     _id: string
     username: string
-    displayed_picture: {
+    displayed_picture?: {
         url: string,
         cloudinary_id: string
     }
@@ -31,3 +29,14 @@ export type User = {
     followers: string[]
 }
 
+export type Post = {
+    creator: User
+    _id: string 
+    content: string
+    image?: {
+        url: string,
+        cloudinary_id: string
+    }
+    likes: number
+    createdAt: string 
+}

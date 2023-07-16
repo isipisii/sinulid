@@ -7,7 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        matteBlack: "#0C0C0D",
+        matteBlack: "#1A1A1A",
+        secondaryBg: "#282828",
         primaryText:"",
         lightText: "#929191",
         cta: "#FAF906",

@@ -14,7 +14,7 @@ const SignUp: FC = () => {
     const [signUpCredentials, setSignUpCredentials] = useState<SignUpCredentials>({
         username: "",
         email: "",
-        password: ""
+        password: "",
     })
 
     function handleOnChange(e: ChangeEvent<HTMLInputElement>){

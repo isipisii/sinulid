@@ -9,6 +9,8 @@ type UpdateUserProfileInfo = {
 type TokenType = {
     token: string
 }
+
+//wasnt able to use prepareHeaders since some endpoint dont require headers
 const authAndUserApi = api.injectEndpoints({
     endpoints: (builder) => ({
         getAuthenticatedUser: builder.mutation<User, string>({

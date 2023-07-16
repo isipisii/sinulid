@@ -11,26 +11,22 @@ interface IHome {
 }
 
 const Home: FC<IHome> = ({ getUserInfo }) => {
-  const { user } = useAppSelector((state) => state.auth);
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-
+  // const dispatch = useAppDispatch();
+  // const navigate = useNavigate();
+  const { user }  =  useAppSelector(state => state.auth)
   // get the user info once rendered
   useEffect(() => {
     getUserInfo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handleLogout() {
-    localStorage.removeItem("token");
-    dispatch(setToken(""));
-    navigate("/login");
-  }
-
   return (
-    <section className="bg-matteBlack h-[100vh] flex justify-between items-center p-4 relative gap-4">
-      <SideBar userInfo={user} handleLogout={handleLogout} />
-      <Feed />
+    <section className="bg-matteBlack w-full flex items-center justify-center px-4">
+      <div className="max-w-[1400px] h-auto w-full flex gap-4">
+        <SideBar userInfo={user} />
+        <Feed />
+        <SideBar userInfo={user} />
+      </div>
     </section>
   );
 };

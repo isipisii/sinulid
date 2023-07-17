@@ -8,10 +8,10 @@ interface ISideBar {
 
 const SideBar: FC<ISideBar> = ({ userInfo }) => {
   return (
-    <aside className="w-[30%] hidden md:block h-[100vh]">
-      <div className="w-auto flex flex-col justify-between h-[85vh] mt-[70px] max-w-[300px]">
+    <aside className="w-[50%] hidden md:block h-[100vh]">
+      <div className="w-auto flex flex-col justify-between h-[85vh] mt-[70px]  fixed overflow-auto">
         {/*current user profile */}
-        <div className="flex items-center gap-3 bg-secondaryBg flex-col rounded-3xl p-4 w-full">
+        <div className="flex items-center gap-3 bg-secondaryBg flex-col rounded-3xl w-[300px] p-4 ">
           {/* name, image, bio */}
           <div className="flex flex-col items-center w-full gap-3">
             <img

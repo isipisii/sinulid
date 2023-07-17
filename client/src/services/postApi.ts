@@ -17,6 +17,11 @@ type DeletePost = {
     token: string
 }
 
+type LikePost = {
+    postId: string
+    token: string
+}
+
 //wasnt able to use prepareHeaders since some endpoint dont require headers
 const postApi = api.injectEndpoints({
     endpoints: (builder) => ({
@@ -51,8 +56,26 @@ const postApi = api.injectEndpoints({
         }),
         getPost: builder.query<Post[], void>({
             query:() => "/posts"
+        }),
+        likePost: builder.mutation<void, LikePost>({
+            query: ({token, postId}) => ({
+                url: `/posts/like/${postId}`,
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+        }),
+        unlikePost: builder.mutation<void, LikePost>({
+            query: ({token, postId}) => ({
+                url: `/posts/unlike/${postId}`,
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
         })
     })
 })
 
-export const { useCreatePostMutation, useDeletePostMutation, useUpdatePostMutation,  useGetPostQuery } = postApi
+export const { useCreatePostMutation, useDeletePostMutation, useUpdatePostMutation,  useLazyGetPostQuery, useLikePostMutation, useUnlikePostMutation } = postApi

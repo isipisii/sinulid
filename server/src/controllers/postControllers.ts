@@ -52,6 +52,7 @@ export const createPost: RequestHandler = async (req: CustomRequest, res, next) 
             content,
             image
         })
+        await newPost.populate("creator")
 
         res.status(201).json(newPost);
     } catch (error) {
@@ -236,6 +237,12 @@ export const unlikePost: RequestHandler<PostParam> = async (req: CustomRequest, 
             throw createHttpError(404, "Post not found")
         }
         
+        const didlike = post.liked_by.some((user) => user.equals(new mongoose.Types.ObjectId(authenticatedUserId)));
+        
+        if(!didlike){
+            throw createHttpError(400, "User already unliked the post")
+        } 
+
         post.likes -= 1
         post.liked_by = post.liked_by.filter((user) => !user.equals(new mongoose.Types.ObjectId(authenticatedUserId)));
 

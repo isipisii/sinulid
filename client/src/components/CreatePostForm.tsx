@@ -1,8 +1,9 @@
 import { useState, FormEvent } from "react";
-import { useAppSelector } from "../features/app/hooks";
+import { useAppSelector, useAppDispatch } from "../features/app/hooks";
 import { useCreatePostMutation } from "../services/postApi";
 import { FiPaperclip } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
+import { addPost } from "../features/post/postSlice";
 
 const CreatePostForm = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -10,6 +11,7 @@ const CreatePostForm = () => {
   const [imagePreview, setImagePreview] = useState<string>("");
   const { user, token } = useAppSelector((state) => state.auth);
   const [createPost] = useCreatePostMutation()
+  const dispatch = useAppDispatch()
 
   // this will set the selected image file to be uploaded and sets the image path for preview
   function handleSelectedFiles(selectedFiles: FileList | null): void {
@@ -48,8 +50,7 @@ const CreatePostForm = () => {
 
     try {
       const newPost = await createPost({postData: data, token}).unwrap()
-      console.log(newPost)
-      // await createPost({postData: data, token}).unwrap() 
+      dispatch(addPost(newPost))
       clearForm()
     } catch (error) {
       console.error(error)
@@ -113,6 +114,7 @@ const CreatePostForm = () => {
           <button
             className="bg-cta p-2 font-normal rounded-xl text-xs"
             disabled={false}
+            type="submit"
           >
             Create post
           </button>

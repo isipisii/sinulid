@@ -39,4 +39,5 @@ export type Post = {
     }
     likes: number
     createdAt: string 
+    liked_by: User[]
 }

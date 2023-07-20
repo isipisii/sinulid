@@ -27,6 +27,7 @@ export type User = {
     link: string
     following: string[]
     followers: string[]
+    email?: string 
 }
 
 export type Post = {
@@ -40,4 +41,11 @@ export type Post = {
     likes: number
     createdAt: string 
     liked_by: User[]
+}
+
+
+export type Repost = {
+    repost_creator: User
+    post: Post
+    createdAt: string 
 }

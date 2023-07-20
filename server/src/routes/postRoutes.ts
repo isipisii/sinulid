@@ -12,9 +12,9 @@ router.get("/user-posts/:userId", PostControllers.getUserPosts)
 
 router.get("/", PostControllers.getPosts)
 
-router.delete("/remove/:postId", PostControllers.deletePost)
+router.get("/:postId", PostControllers.getSinglePost)
 
-router.get("/likes/:postId", PostControllers.checkIfUserLikes)
+router.delete("/remove/:postId", PostControllers.deletePost)
 
 router.patch("/like/:postId", PostControllers.likePost)
 

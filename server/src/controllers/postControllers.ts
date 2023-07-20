@@ -26,9 +26,9 @@ type GetUserPostsParam = {
 // NEEDS AUTHENTICATED USER IN ORDER TO ACCESS THIS
 export const createPost: RequestHandler = async (req: CustomRequest, res, next) => {
     const { content } = req.body as CreatePostBody
-    const authenticatedCreator = req.userId
+    const authenticatedUserId = req.userId
 
-    if(!authenticatedCreator){
+    if(!authenticatedUserId){
         throw createHttpError(403, "Forbidden, unauthorized to create a post")
     }
     
@@ -48,7 +48,7 @@ export const createPost: RequestHandler = async (req: CustomRequest, res, next) 
         }
         
         const newPost = await PostModel.create({
-            creator: authenticatedCreator,
+            creator: authenticatedUserId,
             content,
             image
         })
@@ -57,6 +57,21 @@ export const createPost: RequestHandler = async (req: CustomRequest, res, next) 
         res.status(201).json(newPost);
     } catch (error) {
         next(error)
+    }
+}
+
+export const getSinglePost: RequestHandler<PostParam> = async (req, res, next) => {
+    const postId = req.params.postId
+    try {
+        if(!postId){
+            throw createHttpError(400, "Bad request, missing params")
+        }
+
+        const post = await PostModel.findById(postId).populate("creator").populate("liked_by").exec()
+
+        res.status(200).json(post)
+    } catch (error) {
+        
     }
 }
 

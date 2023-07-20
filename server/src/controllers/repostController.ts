@@ -1,9 +1,9 @@
 import { RequestHandler } from "express";
 import RepostModel from "../models/repost"
 import createHttpError from "http-errors"
+import { CustomRequest } from "../app";
 
 type RepostParam = {
-    userId: string
     postId: string
 }
 
@@ -15,16 +15,21 @@ type GetRepostParam = {
     userId: string
 }
 
-export const createRepost: RequestHandler<RepostParam> = async (req, res, next) => {
-    const { userId, postId } =  req.params
-    
-    if(!userId || !postId){
+export const createRepost: RequestHandler<RepostParam> = async (req: CustomRequest, res, next) => {
+    const { postId } =  req.params
+    const authenticatedUserId = req.userId
+
+    if(!postId){
         throw createHttpError(400, "Bad request, missing parameter")
+    }
+
+    if(!authenticatedUserId){
+        throw createHttpError(403, "Forbidden, unauthorized to repost a post")
     }
 
     try {
         const newRepost = await RepostModel.create({
-            repost_creator: userId,
+            repost_creator: authenticatedUserId,
             post_id: postId
         })
 
@@ -34,7 +39,7 @@ export const createRepost: RequestHandler<RepostParam> = async (req, res, next) 
     }
 } 
 
-export const getUserReposts: RequestHandler<GetRepostParam, unknown, unknown, unknown> = async (req, res, next) => {
+export const getUserReposts: RequestHandler<GetRepostParam> = async (req, res, next) => {
     const { userId } = req.params
 
     try {
@@ -54,15 +59,28 @@ export const getUserReposts: RequestHandler<GetRepostParam, unknown, unknown, un
     }
 }
 
-export const removeRepost: RequestHandler<DeleteRepostParam> = async (req, res, next) => {
+export const deleteRepost: RequestHandler<DeleteRepostParam> = async (req: CustomRequest, res, next) => {
     const { repostId } = req.params
-
-    if(!repostId){
-        throw createHttpError(400, "Bad request, missing parameter")
-    }
+    const authenticatedUserId = req.userId
 
     try {
-        await RepostModel.findByIdAndRemove(repostId)
+        if(!repostId){
+            throw createHttpError(400, "Bad request, missing parameter")
+        }
+
+        const repost = await RepostModel.findById(repostId).exec()
+
+        if(!repost){
+            throw createHttpError(404, "Repost not found")
+        }
+
+        if(authenticatedUserId){
+            if(!repost.repost_creator.equals(authenticatedUserId)){
+                throw createHttpError(403, "Forbidden, unauthorized to remove a post")
+            }  
+        }
+
+        await repost.deleteOne()
 
         res.sendStatus(204)
     } catch (error) {

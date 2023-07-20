@@ -8,6 +8,7 @@ import { useGetAuthenticatedUserMutation } from "./services/authApi";
 import { useAppSelector, useAppDispatch } from "./features/app/hooks";
 import { setUser } from "./features/auth/authSlice";
 import Protected from "./components/Protected";
+import ViewImageModal from "./components/modals/ViewImageModal";
 
 const App: FC = () => {
   const { token } = useAppSelector((state) => state.auth);
@@ -30,6 +31,7 @@ const App: FC = () => {
   return (
     <>
       <NavBar />
+      <ViewImageModal />
       <Routes>
         <Route
           path="/"

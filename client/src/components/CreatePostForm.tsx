@@ -47,7 +47,6 @@ const CreatePostForm = () => {
     if (imageFile) {
       data.append("image", imageFile);
     }
-
     try {
       const newPost = await createPost({postData: data, token}).unwrap()
       dispatch(addPost(newPost))
@@ -93,7 +92,7 @@ const CreatePostForm = () => {
               <p className="top-2 right-2 text-white text-[1.3rem] absolute p-1 rounded-full bg-[#3d3d3dad] hover:bg-[#4f4c4c] cursor-pointer" onClick={removeImage}>
                 <IoMdClose />
               </p>
-              <img src={imagePreview} alt="Preview" className="w-full" />
+              <img src={imagePreview} alt="Preview" className="w-full rounded-xl" />
             </div>
           )}
         </div>

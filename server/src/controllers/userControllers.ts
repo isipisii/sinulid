@@ -110,7 +110,7 @@ export const getUserInfo: RequestHandler = async(req: CustomRequest, res, next) 
         if(!authenticatedUserId){
             throw createHttpError(403, "Forbidden, unauthorized to get user info")
         }
-        const user = await UserModel.findById(authenticatedUserId).exec()
+        const user = await UserModel.findById(authenticatedUserId).select("+email").exec()
         res.status(201).json(user)
     } catch (error) {
         next(error)

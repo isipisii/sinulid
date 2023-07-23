@@ -1,21 +1,13 @@
 import { FC, useEffect, useState } from "react";
 import { BsHeart, BsChat, BsHeartFill } from "react-icons/bs";
 import { FiRepeat } from "react-icons/fi";
-import { Post, User } from "../types/types";
-import {
-  useUnlikePostMutation,
-  useLikePostMutation,
-  useDeletePostMutation,
-} from "../services/postApi";
-import {
-  likePost,
-  unlikePost,
-  deletePost,
-  setImageUrl,
-} from "../features/post/postSlice";
+import { BsThreeDots } from "react-icons/bs";
+import { Post, Reply, User } from "../types/types";
+import { useUnlikePostMutation, useLikePostMutation, useDeletePostMutation, useLazyGetPostRepliesQuery } from "../services/postApi";
+import { likePost, unlikePost, deletePost, setImageUrl } from "../features/post/postSlice";
 import { useAppDispatch } from "../features/app/hooks";
 import { useCreateRepostMutation } from "../services/repostApi";
-import moment from "moment";
+import { useFormatTimeStamp } from "../hook/useFormatTimestamp";
 import PostPreviewModal from "./modals/PostPreviewModal";
 
 interface IPostCard {
@@ -30,20 +22,17 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
   const [unlikePostMutation] = useUnlikePostMutation();
   const [deletePostMutation] = useDeletePostMutation();
   const [createRepostMutation] = useCreateRepostMutation();
+  const [getPostReplies] = useLazyGetPostRepliesQuery();
+
+  const [postReplies, setPostReplies] = useState<Reply[]>([])
   const [postData, setPostData] = useState<Post | null>(null)
   const [showPostPreviewModal, setShowPostPreviewModal] = useState<boolean>(false)
+
+  const { formattedTimeStamp } = useFormatTimeStamp(post.createdAt)
 
   const didLike: boolean = post.liked_by.some(
     (user) => user._id === authenticatedUser?._id
   );
-
-  const timeStamp: string = moment(post.createdAt)
-    .startOf("minute")
-    .fromNow(true);
-  const time: string = timeStamp.split(" ")[0];
-  const finalTime: string = time === "a" || time === "an" ? "1": time
-  const timeUnit: string = timeStamp.split(" ")[1].split("")[0];
-  const timeStampFormat: string = finalTime + timeUnit;
   
   function toggleLikeHandler(postId: string, token: string): void {
     if (!authenticatedUser) {
@@ -57,13 +46,17 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
       dispatch(likePost({ postId, user: authenticatedUser }));
       likePostMutation({ postId, token });
     }
-
   }
 
-  function deletePostHandler(postId: string, token: string): void {
+  async function deletePostHandler(postId: string, token: string): Promise<void> {
     if (!authenticatedUser) return
-    dispatch(deletePost(postId));
-    deletePostMutation({ postId, token });
+
+    try {
+      await deletePostMutation({ postId, token }).unwrap()
+      dispatch(deletePost(postId));
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   async function repostHandler(postId: string, token: string): Promise<void> {
@@ -85,22 +78,40 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
     setShowPostPreviewModal(false)
   }
 
+  //this will fetch all the post replies on each post card
+  useEffect(() => {
+    async function getReplies(): Promise<void> {
+      if (!postData) return;
+      try {
+        const replies = await getPostReplies(postData?._id).unwrap();
+        console.log(replies)
+        if(replies){
+          setPostReplies(replies)
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    getReplies();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postData?._id]);
+
   useEffect(() =>{
     setPostData(post)
   },[post])
 
   return (
     <div className="w-full h-auto bg-secondaryBg rounded-3xl p-4">
-      {/* modal when the comment icon is clicked */}
+      {/* modal when the chat icon is clicked */}
       {postData && showPostPreviewModal &&
       <PostPreviewModal 
         postData={postData}
-        timeStampFormat={timeStampFormat}
         didLike={didLike}
         toggleLike={toggleLikeHandler}
         repost={repostHandler}
-        token={token}
         closeModal={closeModal}
+        postReplies={postReplies}
+        setPostReplies={setPostReplies}
       />}
       {/* post infos */}
       <div className="flex flex-col gap-4 h-auto">
@@ -119,14 +130,14 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
               {post.creator.username}
             </h2>
           </div>
-          <div>
-            <p className="text-">{timeStampFormat}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm">{formattedTimeStamp}</p>
             {authenticatedUser?._id === post.creator._id && (
               <p
-                className="cursor-pointer"
+                className="cursor-pointer text-base"
                 onClick={() => deletePostHandler(post._id, token)}
               >
-                delete
+                <BsThreeDots />
               </p>
             )}
           </div>
@@ -139,7 +150,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
           <img
             src={post?.image?.url}
             alt=""
-            className="w-full rounded-xl cursor-pointer"
+            className="w-full rounded-xl cursor-pointer object-cover max-h-[400px]"
             onClick={() =>
               post.image && dispatch(setImageUrl(post?.image?.url))
             }
@@ -162,7 +173,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
           {/* comment */}
           <div className="flex gap-1 items-center">
             <p 
-              className="text-white text-[1.1rem] p-2 ronded-full hover:bg-[#4e4a4a] ease-in-out duration-300" 
+              className="text-white text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300" 
               onClick={() => {
                 setPostData(post)
                 setShowPostPreviewModal(true)
@@ -170,7 +181,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
             >
               <BsChat />
             </p>
-            <p className="text-lightText text-sm">0</p>
+            <p className="text-lightText text-sm">{postReplies.length}</p>
           </div>
           {/* repost */}
           <div className="flex gap-1 items-center">
@@ -183,7 +194,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
             <p className="text-lightText text-sm">0</p>
           </div>
         </div>
-        {/* end of iconse */}
+        {/* end of icons */}
       </div>
     </div>
   );

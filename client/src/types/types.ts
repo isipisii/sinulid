@@ -49,3 +49,11 @@ export type Repost = {
     post: Post
     createdAt: string 
 }
+
+export type Reply = {
+    _id: string
+    post_id: string
+    creator: User
+    content: string
+    createdAt: string
+}

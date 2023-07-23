@@ -10,7 +10,7 @@ import "dotenv/config"
 import postRoutes from "./routes/postRoutes"
 import userRoutes from "./routes/userRoutes"
 import repostRoutes from "./routes/repostRoutes"
-import commentRoutes from "./routes/commentRoutes"
+import replyRoutes from "./routes/replyRoutes"
 import  jwt, {VerifyErrors} from "jsonwebtoken"
 import env from "./util/validateEnv"
 import cors from "cors"
@@ -42,6 +42,7 @@ app.use((req: CustomRequest, res: Response, next: NextFunction) => {
     next()
   }
 })
+
 app.use(express.json())
 
 cloudinary.v2.config({ 
@@ -53,7 +54,7 @@ cloudinary.v2.config({
 app.use("/posts", postRoutes)
 app.use("/users", userRoutes)
 app.use("/reposts", repostRoutes)
-app.use("/comments", commentRoutes)
+app.use("/replies", replyRoutes)
 
 app.use((res, req, next) => {
   next(createHttpError(404, "Endpoint not found"));

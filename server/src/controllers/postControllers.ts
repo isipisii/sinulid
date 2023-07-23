@@ -31,14 +31,16 @@ export const createPost: RequestHandler = async (req: CustomRequest, res, next) 
     if(!authenticatedUserId){
         throw createHttpError(403, "Forbidden, unauthorized to create a post")
     }
-    
-    if(!content){ 
-        throw createHttpError(400, "Bad request, post should have content")
-    }
 
+    if(req.file){
+        if(!content && !req.file.path){ 
+            throw createHttpError(400, "Bad request, post should have a content")
+        }
+    }
+    
     try {
         let image = null;
-
+        
         if (req.file) {
             const imageResult: any = await cloudinary.v2.uploader.upload(req.file.path)
             image = {
@@ -196,7 +198,7 @@ export const deletePost: RequestHandler<PostParam> = async (req: CustomRequest, 
 
         await post.deleteOne()
 
-        res.sendStatus(204)
+        res.status(204).json(post)
     } catch (error) {
         next(error)
     }

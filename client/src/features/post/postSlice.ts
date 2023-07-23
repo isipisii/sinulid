@@ -5,13 +5,11 @@ import { Post, User} from '../../types/types'
 export interface IPostState {
     posts: Post[]
     viewImage: string,
-    post: Post | null
 }
 
 const initialState: IPostState = {
     posts: [],
     viewImage: "",
-    post: null
 }  
 
 export const postSlice = createSlice({

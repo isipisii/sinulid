@@ -12,7 +12,7 @@ export default {
         primaryText:"",
         lightText: "#929191",
         cta: "#FAF906",
-        
+        borderColor: "#353131f6"
       },
       
     },

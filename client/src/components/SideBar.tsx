@@ -7,6 +7,8 @@ interface ISideBar {
 }
 
 const SideBar: FC<ISideBar> = ({ userInfo }) => {
+  const email = userInfo?.email?.split("@")[0]
+  
   return (
     <aside className="w-[50%] hidden md:block h-[100vh]">
       <div className="w-auto flex flex-col justify-between h-[85vh] mt-[70px]  fixed overflow-auto">
@@ -24,7 +26,7 @@ const SideBar: FC<ISideBar> = ({ userInfo }) => {
                 <h1 className="text-white font-medium text-base text-center">
                   {userInfo?.username}
                 </h1>
-                <p className="text-lightText text-xs text-center">@alessandroo</p>
+                <p className="text-lightText text-xs text-center">@{email}</p>
               </div>
               <p className="text-white text-xs text-center">
                 Bioooooooo <br /> bio

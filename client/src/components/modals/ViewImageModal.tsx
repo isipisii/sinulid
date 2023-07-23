@@ -10,12 +10,12 @@ const ViewImageModal: FC = () => {
   return (
     <> 
     {viewImage &&
-      <div className="w-[100vw] h-[100vh] fixed bg-[#090808af] z-10 flex items-center justify-center">
+      <div className="w-full h-full fixed top-0 left-0 flex items-center justify-center bg-[#090808af] z-10">
         <p className="top-2 right-2 text-white text-[1.3rem] absolute p-1 rounded-full bg-[#3d3d3dad] hover:bg-[#4f4c4c] cursor-pointer" onClick={() => dispatch(setImageUrl(""))}>
           <IoMdClose />
         </p>
-        <div className='w-full md:max-w-[60%]'>
-          <img src={viewImage} alt="post image" className='w-full'/>
+        <div className="max-w-[100vh] md:max-w-[70vw] max-h-[100vh] ">
+          <img src={viewImage} alt="post image" className='w-full h-auto mx-auto'/>
         </div>
       </div>
       }

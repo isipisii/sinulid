@@ -15,7 +15,7 @@ const LogIn: FC = () => {
     password: "",
   });
 
-  function handleOnChange(e: ChangeEvent<HTMLInputElement>) {
+  function handleOnChange(e: ChangeEvent  <HTMLInputElement>) {
     const { name, value } = e.target;
     setLogInCredentials((prevState) => ({
       ...prevState,

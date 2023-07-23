@@ -45,7 +45,6 @@ const authAndUserApi = api.injectEndpoints({
                 body: updateUserInfo
             })
         })
-
     }),
 })
 

@@ -1,5 +1,6 @@
 import { RequestHandler } from "express"
 import PostModel from "../models/post"
+import ReplyModel from "../models/reply"
 import mongoose from "mongoose"
 import createHttpError from "http-errors"
 import cloudinary from "cloudinary"
@@ -195,7 +196,7 @@ export const deletePost: RequestHandler<PostParam> = async (req: CustomRequest, 
         if(cloudinaryId){
             await cloudinary.v2.api.delete_resources([cloudinaryId]);
         }   
-
+        await ReplyModel.deleteMany({post_id: postId})
         await post.deleteOne()
 
         res.status(204).json(post)

@@ -1,11 +1,11 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, JSX } from "react";
 import { useAppSelector, useAppDispatch } from "../features/app/hooks";
 import { useCreatePostMutation } from "../services/postApi";
 import { FiPaperclip } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { addPost } from "../features/post/postSlice";
 
-const CreatePostForm = () => {
+const CreatePostForm = (): JSX.Element => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [textContent, setTextContent] = useState<string>("");
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -63,15 +63,15 @@ const CreatePostForm = () => {
   }
 
   return (
-    <div className="w-full max-w-[600px] h-auto">
+    <div className="w-full h-auto">
       <form
-        className="flex flex-col gap-3 h-auto p-4 bg-secondaryBg rounded-3xl"
+        className="flex flex-col gap-3 h-auto p-4 bg-matteBlack rounded-md"
         onSubmit={submitPost}
       >
         <div className="h-auto w-full flex flex-col gap-3">
           <div className="flex gap-2 items-center">
             <img
-              src={user?.displayed_picture?.url}
+              src={user?.displayed_picture ? user?.displayed_picture?.url : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"}
               alt="user profile"
               className="h-[40px] w-[40px] rounded-full"
             />
@@ -82,24 +82,24 @@ const CreatePostForm = () => {
           <textarea
             name="post"
             placeholder="Create a post..."
-            className="h-auto outline-none text-white p-2 text-sm w-full overflow-hidden bg-matteBlack rounded-xl placeholder:text-[#4a4545]"
+            className="h-auto outline-none text-white p-2 text-xs w-full border-borderColor border bg-matteBlack rounded-sm placeholder:text-[#4a4545]"
             value={textContent}
             onChange={(e) => setTextContent(e.target.value)}
             
           />
           {imagePreview && (
-            <div className="w-full relative">
+            <div className="w-full relative max-w-[500px]">
               <p className="top-2 right-2 text-white text-[1.3rem] absolute p-1 rounded-full bg-[#3d3d3dad] hover:bg-[#4f4c4c] cursor-pointer" onClick={removeImage}>
                 <IoMdClose />
               </p>
-              <img src={imagePreview} alt="Preview" className="w-full rounded-xl" />
+              <img src={imagePreview} alt="Preview" className="w-full rounded-md " />
             </div>
           )}
         </div>
         <div className="flex items-center justify-between">
           <label
             htmlFor="file-input"
-            className="cursor-pointer text-lightText hover:text-[#636060c4] text-[1.5rem]"
+            className="cursor-pointer text-lightText hover:text-[#636060c4] text-[1.3rem]"
           >
             <FiPaperclip />
           </label>
@@ -111,11 +111,11 @@ const CreatePostForm = () => {
             className="hidden"
           />
           <button
-            className="bg-cta p-2 font-normal rounded-xl text-xs"
+            className="bg-white px-6 py-2 font-semibold rounded-sm text-xs"
             disabled={false}
             type="submit"
           >
-            Create post
+            Post
           </button>
         </div>
       </form>

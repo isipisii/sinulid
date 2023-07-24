@@ -1,4 +1,4 @@
-import { Post } from "../types/types";
+import { Reply, Post } from "../types/types";
 import { api } from "./api";
 
 type CreatePost = {
@@ -19,6 +19,17 @@ type DeletePost = {
 
 type LikePost = {
     postId: string
+    token: string
+}
+
+type CreatePostReply = {
+    postId: string
+    token: string
+    content: string
+}
+
+type DeletePostReply = {
+    replyId: string
     token: string
 }
 
@@ -54,7 +65,7 @@ const postApi = api.injectEndpoints({
                 body: updatePostData
             })
         }),
-        getPost: builder.query<Post[], void>({
+        getPosts: builder.query<Post[], void>({
             query:() => "/posts"
         }),
         likePost: builder.mutation<void, LikePost>({
@@ -74,8 +85,46 @@ const postApi = api.injectEndpoints({
                     "Authorization": `Bearer ${token}`
                 }
             })
+        }),
+        getSinglePost: builder.query<Post, string>({
+            query: (postId) => `/posts/${postId}`
+        }),
+        getPostReplies: builder.query<Reply[], string>({
+            query: (postId) => `/replies/${postId}`
+        }),
+        createPostReply: builder.mutation<Reply, CreatePostReply>({
+            query: ({postId, token, content}) => ({
+                url: `/replies/create/${postId}`,
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                },
+                body: {
+                    content
+                }
+            })
+        }),
+        deletePostReply: builder.mutation<void, DeletePostReply>({
+            query:({token, replyId}) => ({
+                url: `/replies/remove/${replyId}`,
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
         })
     })
 })
 
-export const { useCreatePostMutation, useDeletePostMutation, useUpdatePostMutation,  useLazyGetPostQuery, useLikePostMutation, useUnlikePostMutation } = postApi
+export const { 
+    useCreatePostMutation, 
+    useDeletePostMutation, 
+    useUpdatePostMutation,  
+    useLazyGetPostsQuery, 
+    useLikePostMutation, 
+    useUnlikePostMutation,  
+    useLazyGetSinglePostQuery,
+    useLazyGetPostRepliesQuery,
+    useCreatePostReplyMutation,
+    useDeletePostReplyMutation
+} = postApi

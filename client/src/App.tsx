@@ -9,6 +9,9 @@ import { useAppSelector, useAppDispatch } from "./features/app/hooks";
 import { setUser } from "./features/auth/authSlice";
 import Protected from "./components/Protected";
 import ViewImageModal from "./components/modals/ViewImageModal";
+import SideBarAndBottomNav from "./components/SideBarAndBottomNav";
+import Activity from "./pages/Activity";
+import Profile from "./pages/Profile";
 
 const App: FC = () => {
   const { token } = useAppSelector((state) => state.auth);
@@ -31,6 +34,7 @@ const App: FC = () => {
   return (
     <>
       <NavBar />
+      <SideBarAndBottomNav />
       <ViewImageModal />
       <Routes>
         <Route
@@ -41,6 +45,15 @@ const App: FC = () => {
             </Protected>
           }
         />
+        <Route
+          path="/activity"
+          element={
+            <Protected isSignedIn={token}>
+              <Activity />
+            </Protected>
+          }
+        />
+        <Route path="/Profile" element={<Profile />} />
         <Route path="/login" element={<LogIn />} />
         <Route path="/signup" element={<SignUp />} />
       </Routes>

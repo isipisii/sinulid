@@ -66,7 +66,7 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
     }
   }
   return (
-    <div className="bg-[#000000c7] fixed w-[100vw] h-[100vh] z-10 top-0 left-0 flex items-center justify-center">
+    <div className="bg-[#000000bd] backdrop-blur-sm fixed w-[100vw] h-[100vh] z-20 top-0 left-0 flex items-center justify-center">
       {/* close icon */}
       <p
         className="top-5 right-5 text-[#525151] text-[1.5rem] absolute p-3 font-thin rounded-full bg-[#252424ce] hover:bg-[#424141ba] cursor-pointer"
@@ -77,7 +77,7 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
 
       <div
         className={`${
-          postData?.image ? "md:w-[80%]" : "md:w-[60%] max-w-[700px]"
+          postData?.image ? "md:w-[80%]" : "md:w-[60%] max-w-[600px]"
         } h-[500px] flex items-stretch justify-center w-[95%]`}
       >
         {/* post image */}
@@ -92,7 +92,7 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
         )}
         {/* end of post image */}
 
-        {/*post creator*/}
+        
         <div
           className={`bg-matteBlack h-full w-full ${
             postData?.image ? "max-w-[500px]" : null
@@ -100,6 +100,8 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
             postData?.image ? "rounded-tr-md rounded-br-md" : "rounded-md"
           } flex gap-4 flex-col`}>
           <div className={`flex justify-between gap-3 ${postReplies.length === 0 ? "border-b border-borderColor pb-4" : null }`}>
+            {/*post creator*/}
+            {/* post creator image */}
             <img
               src={
                 postData?.creator?.displayed_picture

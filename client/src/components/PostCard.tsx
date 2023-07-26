@@ -3,8 +3,18 @@ import { BsHeart, BsChat, BsHeartFill } from "react-icons/bs";
 import { FiRepeat } from "react-icons/fi";
 import { BsThreeDots } from "react-icons/bs";
 import { Post, Reply, User } from "../types/types";
-import { useUnlikePostMutation, useLikePostMutation, useDeletePostMutation, useLazyGetPostRepliesQuery } from "../services/postApi";
-import { likePost, unlikePost, deletePost, setImageUrl } from "../features/post/postSlice";
+import {
+  useUnlikePostMutation,
+  useLikePostMutation,
+  useDeletePostMutation,
+  useLazyGetPostRepliesQuery,
+} from "../services/postApi";
+import {
+  likePost,
+  unlikePost,
+  deletePost,
+  setImageUrl,
+} from "../features/post/postSlice";
 import { useAppDispatch } from "../features/app/hooks";
 import { useCreateRepostMutation } from "../services/repostApi";
 import { useFormatTimeStamp } from "../hook/useFormatTimestamp";
@@ -26,9 +36,10 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
 
   const [postReplies, setPostReplies] = useState<Reply[]>([]);
   const [postData, setPostData] = useState<Post | null>(null);
+  const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
   const [showPostPreviewModal, setShowPostPreviewModal] =
     useState<boolean>(false);
-  const { formattedTimeStamp } = useFormatTimeStamp(post.createdAt)
+  const { formattedTimeStamp } = useFormatTimeStamp(post.createdAt);
 
   const didLike: boolean = post.liked_by.some(
     (user) => user._id === authenticatedUser?._id
@@ -57,6 +68,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
     try {
       await deletePostMutation({ postId, token }).unwrap();
       dispatch(deletePost(postId));
+      setShowContextMenu(false)
     } catch (error) {
       console.error(error);
     }
@@ -92,9 +104,10 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
       console.error(error);
     }
   }, [postData, getPostReplies]);
-
+  
   //this will fetch all the post replies on each post card
   useEffect(() => {
+    
     getReplies();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getReplies]);
@@ -104,7 +117,21 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
   }, [post]);
 
   return (
-    <div className="w-full h-auto p-4  border-t  border-borderColor ">
+    <div className="w-full h-auto p-4 border-t border-borderColor relative">
+      {/* context menu */}
+      {showContextMenu && (
+        <div className="bg-[#171717] absolute right-5 top-10 rounded-md h-auto z-10 w-[120px]">
+          <p className="w-full text-white text-xs border-[#82818154] border-b p-3 text-left font-semibold">
+            Edit
+          </p>
+          <p
+            className="w-full text-red-600 text-xs p-3 text-left font-semibold"
+            onClick={() => deletePostHandler(post._id, token) }
+          >
+            Delete
+          </p>
+        </div>
+      )}
       {/* modal when the chat icon is clicked */}
       {postData && showPostPreviewModal && (
         <PostPreviewModal
@@ -138,17 +165,14 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
             <div className="flex items-center gap-3">
               <p className="text-xs text-lightText">{formattedTimeStamp}</p>
               {authenticatedUser?._id === post.creator._id && (
-                <p
-                  className="cursor-pointer text-base text-white"
-                  onClick={() => deletePostHandler(post._id, token)}
-                >
+                <p className="cursor-pointer text-base text-white" onClick={() => setShowContextMenu(prevState => !prevState)}>
                   <BsThreeDots />
                 </p>
               )}
             </div>
           </div>
           {/*end of post creator and other details */}
-          
+
           {/* post content */}
           <p className="text-xs text-[#ffffff] tracking-wide whitespace-pre-line">
             {post.content}
@@ -157,7 +181,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
             <img
               src={post?.image?.url}
               alt="post image"
-              className="w-full rounded-md cursor-pointer object-cover max-w-[500px]"
+              className=" w-full rounded-md cursor-pointer object-cover max-w-[500px] transition-transform transform-gpu ease-linear duration-100 active:scale-[.98]"
               onClick={() =>
                 post.image && dispatch(setImageUrl(post?.image?.url))
               }
@@ -175,7 +199,11 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
                 } `}
                 onClick={() => toggleLikeHandler(post._id, token)}
               >
-                {didLike ? <BsHeartFill /> : <BsHeart />}
+                {didLike ? (
+                  <BsHeartFill className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
+                ) : (
+                  <BsHeart className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
+                )}
               </p>
               <p className="text-lightText text-xs">{post.likes}</p>
             </div>
@@ -188,7 +216,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
                   setShowPostPreviewModal(true);
                 }}
               >
-                <BsChat />
+                <BsChat className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
               </p>
               <p className="text-lightText text-xs">{postReplies.length}</p>
             </div>
@@ -198,14 +226,13 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
                 className="text-white text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300 cursor-pointer"
                 onClick={() => repostHandler(post._id, token)}
               >
-                <FiRepeat />
+                <FiRepeat className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
               </p>
               <p className="text-lightText text-xs">0</p>
             </div>
           </div>
           {/* end of icons */}
         </div>
-
       </div>
     </div>
   );

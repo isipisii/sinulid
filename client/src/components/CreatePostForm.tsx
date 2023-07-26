@@ -82,7 +82,7 @@ const CreatePostForm = (): JSX.Element => {
           <textarea
             name="post"
             placeholder="Create a post..."
-            className="h-auto outline-none text-white p-2 text-xs w-full border-borderColor border bg-matteBlack rounded-sm placeholder:text-[#4a4545]"
+            className="h-auto outline-none text-white p-2 text-xs w-full border-borderColor border bg-matteBlack rounded-md placeholder:text-[#4a4545]"
             value={textContent}
             onChange={(e) => setTextContent(e.target.value)}
             
@@ -111,7 +111,7 @@ const CreatePostForm = (): JSX.Element => {
             className="hidden"
           />
           <button
-            className="bg-white px-6 py-2 font-semibold rounded-sm text-xs"
+            className="bg-white px-6 py-2 font-semibold rounded-md text-xs"
             disabled={false}
             type="submit"
           >

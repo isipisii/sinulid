@@ -33,10 +33,8 @@ export const createPost: RequestHandler = async (req: CustomRequest, res, next) 
         throw createHttpError(403, "Forbidden, unauthorized to create a post")
     }
 
-    if(req.file){
-        if(!content && !req.file.path){ 
-            throw createHttpError(400, "Bad request, post should have a content")
-        }
+    if(!content && !req.file?.path){
+        throw createHttpError(400, "Bad request, post should have a content")
     }
     
     try {
@@ -98,7 +96,7 @@ export const getUserPosts: RequestHandler<GetUserPostsParam> = async (req, res, 
             throw createHttpError(400, "Bad request, missing params")
         }
 
-        const userPosts = await PostModel.find({ creator: userId }).populate("creator")
+        const userPosts = await PostModel.find({ creator: userId }).sort({ createdAt: -1}).populate("liked_by").populate("creator").exec()
 
         if(!userPosts){
             throw createHttpError(404, "Posts not found")
@@ -166,6 +164,8 @@ export const updatePost: RequestHandler<PostParam> = async (req: CustomRequest, 
         }
         const updatedPost = await post.save()
 
+        await updatedPost.populate("creator")
+        
         res.status(200).json(updatedPost);
     } catch (error) {
         next(error)

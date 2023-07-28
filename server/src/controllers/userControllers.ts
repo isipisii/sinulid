@@ -11,6 +11,7 @@ type SignUpBody = {
     username: string
     email: string
     password: string
+    name: string
 }
 
 type LogInBody = {
@@ -26,15 +27,20 @@ export type UpdateUserInfoBody = {
     bio: string
     link: string
     username: string
+    name:string
+}
+
+type GetUserInfoParam = {
+    username: string
 }
 
 // account sign up
 export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = async (req, res, next) => {
-    const { username, email, password: rawPassword } = req.body
+    const { username, email, password: rawPassword, name } = req.body
     
     try {   
             // error handlers
-            if(!username || !email || !rawPassword){
+            if(!username || !email || !rawPassword || !name){
                 throw createHttpError(400, "Missing credentials")
             }
             
@@ -56,6 +62,7 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
             const newUser = await UserModel.create({
                 username,
                 email,
+                name,
                 password: hashedPassword
             })
             
@@ -103,7 +110,7 @@ export const logIn: RequestHandler<unknown, unknown, LogInBody, unknown> = async
 }
 
 // this will get the user info once their is a token
-export const getUserInfo: RequestHandler = async(req: CustomRequest, res, next) => {
+export const getAuthenticatedUserInfo: RequestHandler = async(req: CustomRequest, res, next) => {
     const authenticatedUserId = req.userId
 
     try {
@@ -117,9 +124,25 @@ export const getUserInfo: RequestHandler = async(req: CustomRequest, res, next) 
     }
 }
 
-export const updateUserInfo: RequestHandler<UpdateUserInfoParam> = async (req: CustomRequest , res, next) => {
+export const getUserInfo: RequestHandler<GetUserInfoParam> = async (req, res, next) => {
+    const username = req.params.username
+
+    try {
+        if(!username) {
+            throw createHttpError(400, "Bad request, missing params")
+        }
+
+        const user = await UserModel.findOne({ username }).exec()
+        res.status(201).json(user)
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const updateUserInfo: RequestHandler = async (req: CustomRequest , res, next) => {
     const authenticatedUserId = req.userId
-    const { bio, link, username } = req.body as UpdateUserInfoBody
+    const { bio, link, username, name } = req.body as UpdateUserInfoBody
     const newImageFile = req.file?.path
     let newImageResult: any;
 
@@ -154,6 +177,7 @@ export const updateUserInfo: RequestHandler<UpdateUserInfoParam> = async (req: C
         }
 
         user.username = username || user.username
+        user.name = name || user.name
         user.bio = bio || user.bio
         user.link = link || user.link
         user.displayed_picture = {

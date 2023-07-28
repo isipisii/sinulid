@@ -2,7 +2,7 @@ import { JSX, useState } from "react";
 import { LogInCredentials } from "../types/types";
 import { useNavigate, Link } from "react-router-dom";
 import { useAppDispatch } from "../features/app/hooks";
-import { useLogInMutation } from "../services/authApi";
+import { useLogInMutation } from "../services/authAndUserApi";
 import { setToken } from "../features/auth/authSlice";
 import { useForm } from 'react-hook-form';
 import { FiEye, FiEyeOff } from 'react-icons/fi'

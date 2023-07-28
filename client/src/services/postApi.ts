@@ -86,9 +86,6 @@ const postApi = api.injectEndpoints({
                 }
             })
         }),
-        getSinglePost: builder.query<Post, string>({
-            query: (postId) => `/posts/${postId}`
-        }),
         getPostReplies: builder.query<Reply[], string>({
             query: (postId) => `/replies/${postId}`
         }),
@@ -112,6 +109,9 @@ const postApi = api.injectEndpoints({
                     "Authorization": `Bearer ${token}`
                 }
             })
+        }),
+        getUserPosts: builder.query<Post[], string>({
+            query: (userId) => `posts/user-posts/${userId}`
         })
     })
 })
@@ -123,8 +123,8 @@ export const {
     useLazyGetPostsQuery, 
     useLikePostMutation, 
     useUnlikePostMutation,  
-    useLazyGetSinglePostQuery,
     useLazyGetPostRepliesQuery,
     useCreatePostReplyMutation,
-    useDeletePostReplyMutation
+    useDeletePostReplyMutation,
+    useLazyGetUserPostsQuery
 } = postApi

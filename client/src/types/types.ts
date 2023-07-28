@@ -3,6 +3,7 @@ export type SignUpCredentials = {
     email: string
     password: string
     confirmPassword: string
+    name: string
 }
 
 export type LogInCredentials = {
@@ -20,15 +21,15 @@ export type UpdateUserInfo = {
 export type User = {
     _id: string
     username: string
+    name?:string
     displayed_picture?: {
         url: string,
         cloudinary_id: string
     }
-    bio: string
-    link: string
+    bio?: string
+    link?: string
     following: string[]
     followers: string[]
-    email?: string 
 }
 
 export type Post = {

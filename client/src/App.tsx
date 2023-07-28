@@ -1,10 +1,10 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import SignUp from "./pages/SignUp";
 import LogIn from "./pages/LogIn";
 import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
-import { useGetAuthenticatedUserMutation } from "./services/authApi";
+import { useGetAuthenticatedUserMutation } from "./services/authAndUserApi";
 import { useAppSelector, useAppDispatch } from "./features/app/hooks";
 import { setUser } from "./features/auth/authSlice";
 import Protected from "./components/Protected";
@@ -12,6 +12,7 @@ import ViewImageModal from "./components/modals/ViewImageModal";
 import SideBarAndBottomNav from "./components/SideBarAndBottomNav";
 import Activity from "./pages/Activity";
 import Profile from "./pages/Profile";
+import EditPostModal from "./components/modals/EditPostModal";
 
 const App: FC = () => {
   const { token } = useAppSelector((state) => state.auth);
@@ -31,17 +32,22 @@ const App: FC = () => {
     } 
   }
 
+  useEffect(() => {
+    getUserInfo()
+  },[])
+
   return (
     <>
       <NavBar />
       <SideBarAndBottomNav />
       <ViewImageModal />
+      <EditPostModal />
       <Routes>
         <Route
           path="/"
           element={
             <Protected isSignedIn={token}>
-              <Home getUserInfo={getUserInfo} />
+              <Home getUserInfo={getUserInfo}/>
             </Protected>
           }
         />
@@ -53,7 +59,7 @@ const App: FC = () => {
             </Protected>
           }
         />
-        <Route path="/Profile" element={<Profile />} />
+        <Route path="/profile/:username" element={<Profile />} />
         <Route path="/login" element={<LogIn />} />
         <Route path="/signup" element={<SignUp />} />
       </Routes>

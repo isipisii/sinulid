@@ -14,10 +14,13 @@ import {
   unlikePost,
   deletePost,
   setImageUrl,
+  setPostToEdit,
 } from "../features/post/postSlice";
+import { likePostInUserProfile, unlikePostInUserProfile, deletePostInUserProfile } from "../features/user/userProfileSlice";
 import { useAppDispatch } from "../features/app/hooks";
 import { useCreateRepostMutation } from "../services/repostApi";
 import { useFormatTimeStamp } from "../hook/useFormatTimestamp";
+import { Link } from "react-router-dom";
 import PostPreviewModal from "./modals/PostPreviewModal";
 
 interface IPostCard {
@@ -51,10 +54,12 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
     }
 
     if (didLike) {
-      dispatch(unlikePost({ postId, user: authenticatedUser }));
+      dispatch(unlikePost({ postId, user: authenticatedUser })); // for feed's optimistic update
+      dispatch(unlikePostInUserProfile({ postId, user: authenticatedUser })) // for user's profile optimistic update
       unlikePostMutation({ postId, token });
     } else {
-      dispatch(likePost({ postId, user: authenticatedUser }));
+      dispatch(likePost({ postId, user: authenticatedUser }));  // for feed's optimistic update
+      dispatch(likePostInUserProfile({ postId, user: authenticatedUser }))  // for user's profile optimistic update
       likePostMutation({ postId, token });
     }
   }
@@ -67,8 +72,9 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
 
     try {
       await deletePostMutation({ postId, token }).unwrap();
-      dispatch(deletePost(postId));
-      setShowContextMenu(false)
+      dispatch(deletePostInUserProfile(postId)) // for user's profile optimistic update
+      dispatch(deletePost(postId)); // for feed's optimistic update
+      setShowContextMenu(false);
     } catch (error) {
       console.error(error);
     }
@@ -104,10 +110,9 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
       console.error(error);
     }
   }, [postData, getPostReplies]);
-  
+
   //this will fetch all the post replies on each post card
   useEffect(() => {
-    
     getReplies();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getReplies]);
@@ -121,17 +126,25 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
       {/* context menu */}
       {showContextMenu && (
         <div className="bg-[#171717] absolute right-5 top-10 rounded-md h-auto z-10 w-[120px]">
-          <p className="w-full text-white text-xs border-[#82818154] border-b p-3 text-left font-semibold">
+          <p
+            className="w-full text-white text-xs border-[#82818154] border-b p-3 text-left"
+            onClick={() => {
+              dispatch(setPostToEdit(post));
+              setShowContextMenu(false);
+            }}
+          >
             Edit
           </p>
           <p
-            className="w-full text-red-600 text-xs p-3 text-left font-semibold"
-            onClick={() => deletePostHandler(post._id, token) }
+            className="w-full text-red-600 text-xs p-3 text-left"
+            onClick={() => deletePostHandler(post._id, token)}
           >
             Delete
           </p>
         </div>
       )}
+      {/* end of context menu */}
+
       {/* modal when the chat icon is clicked */}
       {postData && showPostPreviewModal && (
         <PostPreviewModal
@@ -159,13 +172,18 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
         <div className="w-full flex-col flex gap-2">
           {/* post creator and other details */}
           <div className="flex items-center w-full justify-between">
-            <h2 className="text-white font-medium text-xs">
-              {post.creator.username}
-            </h2>
+            <Link to={`/profile/${post.creator.username}`}>
+              <h2 className="text-white font-medium text-xs">
+                {post.creator.username}
+              </h2>
+            </Link>
             <div className="flex items-center gap-3">
               <p className="text-xs text-lightText">{formattedTimeStamp}</p>
               {authenticatedUser?._id === post.creator._id && (
-                <p className="cursor-pointer text-base text-white" onClick={() => setShowContextMenu(prevState => !prevState)}>
+                <p
+                  className="cursor-pointer text-base text-white"
+                  onClick={() => setShowContextMenu((prevState) => !prevState)}
+                >
                   <BsThreeDots />
                 </p>
               )}

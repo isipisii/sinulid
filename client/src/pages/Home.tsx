@@ -3,10 +3,10 @@ import { setPosts } from "../features/post/postSlice";
 import { useLazyGetPostsQuery } from "../services/postApi";
 import { useAppDispatch } from "../features/app/hooks";
 import Feed from "../components/Feed";
-import CreatePostForm from "../components/CreatePostForm";
+import CreateAndEditPostForm from "../components/CreateAndEditPostForm";
 
 interface IHome {
-  getUserInfo: () => void;
+  getUserInfo: () => Promise<void>
 }
 
 const Home: FC<IHome> = ({ getUserInfo }) => {
@@ -26,16 +26,16 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
 
   // get the user info  and posts once rendered
   useEffect(() => {
-    getUserInfo();
     getPosts();
+    getUserInfo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <section className="bg-matteBlack w-full flex items-center justify-center">
-      <div className="max-w-[1400px] h-auto w-full flex gap-4 md:mr-[20px] md:ml-[100px] lg:ml-[250px]">
-        <main className="w-full pt-[90px] flex items-center flex-col justify-center gap-3 sm:mx-[50px] md:mx-[0px] max-w-[700px]">
-          <CreatePostForm />
+      <div className="max-w-[1400px] h-auto w-full flex justify-center gap-4 md:ml-[120px] md:mr-[50px] lg:ml-[250px]">
+        <main className="w-full pt-[90px] flex items-center flex-col justify-center gap-3 sm:mx-[50px]  max-w-[800px]">
+          <CreateAndEditPostForm isEditing={false} />
           <Feed />
         </main>
         {/* may ikaag */}

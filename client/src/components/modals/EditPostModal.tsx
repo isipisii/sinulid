@@ -16,7 +16,7 @@ const EditPostModal = (): JSX.Element => {
           <p className="top-5 right-5 text-[#525151] text-[1.5rem] absolute p-3 font-thin rounded-full bg-[#252424ce] hover:bg-[#424141ba] cursor-pointer" onClick={() => dispatch(setPostToEdit(null))}>
             <IoMdClose />
           </p>
-          <div className="w-[90%] max-w-[600px]">
+          <div className="w-[90%] max-w-[600px] border border-borderColor rounded-md">
             <CreateAndEditPostForm isEditing={true} />
           </div>
         </div>

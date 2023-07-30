@@ -13,11 +13,11 @@ const ReplyCard: FC<IReplyCard> = ({ reply, handleDeleteReply }) => {
     const { formattedTimeStamp } = useFormatTimeStamp(reply?.createdAt)
 
     return (
-        <div className="w-full p-4 flex gap-3  border-borderColor border-t">
+        <div className="w-full p-4 flex gap-3 border-borderColor border-t">
             <img
                 src={ reply.creator?.displayed_picture ? reply.creator?.displayed_picture?.url :  "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"}
                 alt=""
-                className="h-[30px] w-[30px] rounded-full"
+                className="h-[30px] w-[30px] rounded-full object-cover"
             /> 
             <div className="flex flex-col w-full gap-2">
                 <div className="flex justify-between w-full">

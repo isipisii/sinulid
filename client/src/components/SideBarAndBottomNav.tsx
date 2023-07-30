@@ -42,8 +42,8 @@ const SideBarAndBottomNav = (): JSX.Element => {
                 {barLinks.map((link, index) => (
                   <Link to={link.linkTo} key={index}>
                     <li
-                      className={`flex items-center gap-2 text-white md:p-4 lg:pl-3 lg:py-3 lg:pr-[6rem] hover:bg-[#42404042] rounded-md 
-                      ${isActive(link.linkTo) ? "bg-[#42404042]" : null}`}
+                      className={`flex items-center gap-2 md:p-4 lg:pl-3 lg:py-3 lg:pr-[6rem] hover:bg-[#42404042] rounded-md 
+                      ${isActive(link.linkTo) ? "bg-[#42404042] text-white" : "text-[#787878]"}`}
                     >
                       <p className="text-[1.7rem]">{isActive(link.linkTo) ? link.activeIcon : link.inactiveIcon}</p>
                       <p className="text-[.9rem] md:hidden lg:block">
@@ -62,7 +62,7 @@ const SideBarAndBottomNav = (): JSX.Element => {
               {barLinks.map((link, index) => (
                 <Link to={link.linkTo} key={index}>
                   <li
-                    className="flex items-center gap-2 text-black p-3 rounded-md"
+                    className={`flex items-center gap-2  ${isActive(link.linkTo) ? "text-black" : "text-[#242222]"} p-3 rounded-md`}
                   >
                     <p className="text-[1.7rem]">{isActive(link.linkTo) ? link.activeIcon : link.inactiveIcon}</p>
                   </li>

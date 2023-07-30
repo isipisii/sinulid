@@ -31,7 +31,7 @@ const NavBar = (): JSX.Element => {
                       : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
                   }
                   alt=""
-                  className="h-[20px] w-[20px] rounded-full"
+                  className="h-[20px] w-[20px] rounded-full object-cover"
                   onClick={handleLogout}
                 />
                 <p className="text-white text-xs">{user?.username}</p>

@@ -29,7 +29,7 @@ const LogIn = (): JSX.Element => {
   }
 
   return (
-    <div className="h-[100vh] flex items-center justify-center bg-matteBlack">
+    <div className="h-[100vh] flex items-center justify-center bg-matteBlack px-4">
       <form
         className="flex items-center justify-center flex-col gap-6 border border-borderColor p-5 rounded-md w-[400px]"
         onSubmit={handleSubmit(handleLogIn)}
@@ -37,7 +37,7 @@ const LogIn = (): JSX.Element => {
         <h1 className="text-white font-semibold text-[1.5rem] self-start">
           <span className="font-light text-lightText">Log in to</span> Sinulid
         </h1>
-        <div className="flex justify-center flex-col gap-3 w-full">
+        <div className="flex flex-col gap-3 w-full">
           {/* email */}
           <input 
             placeholder='Email'

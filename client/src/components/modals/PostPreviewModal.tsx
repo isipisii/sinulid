@@ -65,6 +65,7 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
       console.error(error);
     }
   }
+
   return (
     <div className="bg-[#000000bd] backdrop-blur-sm fixed w-[100vw] h-[100vh] z-20 top-0 left-0 flex items-center justify-center">
       {/* close icon */}
@@ -78,28 +79,34 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
       <div
         className={`${
           postData?.image ? "md:w-[80%]" : "md:w-[60%] max-w-[600px]"
-        } h-[500px] flex items-stretch justify-center w-[95%]`}
+        } h-[450px] flex items-stretch justify-center w-[95%] mt-[4rem] md:mt-0`}
       >
         {/* post image */}
         {postData?.image && (
-          <div className="bg-black h-full flex items-center rounded-tl-md rounded-bl-md">
+          <div className="bg-black h-full flex items-center rounded-tl-md rounded-bl-md  border-borderColor border-y border-l">
             <img
               src={postData?.image?.url}
               alt=""
-              className="w-full max-w-[500px] object-contain h-[500px] rounded-tl-md rounded-bl-md"
+              className="w-full max-w-[500px] object-contain h-[400px]"
             />
           </div>
         )}
         {/* end of post image */}
 
-        
         <div
           className={`bg-matteBlack h-full w-full ${
-            postData?.image ? "max-w-[500px]" : null
-          } p-4 ${
-            postData?.image ? "rounded-tr-md rounded-br-md" : "rounded-md"
-          } flex gap-4 flex-col`}>
-          <div className={`flex justify-between gap-3 ${postReplies.length === 0 ? "border-b border-borderColor pb-4" : null }`}>
+            postData?.image
+              ? "max-w-[500px]  rounded-tr-md rounded-br-md"
+              : "rounded-md border-l"
+          } p-4 flex gap-4 flex-col border-borderColor border-y border-r`}
+        >
+          <div
+            className={`flex justify-between gap-3 ${
+              postReplies.length === 0
+                ? "border-b border-borderColor pb-4"
+                : null
+            }`}
+          >
             {/*post creator*/}
             {/* post creator image */}
             <img
@@ -109,7 +116,7 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
                   : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
               }
               alt=""
-              className="rounded-full w-[35px] h-[35px]"
+              className="rounded-full w-[35px] h-[35px] object-cover"
             />
 
             <div className="w-full flex-col flex gap-2">
@@ -127,9 +134,8 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
               </p>
 
               {/* icons */}
-              <div className="flex gap-3 items-center">
+              <div className="flex items-center my-1 ml-[-.5rem]">
                 {/* heart */}
-                <div className="flex gap-1 items-center">
                   <p
                     className={` text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300 ${
                       didLike ? "text-red-500" : "text-white"
@@ -141,17 +147,13 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
                   >
                     {didLike ? <BsHeartFill /> : <BsHeart />}
                   </p>
-                  <p className="text-lightText text-xs">{postData?.likes}</p>
-                </div>
-                {/* replies */}
-                <div className="flex gap-1 items-center">
+
+                {/* reply */}
                   <p className="text-white text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300">
                     <BsChat />
                   </p>
-                  <p className="text-lightText text-xs">{postReplies.length}</p>
-                </div>
+
                 {/* repost */}
-                <div className="flex gap-1 items-center">
                   <p
                     className="text-white text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300"
                     onClick={() => {
@@ -161,10 +163,26 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
                   >
                     <FiRepeat />
                   </p>
-                  <p className="text-lightText text-xs">0</p>
-                </div>
               </div>
               {/* end of icons */}
+              
+              {/* reply and like count */}
+              <p className="text-[#7b7575] text-xs flex items-center gap-1">
+                {postReplies.length > 0 && (
+                  <span className="cursor-pointer hover:underline underline-offset-2">
+                    {postReplies.length}{" "}
+                    {postReplies.length > 1 ? "replies" : "reply"}
+                  </span>
+                )}
+                {postReplies.length > 0 && postData.likes > 0 && <span>·</span>}
+                {postData.likes > 0 && (
+                  <span className="cursor-pointer hover:underline underline-offset-2">
+                    {postData.likes} {postData.likes > 1 ? "likes" : "like"}
+                  </span>
+                )}
+              </p>
+              {/*end of reply and like count */}
+              
             </div>
           </div>
 
@@ -202,7 +220,7 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
                   : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
               }
               alt="user profile"
-              className="h-[25px] w-[25px] rounded-full"
+              className="h-[25px] w-[25px] rounded-full object-cover"
             />
             <textarea
               placeholder={`Reply to ${postData?.creator.username}`}

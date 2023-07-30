@@ -11,13 +11,6 @@ export type LogInCredentials = {
     password: string;
 };
 
-export type UpdateUserInfo = {
-    bio: string
-    link: string
-    username: string
-    image: File | null
-}
-
 export type User = {
     _id: string
     username: string

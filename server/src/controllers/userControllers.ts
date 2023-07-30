@@ -151,7 +151,7 @@ export const updateUserInfo: RequestHandler = async (req: CustomRequest , res, n
 
         if(!authenticatedUserId){
             throw createHttpError(403, "Forbidden, unauthorized to update user info")
-        }
+        } 
         const user = await UserModel.findById(authenticatedUserId).exec()
         const currentCloudinaryId = user?.displayed_picture?.cloudinary_id
 

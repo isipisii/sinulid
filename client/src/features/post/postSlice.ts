@@ -59,7 +59,7 @@ export const postSlice = createSlice({
         },
         updatePost: (state, action: PayloadAction<Post>) => {
             state.posts = state.posts.map(post => post._id === action.payload._id ? {...action.payload} : post)
-        }
+        },
     },
 })
 

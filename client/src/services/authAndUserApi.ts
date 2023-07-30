@@ -1,8 +1,8 @@
 import { api } from "./api";
-import { LogInCredentials, SignUpCredentials, User, UpdateUserInfo } from "../types/types";
+import { LogInCredentials, SignUpCredentials, User } from "../types/types";
 
 type UpdateUserProfileInfo = {
-    updateUserInfo: UpdateUserInfo;
+    newUserInfo: FormData;
     token: string;
 }
 
@@ -36,18 +36,18 @@ const authAndUserApi = api.injectEndpoints({
             })
         }),
         updateUserProfile: builder.mutation<User, UpdateUserProfileInfo>({
-            query: ({ updateUserInfo, token }) => ({
+            query: ({ newUserInfo, token }) => ({
                 url: "/users/update",
                 method: "PATCH",
                 headers: {
                     "Authorization": `Bearer ${token}`
                 },
-                body: updateUserInfo
+                body: newUserInfo
             })
         }),
         getUserInfo: builder.query<User, string>({
             query: (username) => `/users/${username}`
-        })
+        }),
     }),
 })
 

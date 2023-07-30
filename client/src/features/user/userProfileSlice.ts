@@ -5,22 +5,27 @@ import { User, Post } from "../../types/types";
 interface IUserProfileState {
     userProfileInfo: User | null
     userPosts: Post[]
+    toEditUserInfo: User | null
 }
 
 const initialState: IUserProfileState = {
     userProfileInfo: null,
-    userPosts: []
+    userPosts: [],
+    toEditUserInfo: null
 }
 
 export const userProfileSlice = createSlice({
     name: "userProfile",
     initialState,
     reducers: {
-        setUserInfo: (state, action: PayloadAction<User>) => {
+        setUserProfileInfo: (state, action: PayloadAction<User>) => {
             state.userProfileInfo = action.payload
         },
         setUserPosts: (state, action: PayloadAction<Post[]>) => {
             state.userPosts = action.payload
+        },
+        setToEditUserInfo:(state, action: PayloadAction<User | null>) => {
+            state.toEditUserInfo = action.payload
         },
         likePostInUserProfile: (state, action: PayloadAction<{ postId: string; user: User }>) => {
             state.userPosts = state.userPosts.map(post => {
@@ -52,9 +57,13 @@ export const userProfileSlice = createSlice({
         deletePostInUserProfile: (state, action: PayloadAction<string>) => {
             state.userPosts = state.userPosts.filter(post => post._id !== action.payload)
         },
+         // update the creator in a certain post when the user edited his/her info 
+        updateUserInPost: (state, action: PayloadAction<User>) => {
+            state.userPosts = state.userPosts.map(post => ({...post, creator: action.payload }))
+        }
     }
 })
 
-export const { setUserInfo, setUserPosts, deletePostInUserProfile, updatePostInUserProfile, likePostInUserProfile, unlikePostInUserProfile} = userProfileSlice.actions
+export const { setUserProfileInfo, setUserPosts, deletePostInUserProfile, updatePostInUserProfile, likePostInUserProfile, unlikePostInUserProfile, setToEditUserInfo, updateUserInPost} = userProfileSlice.actions
 
 export default userProfileSlice

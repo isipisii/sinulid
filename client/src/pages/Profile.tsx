@@ -1,17 +1,19 @@
 import { JSX, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useLazyGetUserInfoQuery } from "../services/authAndUserApi";
-import {useLazyGetUserPostsQuery,} from "../services/postApi";
+import { useLazyGetUserPostsQuery } from "../services/postApi";
 import { useAppDispatch, useAppSelector } from "../features/app/hooks";
-import { setUserInfo } from "../features/user/userProfileSlice";
-import { setUserPosts } from "../features/user/userProfileSlice";
+import { setUserProfileInfo, setUserPosts, setToEditUserInfo } from "../features/user/userProfileSlice";
+import { setImageUrl } from "../features/post/postSlice";
 import PostCard from "../components/PostCard";
+import EditUserProfileModal from "../components/modals/EditUserProfileModal";
 
 const Profile = (): JSX.Element => {
   const dispatch = useAppDispatch();
-  const { user: authenticatedUser, token } = useAppSelector((state) => state.auth);
-  const { userPosts } = useAppSelector((state) => state.userProfile)
-  const { userProfileInfo } = useAppSelector((state) => state.userProfile);
+  const { user: authenticatedUser, token } = useAppSelector(
+    (state) => state.auth
+  );
+  const { userPosts, userProfileInfo, toEditUserInfo } = useAppSelector((state) => state.userProfile);
   const { username } = useParams();
   const [getUserInfoQuery] = useLazyGetUserInfoQuery();
   const [getUserPostsQuery] = useLazyGetUserPostsQuery();
@@ -28,7 +30,7 @@ const Profile = (): JSX.Element => {
       try {
         const user = await getUserInfoQuery(username).unwrap();
         if (user) {
-          dispatch(setUserInfo(user));
+          dispatch(setUserProfileInfo(user));
         }
       } catch (error) {
         console.error(error);
@@ -52,10 +54,15 @@ const Profile = (): JSX.Element => {
     }
     getUserPosts();
   }, [userProfileInfo?._id]);
-
+  
   return (
     <section className="bg-matteBlack w-full h-auto flex py-[90px] justify-center">
-      <div className={`max-w-[1400px] h-auto w-full ${authenticatedUser ? "md:ml-[120px] md:mr-[50px] lg:ml-[250px]" : null} flex justify-center`}>
+      <div
+        className={`max-w-[1400px] h-auto w-full ${
+          authenticatedUser ? "md:ml-[120px] md:mr-[50px] lg:ml-[250px]" : null
+        } flex justify-center`}
+      > 
+        {toEditUserInfo && <EditUserProfileModal />}
         <main className="w-full flex items-center  flex-col gap-3 max-w-[800px]">
           {/* user infos */}
           <div className="w-full flex flex-col gap-4 p-4">
@@ -76,38 +83,33 @@ const Profile = (): JSX.Element => {
                     : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
                 }
                 alt="profile picture"
-                className="h-[80px] w-[80px] rounded-full"
+                className="h-[80px] w-[80px] rounded-full object-cover cursor-pointer"
+                onClick={() => userProfileInfo?.displayed_picture && dispatch(setImageUrl(userProfileInfo?.displayed_picture?.url))}
               />
             </div>
             {/*end of username and dp */}
             <div className="flex flex-col gap-4">
               {/* bio */}
               <p className="text-white text-xs max-w-[300px]">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                {userProfileInfo?.bio}
               </p>
-              <p className="text-[#5f5a5a9d] text-xs">
+              <p className="text-[#959494c9] text-xs">
                 <span>1,000 followers</span> ·{" "}
-                <span>https://www.youtube.com/</span>
+                <a href={userProfileInfo?.link}>{userProfileInfo?.link}</a>
               </p>
-              {username === authenticatedUser?.username ? (
+              {authenticatedUser && token && (
                 <div className="flex gap-4">
-                  <button className="text-white text-sm px-6 border border-borderColor py-2 rounded-md w-full">
-                    Edit Profile
-                  </button>
+                  {username === authenticatedUser?.username ? (
+                    <button className="text-white text-xs px-6 border hover:bg-[#2322225e] border-[#8d8c8c] py-2 rounded-md w-full" onClick={() => dispatch(setToEditUserInfo(userProfileInfo))}>
+                      Edit Profile
+                    </button>
+                  ) : (
+                    <button className="text-black bg-white text-xs font-semibold px-6 border py-2 rounded-md w-full">
+                      Follow
+                    </button>
+                  )}
                   <button
-                    className="text-white text-sm px-6 border border-borderColor py-2 rounded-md w-full"
-                    onClick={handleCopyLink}
-                  >
-                    Copy Link
-                  </button>
-                </div>
-              ) : (
-                <div className="flex gap-4">
-                  <button className="text-black bg-white text-sm px-6 border py-2 rounded-md w-full">
-                    Follow
-                  </button>
-                  <button
-                    className="text-white text-sm px-6 border border-borderColor py-2 rounded-md w-full"
+                    className="text-white hover:bg-[#2322225e] text-xs px-6 border border-[#8d8c8c] py-2 rounded-md w-full"
                     onClick={handleCopyLink}
                   >
                     Copy Link

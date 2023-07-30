@@ -23,8 +23,8 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
     isEditing ? postToEdit?.image?.url || "" : ""
   );
   const { user, token } = useAppSelector((state) => state.auth);
-  const [createPostMutation] = useCreatePostMutation();
-  const [updatePostMutation] = useUpdatePostMutation();
+  const [createPostMutation, {isLoading: isCreating}] = useCreatePostMutation();
+  const [updatePostMutation, {isLoading: isUpdating}] = useUpdatePostMutation();
   const dispatch = useAppDispatch();
 
   // this will set the selected image file to be uploaded and sets the image path for preview
@@ -120,7 +120,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
                     : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
                 }
                 alt="user profile"
-                className="h-[40px] w-[40px] rounded-full"
+                className="h-[40px] w-[40px] rounded-full object-cover"
               />
               <h2 className="font-semibold text-sm text-white">
                 {user?.username}
@@ -130,6 +130,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
             <div className="w-full h-full flex flex-col flex-grow gap-3">
               <textarea
                 name="post"
+                autoFocus={isEditing ? true : false}
                 placeholder="Create a post..."
                 className="h-full outline-none text-white p-2 text-xs w-full border-borderColor border bg-matteBlack rounded-md placeholder:text-[#4a4545]"
                 value={textContent}
@@ -168,11 +169,11 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
             className="hidden"
           />
           <button
-            className="bg-white px-6 py-2 font-semibold rounded-md text-xs"
-            disabled={false}
+            className={`bg-white px-6 py-2 font-semibold rounded-md text-xs ${textContent || imageFile || isCreating || isUpdating ? "cursor-pointer" : "cursor-not-allowed"}`}
+            disabled={textContent || imageFile || isCreating || isUpdating ? false : true}
             type="submit"
           >
-            {isEditing ? "Save" : "Post"}
+            {isEditing ? (isUpdating ? "Saving" : "Save") :  (isCreating ? "Posting" : "Post")}
           </button>
         </div>
       </form>

@@ -60,10 +60,39 @@ export const userProfileSlice = createSlice({
          // update the creator in a certain post when the user edited his/her info 
         updateUserInPost: (state, action: PayloadAction<User>) => {
             state.userPosts = state.userPosts.map(post => ({...post, creator: action.payload }))
+        },
+        followUser: (state, action: PayloadAction<User>) => {
+            const isFollowing =  state.userProfileInfo?.followers.some((follower) => follower._id === action.payload._id)
+            if(!state.userProfileInfo || isFollowing) return
+
+            state.userProfileInfo = {...state.userProfileInfo, 
+                followers: [...state.userProfileInfo.followers, action.payload],
+                followerCount: state.userProfileInfo.followerCount + 1
+            }
+        },
+        unfollowUser: (state, action: PayloadAction<User>) => {
+            const isFollowing =  state.userProfileInfo?.followers.some((follower) => follower._id === action.payload._id)
+            if(!state.userProfileInfo || !isFollowing) return
+            
+            state.userProfileInfo = {...state.userProfileInfo, 
+                followers: state.userProfileInfo.followers.filter(follower => follower._id !== action.payload._id),
+                followerCount: state.userProfileInfo.followerCount - 1
+            }
         }
     }
 })
 
-export const { setUserProfileInfo, setUserPosts, deletePostInUserProfile, updatePostInUserProfile, likePostInUserProfile, unlikePostInUserProfile, setToEditUserInfo, updateUserInPost} = userProfileSlice.actions
+export const { 
+    setUserProfileInfo, 
+    setUserPosts, 
+    deletePostInUserProfile, 
+    updatePostInUserProfile, 
+    likePostInUserProfile, 
+    unlikePostInUserProfile, 
+    setToEditUserInfo, 
+    updateUserInPost,
+    followUser,
+    unfollowUser
+} = userProfileSlice.actions
 
 export default userProfileSlice

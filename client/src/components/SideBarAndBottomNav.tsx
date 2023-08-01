@@ -2,6 +2,8 @@ import { JSX } from "react";
 import { GoHome, GoHomeFill } from "react-icons/go";
 import { HiOutlineUser, HiUser } from "react-icons/hi"
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
+import { BiSolidSearch, BiSearch } from "react-icons/bi"
+
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../features/app/hooks";
@@ -29,6 +31,12 @@ const SideBarAndBottomNav = (): JSX.Element => {
       activeIcon: <HiUser />,
       inactiveIcon: <HiOutlineUser />,
       linkTo: `/profile/${user?.username}`,
+    },
+    {
+      linkName: "Search",
+      activeIcon: <BiSolidSearch />,
+      inactiveIcon: <BiSearch />,
+      linkTo: "",
     },
   ];
 

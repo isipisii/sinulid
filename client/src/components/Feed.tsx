@@ -8,13 +8,13 @@ const Feed: FC = () => {
 
   return (
     <div className="flex flex-col w-full">
-      {posts.map((post, index) => (
-        <PostCard
-          key={index}
-          post={post}
-          token={token}
-          authenticatedUser={user}
-        />
+      {posts.map((post) => (
+          <PostCard
+            key={post._id}
+            post={post}
+            token={token}
+            authenticatedUser={user}
+          />
       ))}
     </div>
   );

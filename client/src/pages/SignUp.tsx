@@ -32,7 +32,7 @@ const SignUp = (): JSX.Element => {
 
     return (
     <div className='h-[100vh] flex items-center justify-center bg-matteBlack'>
-        <form className='flex items-center justify-center flex-col gap-6 border border-borderColor p-5 rounded-md w-[400px]' onSubmit={handleSubmit(handleSignUp)}>
+        <form className='flex items-center justify-center flex-col gap-6 border border-borderColor p-5 rounded-md w-[400px] mx-4' onSubmit={handleSubmit(handleSignUp)}>
             <h1 className='text-white font-semibold text-[1.5rem] self-start'><span className='font-light text-lightText'>Join</span> Sinulid <span className='font-light text-lightText'>today</span></h1>
             <div className='flex justify-center flex-col gap-3 w-full'>
                 {/* name */}

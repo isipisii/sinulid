@@ -228,7 +228,6 @@ export const likePost: RequestHandler<PostParam> = async (req: CustomRequest, re
             throw createHttpError(400, "User already liked the post")
         } 
         
-        post.likes += 1
         post.liked_by.push(new mongoose.Types.ObjectId(authenticatedUserId))
 
         await post.save()
@@ -259,9 +258,8 @@ export const unlikePost: RequestHandler<PostParam> = async (req: CustomRequest, 
         
         if(!didlike){
             throw createHttpError(400, "User already unliked the post")
-        } 
-
-        post.likes -= 1
+        }
+        
         post.liked_by = post.liked_by.filter((user) => !user.equals(new mongoose.Types.ObjectId(authenticatedUserId)));
 
         await post.save()
@@ -271,27 +269,3 @@ export const unlikePost: RequestHandler<PostParam> = async (req: CustomRequest, 
         next(error)
     }
 }
-
-// NEEDS AUTHENTICATED USER IN ORDER TO ACCESS THIS
-export const checkIfUserLikes: RequestHandler<PostParam> = async (req: CustomRequest, res, next) => {
-    const { postId } = req.params;
-    const authenticatedUserId = req.userId
-
-    try {
-        const post = await PostModel.findById(postId).exec();
-
-        if(!authenticatedUserId){
-            throw createHttpError(403, "Forbidden, unauthorized to check if the user likes the post")
-        }
-        
-        if (!post) {
-            throw createHttpError(404, "Post not found");
-        }
-        
-    const didLike = post.liked_by.some((likedUserId) => likedUserId.equals(new mongoose.Types.ObjectId(authenticatedUserId)));
-
-    res.json(didLike);
-    } catch (error) {
-        next(error);
-    }
-};

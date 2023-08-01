@@ -169,8 +169,8 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
             className="hidden"
           />
           <button
-            className={`bg-white px-6 py-2 font-semibold rounded-md text-xs ${textContent || imageFile || isCreating || isUpdating ? "cursor-pointer" : "cursor-not-allowed"}`}
-            disabled={textContent || imageFile || isCreating || isUpdating ? false : true}
+            className={`bg-white px-6 py-2 font-semibold rounded-md text-xs ${(textContent || imageFile) || isCreating || isUpdating ? "cursor-pointer" : "cursor-not-allowed"}`}
+            disabled={(textContent || imageFile) || isCreating || isUpdating ? false : true}
             type="submit"
           >
             {isEditing ? (isUpdating ? "Saving" : "Save") :  (isCreating ? "Posting" : "Post")}

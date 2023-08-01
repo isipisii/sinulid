@@ -4,10 +4,12 @@ import SignUp from "./pages/SignUp";
 import LogIn from "./pages/LogIn";
 import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
-import { useGetAuthenticatedUserMutation } from "./services/authAndUserApi";
+
+import { useLazyGetAuthenticatedUserQuery } from "./services/authAndUserApi";
 import { useAppSelector, useAppDispatch } from "./features/app/hooks";
 import { setUser } from "./features/auth/authSlice";
 import Protected from "./components/Protected";
+
 import ViewImageModal from "./components/modals/ViewImageModal";
 import SideBarAndBottomNav from "./components/SideBarAndBottomNav";
 import Activity from "./pages/Activity";
@@ -17,7 +19,7 @@ import EditPostModal from "./components/modals/EditPostModal";
 const App: FC = () => {
   const { token } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
-  const [getAuthenticatedUserInfo] = useGetAuthenticatedUserMutation()
+  const [getAuthenticatedUserInfo] = useLazyGetAuthenticatedUserQuery()
 
   // gets the user who logs in along with the token to authenticate
   async function getUserInfo(): Promise<void> {

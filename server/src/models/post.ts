@@ -18,10 +18,6 @@ const postSchema = new Schema({
             type: String
         }
     },
-    likes: {
-        type: Number,
-        default: 0
-    },
     liked_by: [
         {
             type: Schema.Types.ObjectId,
@@ -29,7 +25,11 @@ const postSchema = new Schema({
         },
     ],
 },
-{timestamps: true})
+{timestamps: true, toJSON: { virtuals: true }})
+
+postSchema.virtual("likes").get(function (){
+    return this.liked_by.length
+})
 
 type PostSchema = InferSchemaType<typeof postSchema>
 

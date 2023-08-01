@@ -10,10 +10,15 @@ type TokenType = {
     token: string
 }
 
+type FollowAndUnfollow = {
+    token: string
+    userToFollowId: string
+}
+
 //wasnt able to use prepareHeaders since some endpoint dont require headers
 const authAndUserApi = api.injectEndpoints({
     endpoints: (builder) => ({
-        getAuthenticatedUser: builder.mutation<User, string>({
+        getAuthenticatedUser: builder.query<User, string>({
             query: (token) => ({
                 url: "/users",
                 headers: {
@@ -48,7 +53,33 @@ const authAndUserApi = api.injectEndpoints({
         getUserInfo: builder.query<User, string>({
             query: (username) => `/users/${username}`
         }),
+        followUser: builder.mutation<void, FollowAndUnfollow>({
+            query: ({ token, userToFollowId }) => ({
+                url: `/users/follow/${userToFollowId}`,
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+        }),
+        unfollowUser: builder.mutation<void, FollowAndUnfollow>({
+            query: ({ token, userToFollowId }) => ({
+                url: `/users/unfollow/${userToFollowId}`,
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+        })
     }),
 })
 
-export const { useGetAuthenticatedUserMutation , useLogInMutation, useSignUpMutation, useUpdateUserProfileMutation, useLazyGetUserInfoQuery} = authAndUserApi
+export const { 
+    useLazyGetAuthenticatedUserQuery, 
+    useLogInMutation, 
+    useSignUpMutation, 
+    useUpdateUserProfileMutation, 
+    useLazyGetUserInfoQuery, 
+    useFollowUserMutation, 
+    useUnfollowUserMutation
+} = authAndUserApi

@@ -14,4 +14,8 @@ router.post("/login", UserControllers.logIn)
 
 router.patch("/update", upload.single("image"), UserControllers.updateUserInfo)
 
+router.patch("/follow/:userId", UserControllers.followUser)
+
+router.patch("/unfollow/:userId", UserControllers.unfollowUser)
+
 export default router

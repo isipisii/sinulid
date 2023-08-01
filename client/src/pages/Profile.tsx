@@ -1,30 +1,48 @@
 import { JSX, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useLazyGetUserInfoQuery } from "../services/authAndUserApi";
+import { useLazyGetUserInfoQuery, useFollowUserMutation, useUnfollowUserMutation } from "../services/authAndUserApi";
 import { useLazyGetUserPostsQuery } from "../services/postApi";
 import { useAppDispatch, useAppSelector } from "../features/app/hooks";
-import { setUserProfileInfo, setUserPosts, setToEditUserInfo } from "../features/user/userProfileSlice";
+
+import { setUserProfileInfo, setUserPosts, setToEditUserInfo, unfollowUser, followUser} from "../features/user/userProfileSlice";
 import { setImageUrl } from "../features/post/postSlice";
+
 import PostCard from "../components/PostCard";
 import EditUserProfileModal from "../components/modals/EditUserProfileModal";
 
 const Profile = (): JSX.Element => {
   const dispatch = useAppDispatch();
-  const { user: authenticatedUser, token } = useAppSelector(
-    (state) => state.auth
-  );
-  const { userPosts, userProfileInfo, toEditUserInfo } = useAppSelector((state) => state.userProfile);
   const { username } = useParams();
+  const { user: authenticatedUser, token } = useAppSelector((state) => state.auth);
+  const { userPosts, userProfileInfo, toEditUserInfo } = useAppSelector((state) => state.userProfile);
+
+  const [followMutation] = useFollowUserMutation()
+  const [unfollowMutation] = useUnfollowUserMutation()
+
   const [getUserInfoQuery] = useLazyGetUserInfoQuery();
   const [getUserPostsQuery] = useLazyGetUserPostsQuery();
-
-  const handleCopyLink = (): void => {
+  
+  function handleCopyLink(): void {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
-  };
+  }
+  
+  const isFollowing = userProfileInfo?.followers.some(follower => follower._id === authenticatedUser?._id)
+  
+  function toggleFollowAndUnfollowHandler(): void {
+    if(!authenticatedUser || !userProfileInfo) return
+
+    if(isFollowing){
+      dispatch(unfollowUser(authenticatedUser))
+      unfollowMutation({token, userToFollowId: userProfileInfo._id})
+    } else {
+      dispatch(followUser(authenticatedUser))
+      followMutation({token, userToFollowId: userProfileInfo._id})
+    }
+  }
 
   useEffect(() => {
-    async function getUserInfo() {
+    async function getUserInfo(): Promise<void> {
       if (!username) return;
 
       try {
@@ -40,11 +58,11 @@ const Profile = (): JSX.Element => {
   }, [username]);
 
   useEffect(() => {
-    async function getUserPosts() {
+    async function getUserPosts(): Promise<void> {
       if (!userProfileInfo) return;
 
       try {
-        const userPosts = await getUserPostsQuery(userProfileInfo._id).unwrap();
+        const userPosts = await getUserPostsQuery(userProfileInfo._id).unwrap()
         if (userPosts) {
           dispatch(setUserPosts(userPosts));
         }
@@ -56,14 +74,14 @@ const Profile = (): JSX.Element => {
   }, [userProfileInfo?._id]);
   
   return (
-    <section className="bg-matteBlack w-full h-auto flex py-[90px] justify-center">
+    <section className="bg-matteBlack w-full flex py-[90px] justify-center">
       <div
-        className={`max-w-[1400px] h-auto w-full ${
+        className={`max-w-[1400px] h-full  w-full ${
           authenticatedUser ? "md:ml-[120px] md:mr-[50px] lg:ml-[250px]" : null
         } flex justify-center`}
       > 
         {toEditUserInfo && <EditUserProfileModal />}
-        <main className="w-full flex items-center  flex-col gap-3 max-w-[800px]">
+        <main className="w-full flex items-center flex-col gap-3 max-w-[700px]">
           {/* user infos */}
           <div className="w-full flex flex-col gap-4 p-4">
             {/* username and dp */}
@@ -94,7 +112,7 @@ const Profile = (): JSX.Element => {
                 {userProfileInfo?.bio}
               </p>
               <p className="text-[#959494c9] text-xs">
-                <span>1,000 followers</span> ·{" "}
+                <span>{userProfileInfo?.followerCount} {userProfileInfo?.followerCount && userProfileInfo?.followerCount > 1 ? "followers" : "follower"} </span> ·{" "}
                 <a href={userProfileInfo?.link}>{userProfileInfo?.link}</a>
               </p>
               {authenticatedUser && token && (
@@ -104,15 +122,15 @@ const Profile = (): JSX.Element => {
                       Edit Profile
                     </button>
                   ) : (
-                    <button className="text-black bg-white text-xs font-semibold px-6 border py-2 rounded-md w-full">
-                      Follow
+                    <button className={`${isFollowing ? "border border-[#8d8c8c] hover:bg-[#2322225e] text-white" : "bg-white text-black font-semibold"} text-xs px-6 border py-2 rounded-md w-full`} onClick={toggleFollowAndUnfollowHandler}>
+                      {isFollowing ? "Unfollow" : "Follow"} 
                     </button>
                   )}
                   <button
                     className="text-white hover:bg-[#2322225e] text-xs px-6 border border-[#8d8c8c] py-2 rounded-md w-full"
                     onClick={handleCopyLink}
                   >
-                    Copy Link
+                    Share Profile
                   </button>
                 </div>
               )}
@@ -120,11 +138,11 @@ const Profile = (): JSX.Element => {
           </div>
           {/* end of user infos */}
 
-          {/* user feed */}
+          {/* user posts */}
           <div className="flex flex-col w-full">
-            {userPosts.map((post, index) => (
+            {userPosts.map((post) => (
               <PostCard
-                key={index}
+                key={post._id}
                 post={post}
                 token={token}
                 authenticatedUser={authenticatedUser}

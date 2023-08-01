@@ -21,8 +21,9 @@ export type User = {
     }
     bio?: string
     link?: string
-    following: string[]
-    followers: string[]
+    followerCount: number
+    following: User[]
+    followers: User[]
 }
 
 export type Post = {

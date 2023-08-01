@@ -1,5 +1,5 @@
 import { InferSchemaType, Schema, model } from "mongoose";
-// initial
+
 const userSchema = new Schema({
     username: { 
         type: String, 
@@ -8,7 +8,7 @@ const userSchema = new Schema({
     },
     name: {
         type: String, 
-        required: true,
+        required: true
     },
     email: { 
         type: String, 
@@ -49,8 +49,12 @@ const userSchema = new Schema({
             ref: "User"
         }
     ],
-},
-{ timestamps: true });
+}, 
+{ timestamps: true, toJSON: { virtuals: true }});
+
+userSchema.virtual("followerCount").get(function (){
+    return this.followers.length
+})
 
 type UserType = InferSchemaType<typeof userSchema>;
 

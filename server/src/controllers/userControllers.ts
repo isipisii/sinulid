@@ -6,6 +6,7 @@ import  jwt from "jsonwebtoken"
 import env from "../util/validateEnv"
 import { CustomRequest } from "../app";
 import cloudinary from "cloudinary";
+import mongoose from "mongoose";
 
 type SignUpBody = { 
     username: string
@@ -19,10 +20,6 @@ type LogInBody = {
     password: string
 }
 
-type UpdateUserInfoParam = {
-    userId: string
-}
-
 export type UpdateUserInfoBody = {
     bio: string
     link: string
@@ -32,6 +29,10 @@ export type UpdateUserInfoBody = {
 
 type GetUserInfoParam = {
     username: string
+}
+
+type FollowAndUnfollowParam = {
+    userId: string
 }
 
 // account sign up
@@ -132,7 +133,7 @@ export const getUserInfo: RequestHandler<GetUserInfoParam> = async (req, res, ne
             throw createHttpError(400, "Bad request, missing params")
         }
 
-        const user = await UserModel.findOne({ username }).exec()
+        const user = await UserModel.findOne({ username }).populate("followers").exec()
         res.status(201).json(user)
 
     } catch (error) {
@@ -192,4 +193,81 @@ export const updateUserInfo: RequestHandler = async (req: CustomRequest , res, n
     } catch (error) {
         next(error)
     }
+}
+
+
+export const followUser: RequestHandler<FollowAndUnfollowParam> = async (req: CustomRequest, res, next) => {
+    const { userId: userToFollowId } = req.params;
+    const authenticatedFollowerId = req.userId;
+
+    try {
+        const userToFollow = await UserModel.findById(userToFollowId).exec();
+
+        if (!authenticatedFollowerId) {
+            throw createHttpError(403, "Forbidden, unauthorized to update user info");
+        }
+
+        if (!userToFollowId) {
+            throw createHttpError(400, "Bad request, missing param");
+        }
+
+        if (userToFollowId === authenticatedFollowerId) {
+            throw createHttpError(400, "Bad request, you cannot follow yourself");
+        }
+
+        if (!userToFollow) {
+            throw createHttpError(404, "User not found");
+        }
+
+        const isFollowing = userToFollow.followers.some(followerId => followerId.equals(new mongoose.Types.ObjectId(authenticatedFollowerId)));
+
+        if (isFollowing) {
+            throw createHttpError(400, "You already followed this user");
+        }
+
+        userToFollow.followers.push(new mongoose.Types.ObjectId(authenticatedFollowerId));
+
+        await userToFollow.save();
+
+        res.sendStatus(201)
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const unfollowUser: RequestHandler<FollowAndUnfollowParam> = async (req: CustomRequest, res, next) => {
+    const { userId: userToUnfollowId } = req.params
+    const authenticatedFollowerId = req.userId
+
+    try {
+        const userToUnfollow = await UserModel.findById(userToUnfollowId).exec()
+
+        if(!authenticatedFollowerId) {
+            throw createHttpError(403, "Forbidden, unauthorized to update user info")
+        }
+
+        if(!userToUnfollowId) {
+            throw createHttpError(400, "Bad request, missing param")
+        }
+
+        if(userToUnfollowId === authenticatedFollowerId){
+            throw createHttpError(400, "Bad request, you cannot unfollow yourself")
+        }
+
+        if(!userToUnfollow){
+            throw createHttpError(404, "User not found")
+        }
+
+        const isFollowing = userToUnfollow.followers.some((followerId) => followerId.equals(new mongoose.Types.ObjectId(authenticatedFollowerId)))
+
+        if(!isFollowing) throw createHttpError(400, "You already unfollowed this user")
+        
+        userToUnfollow.followers = userToUnfollow.followers.filter((followerId => !followerId.equals(new mongoose.Types.ObjectId(authenticatedFollowerId))))
+
+        await userToUnfollow.save()
+
+        res.sendStatus(201)
+    } catch (error) {
+        next(error)
+    }   
 }

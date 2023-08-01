@@ -44,7 +44,8 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
   const [postReplies, setPostReplies] = useState<Reply[]>([]);
   const [postData, setPostData] = useState<Post | null>(null);
   const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
-  const [showPostPreviewModal, setShowPostPreviewModal] = useState<boolean>(false);
+  const [showPostPreviewModal, setShowPostPreviewModal] =
+    useState<boolean>(false);
   const { formattedTimeStamp } = useFormatTimeStamp(post.createdAt);
 
   const didLike: boolean = post.liked_by.some(
@@ -67,7 +68,10 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
     }
   }
 
-  async function deletePostHandler(postId: string, token: string): Promise<void> {
+  async function deletePostHandler(
+    postId: string,
+    token: string
+  ): Promise<void> {
     if (!authenticatedUser) return;
 
     try {
@@ -80,7 +84,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
     }
   }
 
-  // get the users' image url who replied on a certain post 
+  // get the users' image url who replied on a certain post
   function getUserImageUrls(): string[] {
     const imageUrls: string[] = [];
 
@@ -90,7 +94,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
       imageUrls.push(reply.creator.displayed_picture?.url);
     });
 
-    return imageUrls;
+    return imageUrls.slice(0, 3);
   }
 
   async function repostHandler(postId: string, token: string): Promise<void> {
@@ -105,6 +109,11 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  function openModal(): void {
+    dispatch(setPostToEdit(post));
+    setShowContextMenu(false);
   }
 
   function closeModal(): void {
@@ -135,16 +144,13 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
   }, [post]);
 
   return (
-    <div className="w-full h-auto p-4 border-t border-borderColor relative">
+    <div className="w-full h-auto p-3 border-t border-borderColor relative">
       {/* context menu */}
       {showContextMenu && (
         <div className="bg-[#171717] absolute right-5 top-10 rounded-md h-auto z-10 w-[120px]">
           <p
             className="w-full text-white text-xs border-[#82818154] border-b p-3 text-left cursor-pointer"
-            onClick={() => {
-              dispatch(setPostToEdit(post));
-              setShowContextMenu(false);
-            }}
+            onClick={openModal}
           >
             Edit
           </p>
@@ -192,7 +198,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
               <svg
                 width="2"
                 height="100%"
-                viewBox="0 0 2 100%"
+                viewBox="0 0 2 500"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 preserveAspectRatio="none"
@@ -201,9 +207,9 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
                 <path
                   d="M1 1L1.01805 2000"
                   stroke="#B0A2A2"
-                  stroke-opacity="0.73"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeOpacity="0.73"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   className="stroke-[#ffffff4d] stroke-2"
                 />
               </svg>
@@ -216,18 +222,19 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
             <div
               className={`h-[30px] w-[39px] ${
                 getUserImageUrls().length >= 2
-                  ? "relative pb-3"
+                  ? "relative pb-6"
                   : "flex items-center justify-center"
               }`}
             >
               {getUserImageUrls().map((imageUrl, index) => (
                 <img
+                  key={index}
                   src={imageUrl}
                   alt=""
                   className={`h-[20px] w-[20px] object-cover rounded-full 
                   ${
                     index === 0 && getUserImageUrls().length >= 2
-                      ? "absolute top-1 right-0 h-[20px] w-[20px]"
+                      ? "absolute top-1 right-0 h-[15px] w-[15px]"
                       : null
                   }
                   ${
@@ -237,7 +244,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
                   }
                   ${
                     index === 2 && getUserImageUrls().length > 2
-                      ? "absolute top-0 right-0 left-0 mx-auto h-[12px] w-[12px]"
+                      ? "absolute bottom-2 right-0 left-0 mx-auto h-[12px] w-[12px]"
                       : "null"
                   }
                   `}
@@ -271,9 +278,12 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
           {/*end of post creator and other details */}
 
           {/* post content */}
-          <p className="text-xs text-[#ffffff] tracking-wide whitespace-pre-line">
-            {post.content}
-          </p>
+          <div className="w-full">
+            <p className="text-xs text-[#ffffff] tracking-wide whitespace-pre-wrap break-words w-[250px] sm:w-full">
+              {post.content}
+            </p>
+          </div>
+
           {post?.image && (
             <img
               src={post?.image?.url}
@@ -321,7 +331,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
             </p>
           </div>
           {/* end of icons */}
-          
+
           {/* reply and like count */}
           <p className="text-[#7b7575] text-xs flex items-center gap-1">
             {postReplies.length > 0 && (
@@ -344,7 +354,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser }) => {
               </span>
             )}
           </p>
-         {/* end of reply and like count */}     
+          {/* end of reply and like count */}
         </div>
       </div>
     </div>

@@ -7,9 +7,9 @@ export const useFormatTimeStamp = (date: string) => {
     const finalTime: string = time === "a" || time === "an" ? "1": time
 
     const timeUnit: string = timeStamp.split(" ")[1].split("")[0];
-    const finaltTimeUnit: string  = timeUnit === "f" ? "s" : timeUnit 
+    const finalTimeUnit: string  = timeUnit === "f" ? "just now" : timeUnit 
 
-    const formattedTimeStamp: string = finalTime + finaltTimeUnit;
+    const formattedTimeStamp: string = finalTimeUnit !== timeUnit ? finalTimeUnit : (finalTime + finalTimeUnit);
     
     return { formattedTimeStamp }
 }

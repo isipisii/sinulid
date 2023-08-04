@@ -19,6 +19,8 @@ export const createRepost: RequestHandler<RepostParam> = async (req: CustomReque
     const { postId } =  req.params
     const authenticatedUserId = req.userId
 
+    
+
     if(!postId){
         throw createHttpError(400, "Bad request, missing parameter")
     }
@@ -30,10 +32,23 @@ export const createRepost: RequestHandler<RepostParam> = async (req: CustomReque
     try {
         const newRepost = await RepostModel.create({
             repost_creator: authenticatedUserId,
-            post_id: postId
+            post: postId
         })
+        
+        const populatedNewRepost = await RepostModel.populate(newRepost, [
+            {
+                path: "post",
+                select: "-updatedAt",
+                populate: [
+                    { path: "creator" },
+                    { path: "liked_by" },
+                ],
+            },
+            { path: "repost_creator" },
+        ]);
 
-        res.status(201).json(newRepost)
+
+        res.status(201).json(populatedNewRepost)
     } catch (error) {
         next(error)
     }

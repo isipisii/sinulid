@@ -4,6 +4,8 @@ import SignUp from "./pages/SignUp";
 import LogIn from "./pages/LogIn";
 import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
+// import UserPostsAndReposts from "./pages/UserPostsAndReposts";
+import UserReplies from "./pages/UserReplies";
 
 import { useLazyGetAuthenticatedUserQuery } from "./services/authAndUserApi";
 import { useAppSelector, useAppDispatch } from "./features/app/hooks";
@@ -15,9 +17,11 @@ import SideBarAndBottomNav from "./components/SideBarAndBottomNav";
 import Activity from "./pages/Activity";
 import Profile from "./pages/Profile";
 import EditPostModal from "./components/modals/EditPostModal";
+import PostAndReplies from "./pages/PostAndReplies";
 
 const App: FC = () => {
   const { token } = useAppSelector((state) => state.auth);
+  const { userProfileInfo } = useAppSelector((state) => state.userProfile)
   const dispatch = useAppDispatch();
   const [getAuthenticatedUserInfo] = useLazyGetAuthenticatedUserQuery()
 
@@ -61,9 +65,14 @@ const App: FC = () => {
             </Protected>
           }
         />
-        <Route path="/profile/:username" element={<Profile />} />
+        <Route path="/profile/:username" element={<Profile />}>
+          <Route path="replies" element={<UserReplies userProfileInfo={userProfileInfo} />} />
+        </Route>
         <Route path="/login" element={<LogIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/:username/post/:postId" element={<PostAndReplies />} />
+        {/* TODO */}
+        {/* <Route path="*" element={<NotFound />} /> */} 
       </Routes>
     </>
   );

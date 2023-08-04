@@ -1,5 +1,5 @@
 import { api } from "./api";
-import { LogInCredentials, SignUpCredentials, User } from "../types/types";
+import { LogInCredentials, Repost, SignUpCredentials, User, Post } from "../types/types";
 
 type UpdateUserProfileInfo = {
     newUserInfo: FormData;
@@ -14,6 +14,7 @@ type FollowAndUnfollow = {
     token: string
     userToFollowId: string
 }
+
 
 //wasnt able to use prepareHeaders since some endpoint dont require headers
 const authAndUserApi = api.injectEndpoints({
@@ -70,6 +71,9 @@ const authAndUserApi = api.injectEndpoints({
                     "Authorization": `Bearer ${token}`
                 }
             })
+        }),
+        getUserPostsAndReposts: builder.query<(Post | Repost)[],string>({
+            query:(userId) =>  `/users/${userId}/posts-and-reposts`
         })
     }),
 })
@@ -81,5 +85,6 @@ export const {
     useUpdateUserProfileMutation, 
     useLazyGetUserInfoQuery, 
     useFollowUserMutation, 
-    useUnfollowUserMutation
+    useUnfollowUserMutation,
+    useLazyGetUserPostsAndRepostsQuery
 } = authAndUserApi

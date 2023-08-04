@@ -37,13 +37,15 @@ export type Post = {
     likes: number
     createdAt: string 
     liked_by: User[]
+    type: string
 }
 
-
 export type Repost = {
+    _id: string
     repost_creator: User
     post: Post
     createdAt: string 
+    type: string
 }
 
 export type Reply = {

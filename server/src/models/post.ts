@@ -31,6 +31,10 @@ postSchema.virtual("likes").get(function (){
     return this.liked_by.length
 })
 
+postSchema.virtual("type").get(function (){
+    return "post"
+})
+
 type PostSchema = InferSchemaType<typeof postSchema>
 
 export default model<PostSchema>("Post", postSchema)

@@ -6,13 +6,17 @@ const repostSchema = new Schema({
         required: true, 
         ref: "User" 
     },
-    post_id: {
+    post: {
         type: Schema.Types.ObjectId, 
         required: true,
         ref: "Post"
     }
 },
-{ timestamps: true })
+{ timestamps: true, toJSON: { virtuals: true }})
+
+repostSchema.virtual("type").get(function (){
+    return "repost"
+})
 
 type RepostSchema = InferSchemaType<typeof repostSchema>
 

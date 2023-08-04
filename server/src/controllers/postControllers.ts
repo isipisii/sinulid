@@ -5,6 +5,7 @@ import mongoose from "mongoose"
 import createHttpError from "http-errors"
 import cloudinary from "cloudinary"
 import { CustomRequest } from "../app"
+import RepostModel from "../models/repost"
 
 export type CreatePostBody = {
     content: string
@@ -68,11 +69,12 @@ export const getSinglePost: RequestHandler<PostParam> = async (req, res, next) =
             throw createHttpError(400, "Bad request, missing params")
         }
 
-        const post = await PostModel.findById(postId).populate("creator").populate("liked_by").exec()
+         const post = await PostModel.findById(postId).populate("creator").exec()
+        // const post = await PostModel.findById(postId).populate("creator").populate("liked_by").exec()
 
         res.status(200).json(post)
     } catch (error) {
-        
+        next(error)
     }
 }
 
@@ -196,7 +198,9 @@ export const deletePost: RequestHandler<PostParam> = async (req: CustomRequest, 
         if(cloudinaryId){
             await cloudinary.v2.api.delete_resources([cloudinaryId]);
         }   
-        await ReplyModel.deleteMany({post_id: postId})
+        // delete those reply and repost document that has the same post id as with the post to be deleted
+        await ReplyModel.deleteMany({post_id: postId}) 
+        await RepostModel.deleteMany({post: postId})
         await post.deleteOne()
 
         res.status(204).json(post)

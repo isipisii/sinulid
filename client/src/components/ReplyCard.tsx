@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Reply } from "../types/types";
-import { useFormatTimeStamp } from "../hook/useFormatTimestamp";
+import { useFormatTimeStamp } from "../util/useFormatTimestamp";
 import { useAppSelector } from "../features/app/hooks";
 
 interface IReplyCard {
@@ -13,7 +13,7 @@ const ReplyCard: FC<IReplyCard> = ({ reply, handleDeleteReply }) => {
     const { formattedTimeStamp } = useFormatTimeStamp(reply?.createdAt)
 
     return (
-        <div className="w-full p-4 flex gap-3 border-borderColor border-t">
+        <div className="w-full p-4 flex gap-3 border-borderColor border-b">
             <img
                 src={ reply.creator?.displayed_picture ? reply.creator?.displayed_picture?.url :  "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"}
                 alt=""

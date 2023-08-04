@@ -6,12 +6,14 @@ interface IPostState {
     posts: Post[]
     viewImage: string,
     postToEdit: Post | null
+    post: Post | null
 }
 
 const initialState: IPostState = {
     posts: [],
     viewImage: "",
-    postToEdit: null
+    postToEdit: null,
+    post: null
 }  
 
 export const postSlice = createSlice({
@@ -60,9 +62,12 @@ export const postSlice = createSlice({
         updatePost: (state, action: PayloadAction<Post>) => {
             state.posts = state.posts.map(post => post._id === action.payload._id ? {...action.payload} : post)
         },
+        setSinglePost: (state, action: PayloadAction<Post>) => {
+            state.post = action.payload
+        },
     },
 })
 
-export const { setPosts, addPost, likePost, unlikePost, deletePost, setImageUrl, updatePost, setPostToEdit} = postSlice.actions
+export const { setPosts, addPost, likePost, unlikePost, deletePost, setImageUrl, updatePost, setPostToEdit, setSinglePost} = postSlice.actions
 
 export default postSlice.reducer

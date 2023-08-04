@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { useAppSelector } from "../features/app/hooks";
 
 const SideBarAndBottomNav = (): JSX.Element => {
-  const { user, token } = useAppSelector(state => state.auth)
+  const { user: authenticatedUser } = useAppSelector(state => state.auth)
   const location = useLocation();
   const isActive = (currentPath: string): boolean => location.pathname === currentPath
 
@@ -17,7 +17,7 @@ const SideBarAndBottomNav = (): JSX.Element => {
     {
       linkName: "Home",
       activeIcon: <GoHomeFill />,
-      inactiveIcon: <GoHome />,
+      inactiveIcon: <GoHome />, 
       linkTo: "/",
     },
     {
@@ -30,7 +30,7 @@ const SideBarAndBottomNav = (): JSX.Element => {
       linkName: "Profile",
       activeIcon: <HiUser />,
       inactiveIcon: <HiOutlineUser />,
-      linkTo: `/profile/${user?.username}`,
+      linkTo: `/profile/${authenticatedUser?.username}`,
     },
     {
       linkName: "Search",
@@ -42,7 +42,7 @@ const SideBarAndBottomNav = (): JSX.Element => {
 
   return (
     <>
-      {location.pathname !== "/signup" && location.pathname !== "/login" && user !== null && (
+      {location.pathname !== "/signup" && location.pathname !== "/login" && authenticatedUser !== null && (
         <>
           <aside className="md:w-[20%] lg:w-[40%] hidden md:block">
             <div className="w-auto flex flex-col h-[100vh] mt-[70px] fixed overflow-auto border-r border-borderColor p-3">

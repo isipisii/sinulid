@@ -110,9 +110,9 @@ const postApi = api.injectEndpoints({
                 }
             })
         }),
-        getUserPosts: builder.query<Post[], string>({
-            query: (userId) => `posts/user-posts/${userId}`
-        })
+        getSinglePost: builder.query<Post, string>({
+            query: (postId) => `/posts/${postId}`
+        }),
     })
 })
 
@@ -126,5 +126,5 @@ export const {
     useLazyGetPostRepliesQuery,
     useCreatePostReplyMutation,
     useDeletePostReplyMutation,
-    useLazyGetUserPostsQuery
+    useLazyGetSinglePostQuery
 } = postApi

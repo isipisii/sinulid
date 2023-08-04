@@ -7,7 +7,7 @@ import {
 import { FiPaperclip } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { addPost, setPostToEdit, updatePost } from "../features/post/postSlice";
-import { updatePostInUserProfile } from "../features/user/userProfileSlice";
+import { updatePostOrRepostInUserProfile } from "../features/user/userProfileSlice";
 
 interface ICreatePostForm {
   isEditing: boolean;
@@ -70,7 +70,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
         updatePostData: data,
       }).unwrap();
       dispatch(updatePost(updatedPost));
-      dispatch(updatePostInUserProfile(updatedPost))
+      dispatch(updatePostOrRepostInUserProfile(updatedPost))
       dispatch(setPostToEdit(null));
     } catch (error) {
       console.error(error);

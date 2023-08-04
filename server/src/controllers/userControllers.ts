@@ -1,12 +1,15 @@
 import { RequestHandler, raw } from "express";
 import createHttpError from "http-errors";
 import UserModel from "../models/user";
+import PostModel from "../models/post"
+import RepostModel from "../models/repost"
 import bcrypt from "bcrypt";
 import  jwt from "jsonwebtoken"
 import env from "../util/validateEnv"
 import { CustomRequest } from "../app";
 import cloudinary from "cloudinary";
 import mongoose from "mongoose";
+import path from "path";
 
 type SignUpBody = { 
     username: string
@@ -32,6 +35,10 @@ type GetUserInfoParam = {
 }
 
 type FollowAndUnfollowParam = {
+    userId: string
+}
+
+type GetUserPostsAndReposts = {
     userId: string
 }
 
@@ -229,7 +236,7 @@ export const followUser: RequestHandler<FollowAndUnfollowParam> = async (req: Cu
 
         await userToFollow.save();
 
-        res.sendStatus(201)
+        res.sendStatus(201) 
     } catch (error) {
         next(error);
     }
@@ -270,4 +277,42 @@ export const unfollowUser: RequestHandler<FollowAndUnfollowParam> = async (req: 
     } catch (error) {
         next(error)
     }   
+}
+
+export const getUserPostsAndReposts: RequestHandler<GetUserPostsAndReposts> = async (req, res, next) => {
+    const { userId } = req.params
+
+    try {
+        if(!userId){
+            throw createHttpError(400, "Bad request, missing param")
+        }  
+        
+        const userPosts = await PostModel.find({ creator: userId }).populate("liked_by").populate("creator").exec()
+        const userReposts = await RepostModel.find({ repost_creator: userId }).populate({
+            path: "post",
+            select: "-updatedAt",
+            populate: [
+                {path: "creator"},
+                {path: "liked_by"},
+              ],
+        }).populate("repost_creator").exec();
+          
+
+        if(!userReposts){
+            throw createHttpError(404, "Reposts not found")
+        }  
+
+        if(!userPosts){
+            throw createHttpError(404, "Posts not found")
+        }  
+
+        const combinedData = [...userPosts, ...userReposts];
+
+        // sort the combined array by the time created in ascending order
+        combinedData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        res.status(201).json(combinedData)
+    } catch (error) {
+        next(error)
+    }
 }

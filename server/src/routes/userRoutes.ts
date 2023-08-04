@@ -18,4 +18,6 @@ router.patch("/follow/:userId", UserControllers.followUser)
 
 router.patch("/unfollow/:userId", UserControllers.unfollowUser)
 
+router.get("/:userId/posts-and-reposts", UserControllers.getUserPostsAndReposts)
+
 export default router

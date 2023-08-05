@@ -11,7 +11,8 @@ import postRoutes from "./routes/postRoutes"
 import userRoutes from "./routes/userRoutes"
 import repostRoutes from "./routes/repostRoutes"
 import replyRoutes from "./routes/replyRoutes"
-import  jwt, {VerifyErrors} from "jsonwebtoken"
+import { authHandler } from "./middlewares/authMiddleware";
+import { errorHandler } from "./middlewares/errorMiddleware";
 import env from "./util/validateEnv"
 import cors from "cors"
 import cloudinary from "cloudinary"
@@ -20,28 +21,13 @@ export interface CustomRequest extends Request {
   userId?: string; // adding the userId property to the Request interface
 }
 
-// Middlewares
 const app: Application = express();
 
 app.use(cors())
 app.use(morgan("dev"));
 
-//jwt middleware for verifying the token returned by the client
-app.use((req: CustomRequest, res: Response, next: NextFunction) => {
-  const token = req.header("Authorization")?.split(" ")[1];
-
-  if(token){
-    jwt.verify(token, env.JWT_SECRET, (error: VerifyErrors | null, decoded: any) => {
-      if (error) {
-        return res.status(401).json({ error: "Invalid token" });
-      }
-      req.userId = decoded.userId;
-      next();
-    })
-  } else {
-    next()
-  }
-})
+//auth middleware for verifying the token returned by the client
+app.use(authHandler)
 
 app.use(express.json())
 
@@ -56,21 +42,12 @@ app.use("/users", userRoutes)
 app.use("/reposts", repostRoutes)
 app.use("/replies", replyRoutes)
 
+// middleware for non existing endpoint
 app.use((res, req, next) => {
   next(createHttpError(404, "Endpoint not found"));
 });
 
 // error middleware
-app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
-  console.error(error);
-  let errorMess = "An unknown error occurred";
-  let statusCode = 500;
-
-  if (isHttpError(error)) {
-    statusCode = error.status;
-    errorMess = error.message;
-  }
-  res.status(statusCode).json({ error: errorMess });
-});
+app.use(errorHandler);
 
 export default app;

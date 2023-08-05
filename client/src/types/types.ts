@@ -55,3 +55,8 @@ export type Reply = {
     content: string
     createdAt: string
 }
+
+export enum ItemType {
+    Repost = "repost",
+    Post = "post"
+}

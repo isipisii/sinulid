@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
-import { Post, User} from '../../types/types'
+import { Post, User } from '../../types/types'
 
 interface IPostState {
     posts: Post[]
@@ -13,7 +13,7 @@ const initialState: IPostState = {
     posts: [],
     viewImage: "",
     postToEdit: null,
-    post: null
+    post: null,
 }  
 
 export const postSlice = createSlice({
@@ -65,9 +65,20 @@ export const postSlice = createSlice({
         setSinglePost: (state, action: PayloadAction<Post>) => {
             state.post = action.payload
         },
+    
     },
 })
 
-export const { setPosts, addPost, likePost, unlikePost, deletePost, setImageUrl, updatePost, setPostToEdit, setSinglePost} = postSlice.actions
+export const { 
+    setPosts, 
+    addPost, 
+    likePost, 
+    unlikePost, 
+    deletePost, 
+    setImageUrl, 
+    updatePost, 
+    setPostToEdit, 
+    setSinglePost, 
+} = postSlice.actions
 
 export default postSlice.reducer

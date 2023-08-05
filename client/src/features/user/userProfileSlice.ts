@@ -1,17 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { User, Post, Repost } from "../../types/types";
+import { User, Post, Repost, ItemType } from "../../types/types";
 
 interface IUserProfileState {
     userProfileInfo: User | null
     userPostsAndReposts: (Post | Repost) []
     toEditUserInfo: User | null
+    userReposts: Repost[]
 }
 
 const initialState: IUserProfileState = {
     userProfileInfo: null,
     userPostsAndReposts: [],
-    toEditUserInfo: null
+    toEditUserInfo: null,
+    userReposts: []
 }
 
 export const userProfileSlice = createSlice({
@@ -29,7 +31,7 @@ export const userProfileSlice = createSlice({
         },
         likePostOrRepostInUserProfile: (state, action: PayloadAction<{ postId: string; user: User }>) => {
             state.userPostsAndReposts = state.userPostsAndReposts.map(item => {
-                if (item.type === "post") {
+                if (item.type === ItemType.Post) {
                     const post = item as Post;
                     if (post._id === action.payload.postId) {
                         return {
@@ -38,7 +40,7 @@ export const userProfileSlice = createSlice({
                             likes: post.likes + 1,
                         };
                     }
-                } else if (item.type === "repost") {
+                } else if (item.type === ItemType.Repost) {
                     const repost = item as Repost;
                     if (repost.post._id === action.payload.postId) {
                         return {
@@ -56,7 +58,7 @@ export const userProfileSlice = createSlice({
         },
         unlikePostOrRepostInUserProfile: (state, action: PayloadAction<{ postId: string; user: User }>) => {
             state.userPostsAndReposts = state.userPostsAndReposts.map(item => {
-                if (item.type === "post") {
+                if (item.type === ItemType.Post) {
                     const post = item as Post;
                     if (post._id === action.payload.postId) {
                         return {
@@ -65,7 +67,7 @@ export const userProfileSlice = createSlice({
                             likes: post.likes - 1,
                         };
                     }
-                } else if (item.type === "repost") {
+                } else if (item.type === ItemType.Repost) {
                     const repost = item as Repost;
                     if (repost.post._id === action.payload.postId) {
                         return {
@@ -83,14 +85,14 @@ export const userProfileSlice = createSlice({
         },
         updatePostOrRepostInUserProfile: (state, action: PayloadAction<Post>) => {
             state.userPostsAndReposts = state.userPostsAndReposts.map(item => {
-                if(item.type === "post"){
+                if(item.type === ItemType.Post){
                     const post = item as Post
                     if(post._id === action.payload._id){
                         return {
                             ...action.payload
                         }
                     }
-                } else if(item.type === "repost"){
+                } else if(item.type === ItemType.Repost){
                     const repost = item as Repost
 
                     if(repost.post._id === action.payload._id){
@@ -104,15 +106,14 @@ export const userProfileSlice = createSlice({
                 }
                 return item
             })
-            // state.userPosts = state.userPosts.map(post => post._id === action.payload._id ? {...action.payload} : post)
         },
         deletePostOrRepostInUserProfile: (state, action: PayloadAction<{postId?: string, repostId?: string}>) => {
             state.userPostsAndReposts = state.userPostsAndReposts.filter(item => {
-                if(item.type === "post"){
+                if(item.type === ItemType.Post){
                     const post = item as Post
                     return  post._id !== action.payload.postId
                 } 
-                else if (item.type === "repost" && action.payload.repostId){
+                else if (item.type === ItemType.Repost && action.payload.repostId){
                     const repost = item as Repost 
                     return repost._id !== action.payload.repostId && repost.post._id !== action.payload.postId
                 }
@@ -121,13 +122,13 @@ export const userProfileSlice = createSlice({
          // update the creator in a certain post when the user edited his/her info 
         updateUserInPost: (state, action: PayloadAction<User>) => {
             state.userPostsAndReposts = state.userPostsAndReposts.map(item => {
-                if(item.type === "post"){
+                if(item.type === ItemType.Post){
                     const post = item as Post
                     return {
                         ...post,
                         creator: action.payload
                     }
-                } else if (item._id === "repost"){
+                } else if (item._id === ItemType.Repost){
                     const repost = item as Repost
                     return {
                         ...repost,
@@ -160,6 +161,9 @@ export const userProfileSlice = createSlice({
         },
         addRepostInUserProfile: (state, action: PayloadAction<Repost>) => {
             state.userPostsAndReposts.unshift(action.payload)
+        },
+        setUserReposts: (state, action: PayloadAction<Repost[]>) => {
+            state.userReposts = action.payload
         }
     }
 })
@@ -175,7 +179,8 @@ export const {
     updateUserInPost,
     followUser,
     unfollowUser,
-    addRepostInUserProfile
+    addRepostInUserProfile,
+    setUserReposts
 } = userProfileSlice.actions
 
 export default userProfileSlice

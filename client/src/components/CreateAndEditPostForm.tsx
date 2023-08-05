@@ -9,6 +9,8 @@ import { IoMdClose } from "react-icons/io";
 import { addPost, setPostToEdit, updatePost } from "../features/post/postSlice";
 import { updatePostOrRepostInUserProfile } from "../features/user/userProfileSlice";
 
+import Spinner from "./loader/Spinner";
+
 interface ICreatePostForm {
   isEditing: boolean;
 }
@@ -23,8 +25,10 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
     isEditing ? postToEdit?.image?.url || "" : ""
   );
   const { user, token } = useAppSelector((state) => state.auth);
-  const [createPostMutation, {isLoading: isCreating}] = useCreatePostMutation();
-  const [updatePostMutation, {isLoading: isUpdating}] = useUpdatePostMutation();
+  const [createPostMutation, { isLoading: isCreating }] =
+    useCreatePostMutation();
+  const [updatePostMutation, { isLoading: isUpdating }] =
+    useUpdatePostMutation();
   const dispatch = useAppDispatch();
 
   // this will set the selected image file to be uploaded and sets the image path for preview
@@ -70,7 +74,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
         updatePostData: data,
       }).unwrap();
       dispatch(updatePost(updatedPost));
-      dispatch(updatePostOrRepostInUserProfile(updatedPost))
+      dispatch(updatePostOrRepostInUserProfile(updatedPost));
       dispatch(setPostToEdit(null));
     } catch (error) {
       console.error(error);
@@ -110,28 +114,30 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
         className="flex flex-col gap-3 h-auto p-4 bg-matteBlack rounded-md"
         onSubmit={isEditing ? updatePostHandler : submitPostHandler}
       >
-        {isEditing && <h2 className="text-center text-white font-medium">Edit post</h2>}
+        {isEditing && (
+          <h2 className="text-center text-white font-medium">Edit post</h2>
+        )}
         <div className="h-auto w-full flex flex-col gap-3">
-            <div className="flex gap-2 items-center">
-              <img
-                src={
-                  user?.displayed_picture
-                    ? user?.displayed_picture?.url
-                    : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
-                }
-                alt="user profile"
-                className="h-[40px] w-[40px] rounded-full object-cover"
-              />
-              <h2 className="font-semibold text-sm text-white">
-                {user?.username}
-              </h2>
-            </div>
-          <div className="max-h-[330px] overflow-auto"> 
+          <div className="flex gap-2 items-center">
+            <img
+              src={
+                user?.displayed_picture
+                  ? user?.displayed_picture?.url
+                  : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
+              }
+              alt="user profile"
+              className="h-[40px] w-[40px] rounded-full object-cover"
+            />
+            <h2 className="font-semibold text-sm text-white">
+              {user?.username}
+            </h2>
+          </div>
+          <div className="max-h-[330px] overflow-auto">
             <div className="w-full h-full flex flex-col flex-grow gap-3">
               <textarea
                 name="post"
                 autoFocus={isEditing ? true : false}
-                placeholder="Create a post..."
+                placeholder={isEditing ? "Edit thread..." : "Start a thread..."}
                 className="h-full outline-none text-white p-2 text-xs w-full border-borderColor border bg-matteBlack rounded-md placeholder:text-[#4a4545]"
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
@@ -157,7 +163,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
         <div className="flex items-center justify-between">
           <label
             htmlFor="file-input"
-            className="cursor-pointer text-lightText hover:text-[#636060c4] text-[1.3rem]"
+            className="cursor-pointer text-lightText hover:text-[#636060c4] text-[1.1rem] border border-borderColor p-2 rounded-md"
           >
             <FiPaperclip />
           </label>
@@ -169,11 +175,25 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
             className="hidden"
           />
           <button
-            className={`bg-white px-6 py-2 font-semibold rounded-md text-xs ${(textContent || imageFile) || isCreating || isUpdating ? "cursor-pointer" : "cursor-not-allowed"}`}
-            disabled={(textContent || imageFile) || isCreating || isUpdating ? false : true}
+            className={`bg-white px-6 py-2 font-semibold rounded-md text-sm flex gap-2 items-center ${
+              textContent || imageFile || isCreating || isUpdating
+                ? "cursor-pointer"
+                : "cursor-not-allowed"
+            }`}
+            disabled={
+              textContent || imageFile || isCreating || isUpdating
+                ? false
+                : true
+            }
             type="submit"
           >
-            {isEditing ? (isUpdating ? "Saving" : "Save") :  (isCreating ? "Posting" : "Post")}
+            {isEditing ? (isUpdating ? "Saving" : "Save") : (isCreating ? "Posting" : "Post")}
+              {isUpdating && (
+                <Spinner fillColor="fill-black" pathColor="text-gray-400"/>
+              )}
+              {isCreating && (
+               <Spinner fillColor="fill-black" pathColor="text-gray-400"/>
+              )}
           </button>
         </div>
       </form>

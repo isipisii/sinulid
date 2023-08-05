@@ -70,7 +70,6 @@ export const getSinglePost: RequestHandler<PostParam> = async (req, res, next) =
         }
 
          const post = await PostModel.findById(postId).populate("creator").exec()
-        // const post = await PostModel.findById(postId).populate("creator").populate("liked_by").exec()
 
         res.status(200).json(post)
     } catch (error) {

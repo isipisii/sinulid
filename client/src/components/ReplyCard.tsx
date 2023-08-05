@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Reply } from "../types/types";
-import { useFormatTimeStamp } from "../util/useFormatTimestamp";
+import { useFormatTimeStamp } from "../hooks/useFormatTimestamp";
 import { useAppSelector } from "../features/app/hooks";
 
 interface IReplyCard {
@@ -10,7 +10,7 @@ interface IReplyCard {
 
 const ReplyCard: FC<IReplyCard> = ({ reply, handleDeleteReply }) => {
     const {user: authenticatedUser } = useAppSelector(state => state.auth)
-    const { formattedTimeStamp } = useFormatTimeStamp(reply?.createdAt)
+    const formattedTimeStamp = useFormatTimeStamp(reply?.createdAt)
 
     return (
         <div className="w-full p-4 flex gap-3 border-borderColor border-b">
@@ -29,6 +29,7 @@ const ReplyCard: FC<IReplyCard> = ({ reply, handleDeleteReply }) => {
                 </div>
                 <p className="text-xs text-[#ffffff] tracking-wide whitespace-pre-line">{reply.content}</p>
             </div>
+            
         </div>
     );
 };

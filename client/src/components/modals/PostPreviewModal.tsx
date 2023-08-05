@@ -9,7 +9,7 @@ import {
   useDeletePostReplyMutation,
 } from "../../services/postApi";
 import { useAppSelector } from "../../features/app/hooks";
-import { useFormatTimeStamp } from "../../hook/useFormatTimestamp";
+import { useFormatTimeStamp } from "../../hooks/useFormatTimestamp";
 
 import ReplyCard from "../ReplyCard";
 
@@ -18,7 +18,7 @@ interface IPostPreviewModal {
   closeModal: () => void;
   didLike: boolean;
   toggleLike: (postId: string, token: string) => void;
-  repost: (postId: string, token: string) => Promise<void>;
+  repost: (postId: string, repostId?: string) => void;
   postReplies: Reply[];
   setPostReplies: (replies: Reply[]) => void;
 }
@@ -30,7 +30,7 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
   const [deletePostReplyMutation] = useDeletePostReplyMutation();
   const [createPostReply] = useCreatePostReplyMutation();
   const [reply, setReply] = useState<string>("");
-  const { formattedTimeStamp } = useFormatTimeStamp(postData?.createdAt);
+  const formattedTimeStamp  = useFormatTimeStamp(postData?.createdAt);
 
   const handleSubmitReply = useCallback(
     async (e: FormEvent<HTMLFormElement>) => {
@@ -137,7 +137,7 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
               <div className="flex items-center my-1 ml-[-.5rem]">
                 {/* heart */}
                   <p
-                    className={` text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300 ${
+                    className={` text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 ${
                       didLike ? "text-red-500" : "text-white"
                     } `}
                     onClick={() => {
@@ -149,16 +149,16 @@ const PostPreviewModal: FC<IPostPreviewModal> = ({ postData, closeModal, didLike
                   </p>
 
                 {/* reply */}
-                  <p className="text-white text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300">
+                  <p className="text-white text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300">
                     <BsChat />
                   </p>
 
                 {/* repost */}
                   <p
-                    className="text-white text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300"
+                    className="text-white text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300"
                     onClick={() => {
                       if (!postData) return;
-                      repost(postData?._id, token);
+                      repost(postData?._id);
                     }}
                   >
                     <FiRepeat />

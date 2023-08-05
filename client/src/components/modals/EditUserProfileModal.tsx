@@ -1,5 +1,6 @@
 import { JSX, useState, ChangeEvent, FormEvent } from "react";
 import { IoMdClose } from "react-icons/io";
+import { FaUserPen } from "react-icons/fa6"
 import { useAppSelector, useAppDispatch } from "../../features/app/hooks";
 import { setToEditUserInfo, setUserProfileInfo, updateUserInPost } from "../../features/user/userProfileSlice";
 import { useUpdateUserProfileMutation } from "../../services/authAndUserApi";
@@ -73,6 +74,7 @@ const EditUserProfileModal = (): JSX.Element => {
 
         try {
             const updatedUserInfo = await updateUserProfileMutation({ newUserInfo: data, token }).unwrap()
+            // update the states
             if(updatedUserInfo){
                 dispatch(setUserProfileInfo(updatedUserInfo))
                 dispatch(setUser(updatedUserInfo))
@@ -95,7 +97,7 @@ const EditUserProfileModal = (): JSX.Element => {
                 <h2 className="text-center text-white font-medium mb-4">Edit profile</h2>
                 <form action="" className="flex w-full flex-col gap-4 h-full" onSubmit={handleUpdateUserInfo}>
                     <div className="flex justify-between items-end">
-                        <div className="w-[70%] md:w-[85%] flex flex-col outline-none">
+                        <div className="w-[70%] md:w-[80%] flex flex-col outline-none">
                             <label className="text-white text-xs md:text-sm">Name</label>
                             <input 
                                 value={userInfo?.name} 
@@ -107,10 +109,14 @@ const EditUserProfileModal = (): JSX.Element => {
                             />
                         </div>
                         {/* displayed pic preview and upload */}
-                        <div className="">
+                        <div className="h-[60px] w-[60px] md:h-[80px] md:w-[80px] relative rounded-full ">
+                            
                             <label
                                 htmlFor="file-input"
-                            >
+                            >   
+                                <div className="flex opacity-0 hover:opacity-100 hover:bg-[#1715153c] w-full cursor-pointer rounded-full h-full absolute top-0 left-0 ease-in-out duration-300 items-center justify-center">
+                                    <p className="text-[#fff] text-[1.4rem] ml-1"><FaUserPen/></p>
+                                </div>
                                 <img src={imagePreview ? imagePreview : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"} alt="profile pic" className="rounded-full h-[60px] w-[60px] md:h-[80px] md:w-[80px] object-cover"/>
                             </label>
                             <input

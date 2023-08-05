@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { useLazyGetSinglePostQuery, useLazyGetPostRepliesQuery, useDeletePostReplyMutation } from "../services/postApi";
 import { setSinglePost } from "../features/post/postSlice";
 
-import PostCard from "../components/PostCard";
+import { MemoizedPostAndRepostCard } from "../components/PostAndRepostCard";
 import { Reply } from "../types/types";
 import ReplyCard from "../components/ReplyCard";
 
@@ -38,7 +38,7 @@ const PostAndReplies = (): JSX.Element => {
       }
     }
     getSinglePostAndReplies();
-  }, [postId, username]);
+  }, [postId, username, dispatch, getPostReplies, getSinglePostQuery]);
   console.log(post);
   console.log(postReplies)
 
@@ -85,7 +85,7 @@ const PostAndReplies = (): JSX.Element => {
       >
         <main className="w-full pt-[90px] flex items-center flex-col justify-center sm:mx-[50px] max-w-[700px]">
           {post && (
-            <PostCard
+            <MemoizedPostAndRepostCard
               post={post}
               token={token}
               authenticatedUser={authenticatedUser}

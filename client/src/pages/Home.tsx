@@ -17,18 +17,7 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
   const [getPostsAndRepostsQuery] = useLazyGetUserPostsAndRepostsQuery();
   const { user: authenticatedUser } = useAppSelector(state => state.auth)
 
-  async function getPosts() {
-    try {
-      const payload = await getLazyPostsQuery();
-      if (payload?.data) {
-        dispatch(setPosts(payload?.data));
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-
+// gets the user reposts and posts in this component so that is this page rendered, then we can easily identify the post that has been reposted
   useEffect(() => {
     async function getUserRepostsAndPosts(): Promise<void> {
       if (!authenticatedUser) return;
@@ -47,6 +36,16 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
 
   // get the user info  and posts once rendered
   useEffect(() => {
+    async function getPosts() {
+      try {
+        const payload = await getLazyPostsQuery();
+        if (payload?.data) {
+          dispatch(setPosts(payload?.data));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
     getPosts();
     getUserInfo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,7 +60,6 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
           </div>
           <Feed />
         </main>
-        {/* may ikaag */}
       </div>
     </section>
   );

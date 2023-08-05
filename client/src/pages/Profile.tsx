@@ -17,9 +17,10 @@ import {
 } from "../features/user/userProfileSlice";
 import { setImageUrl } from "../features/post/postSlice";
 
-import PostCard from "../components/PostCard";
+import { MemoizedPostAndRepostCard } from "../components/PostAndRepostCard";
 import EditUserProfileModal from "../components/modals/EditUserProfileModal";
-import { Repost, Post } from "../types/types";
+import { Repost, Post, ItemType } from "../types/types";
+import { filteredUserReposts } from "../util/filteredUserReposts";
 
 const Profile = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -29,6 +30,8 @@ const Profile = (): JSX.Element => {
   );
   const { userPostsAndReposts, userProfileInfo, toEditUserInfo } =
     useAppSelector((state) => state.userProfile);
+  // helper function that filters the posts and reposts of the user and returns an array of user reposts
+  const userReposts = filteredUserReposts(userPostsAndReposts)
 
   const [followMutation] = useFollowUserMutation();
   const [unfollowMutation] = useUnfollowUserMutation();
@@ -95,13 +98,6 @@ const Profile = (): JSX.Element => {
     getPostsAndRepostsQuery,
     userProfileInfo,
   ]);
-
-  const userReposts = userPostsAndReposts.filter((item) => {
-    if (item.type === "repost") {
-      const repost = item as Repost;
-      return repost;
-    }
-  }) as Repost[];
 
   return (
     <section className="bg-matteBlack w-full flex py-[90px] justify-center">
@@ -208,8 +204,10 @@ const Profile = (): JSX.Element => {
           <div className="flex flex-col w-full">
             {userPostsAndReposts &&
               userPostsAndReposts.map((item) => {
+
                 // Check the type of the item and render the appropriate component
-                if (item.type === "post") {
+                // post
+                if (item.type === ItemType.Post) {
                   const post = item as Post;
                   const isReposted = userReposts.some(
                     (repost) =>
@@ -218,7 +216,7 @@ const Profile = (): JSX.Element => {
                   );
 
                   return (
-                    <PostCard
+                    <MemoizedPostAndRepostCard
                       key={post._id}
                       post={post}
                       token={token}
@@ -227,7 +225,9 @@ const Profile = (): JSX.Element => {
                     />
                   );
                 }
-                if (item.type === "repost") {
+                
+                // repost
+                if (item.type === ItemType.Repost) {
                   const repostItem = item as Repost;
                   const isReposted = userReposts.some(
                     (repost) =>
@@ -235,7 +235,7 @@ const Profile = (): JSX.Element => {
                       repost.repost_creator._id === authenticatedUser?._id
                   );
                   return (
-                    <PostCard
+                    <MemoizedPostAndRepostCard
                       key={repostItem._id}
                       repost={repostItem}
                       type="repost"

@@ -1,6 +1,6 @@
-import { FC, useEffect, useState, useCallback } from "react";
+import { FC, useEffect, useState, useCallback, memo } from "react";
 import { BsHeart, BsChat, BsHeartFill } from "react-icons/bs";
-import { FiRepeat } from "react-icons/fi";
+import { FiRepeat, FiSend } from "react-icons/fi";
 import { TbRepeat, TbRepeatOff } from "react-icons/tb";
 import { BsThreeDots } from "react-icons/bs";
 import { Post, Reply, Repost, User } from "../types/types";
@@ -30,12 +30,15 @@ import {
 } from "../services/repostApi";
 
 import { useAppDispatch, useAppSelector } from "../features/app/hooks";
-import { useFormatTimeStamp } from "../util/useFormatTimestamp";
+import { useFormatTimeStamp } from "../hooks/useFormatTimestamp";
 import { bubbleStyleUserImageWhoReplied } from "../util/bubbleStyle";
+import { filteredUserReposts} from "../util/filteredUserReposts";
+
 import { Link } from "react-router-dom";
 import PostPreviewModal from "./modals/PostPreviewModal";
+import Spinner from "./loader/Spinner";
 
-interface IPostCard {
+interface IPostAndRepostCard {
   post: Post;
   token: string;
   authenticatedUser: User | null;
@@ -44,12 +47,12 @@ interface IPostCard {
   isReposted?: boolean
 }
 
-const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isReposted }) => {
+const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedUser, repost, isReposted }) => {
   const dispatch = useAppDispatch();
 
   const [likePostMutation] = useLikePostMutation();
   const [unlikePostMutation] = useUnlikePostMutation();
-  const [deletePostMutation] = useDeletePostMutation();
+  const [deletePostMutation, {isLoading: isDeleting}] = useDeletePostMutation();
   const [createRepostMutation] = useCreateRepostMutation();
   const [removeRepostMutation] = useRemoveRepostMutation();
   const [getPostReplies] = useLazyGetPostRepliesQuery();
@@ -58,19 +61,20 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
   const [postData, setPostData] = useState<Post | null>(null);
   const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
   const [showPostPreviewModal, setShowPostPreviewModal] = useState<boolean>(false);
-  const { formattedTimeStamp } = useFormatTimeStamp(post.createdAt);
+  const formattedTimeStamp = useFormatTimeStamp(post.createdAt);
   const { userPostsAndReposts } = useAppSelector(state => state.userProfile)
+
+  // custom hook that filters the posts and reposts of the user and returns an array of user reposts
+  const userReposts = filteredUserReposts(userPostsAndReposts)
 
   const didLike: boolean = post.liked_by.some(
     (user) => user._id === authenticatedUser?._id
   );
   
-  // 
   function toggleLikeHandler(postId: string, token: string): void {
     if (!authenticatedUser) {
       return;
     }
-
     if (didLike) {
       dispatch(
         unlikePostOrRepostInUserProfile({ postId, user: authenticatedUser })
@@ -90,15 +94,31 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
     if (!authenticatedUser) return;
   
     try {
-      // Delete the original post
+      // delete the original post
       await deletePostMutation({ postId, token });
-
       dispatch(deletePostOrRepostInUserProfile({postId, repostId: repost?._id})); // for user's profile optimistic update
       dispatch(deletePost(postId)); // for feed's optimistic update
       setShowContextMenu(false);
     } catch (error) {
       console.error(error);
     }
+  }
+  
+  async function toggleRepostHandler(postId: string): Promise<void> {
+      // if a post card is marked as reposted, then it will remove the repost
+      if (isReposted) {
+        // retrieving the repost that will be remove by checking if this card is being reposted by the user
+        const repostToRemove = userReposts?.find(repost => repost.post._id === post._id)
+
+        if(repostToRemove) {
+          await removeRepostMutation({token, repostId: repostToRemove?._id})
+          dispatch(deletePostOrRepostInUserProfile({repostId: repostToRemove?._id}))
+        }
+      }
+      else {
+        const newRepost = await createRepostMutation({ postId, token }).unwrap()
+        dispatch(addRepostInUserProfile(newRepost))
+    } 
   }
 
   // gets the users' image unique url who replied on a certain post
@@ -115,31 +135,6 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
       if(imageUrls.length > 3) break
     }
     return imageUrls;
-  }
-
-  async function toggleRepostHandler(postId: string): Promise<void> {
-    // collects the list of the current user's repost 
-      const userReposts = userPostsAndReposts.filter((item) => {
-        if (item.type === "repost") {
-          const repost = item as Repost;
-          return repost;
-        }
-      }) as Repost[];
-
-      // if a post card is marked as reposted, then it will remove the repost
-      if (isReposted) {
-        // retrieving the repost to remove by checking if this card is being reposted by the user
-        const repostToRemove = userReposts?.find(repost => repost.post._id === post._id)
-
-        if(repostToRemove) {
-          await removeRepostMutation({token, repostId: repostToRemove?._id})
-          dispatch(deletePostOrRepostInUserProfile({repostId: repostToRemove?._id}))
-        }
-      }
-      else {
-        const newRepost = await createRepostMutation({ postId, token }).unwrap()
-        dispatch(addRepostInUserProfile(newRepost))
-    } 
   }
 
   function openEditPostModal(): void {
@@ -174,6 +169,13 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
     setPostData(post);
   }, [post]);
 
+  // will copy to clipboard the post's link when the share icon is clicked
+  function copyPostLink(username: string, postId: string): void{
+    const origin = window.location.origin
+    const postLink = `${origin}/${username}/post/${postId}`
+    navigator.clipboard.writeText(postLink);
+  }
+
   return (
     <div className="w-full h-auto p-3 border-b border-borderColor relative">
       {/* will only show if this component is a repost */}
@@ -185,19 +187,21 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
 
       {/* context menu */}
       {showContextMenu && (
-        <div className="bg-[#171717] absolute right-5 top-10 rounded-md h-auto z-10 w-[120px]">
-          <p
-            className="w-full text-white text-xs border-[#82818154] border-b p-3 text-left cursor-pointer"
+        <div className="bg-matteBlack absolute right-5 top-10 rounded-md h-auto z-10 w-[130px] border border-borderColor p-2 flex flex-col gap-1">
+          <button
+            className="w-full text-white text-xs p-3 text-left cursor-pointer hover:bg-[#4e4a4a48] rounded-sm ease-in-out duration-300"
             onClick={openEditPostModal}
           >
             Edit
-          </p>
-          <p
-            className="w-full text-red-600 text-xs p-3 text-left cursor-pointer"
+          </button>
+          <button
+            className={`w-full text-red-600 text-xs p-3 text-left cursor-pointer rounded-sm hover:bg-[#4e4a4a48] ease-in-out duration-300 flex gap-2 items-center`}
             onClick={() => deletePostHandler(post._id, token)}
+            disabled={isDeleting ? true : false}
           >
-            Delete
-          </p>
+            {isDeleting && <Spinner fillColor="fill-red-600" pathColor="text-gray-400"/>}
+            {isDeleting ? "Deleting" : "Delete"}
+          </button>
         </div>
       )}
       {/* end of context menu */}
@@ -281,7 +285,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
 
         <div className="w-full flex-col flex gap-1">
           {/* post creator and other details */}
-          <div className="flex items-center w-full justify-between">
+          <div className="flex items-center w-full justify-between mb-1">
             <Link to={`/profile/${post.creator.username}`}>
               <h2 className="text-white font-medium text-xs hover:underline underline-offset-2">
                 {post.creator.username}
@@ -292,9 +296,9 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
               {authenticatedUser?._id === post.creator._id && (
                 <p
                   className="cursor-pointer text-base text-white rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300 p-1"
-                  onClick={() => setShowContextMenu((prevState) => !prevState)}
+                  onClick={() => setShowContextMenu(prevState => !prevState)}
                 >
-                  <BsThreeDots />
+                  <BsThreeDots className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
                 </p>
               )}
             </div>
@@ -324,7 +328,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
           <div className="flex items-center my-1 ml-[-.5rem]">
             {/* heart */}
             <p
-              className={` text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer ${
+              className={` text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer ${
                 didLike ? "text-red-500" : "text-white"
               } `}
               onClick={() => toggleLikeHandler(post._id, token)}
@@ -338,7 +342,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
 
             {/* reply */}
             <p
-              className="text-white text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
+              className="text-white text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
               onClick={() => {
                 setPostData(post);
                 setShowPostPreviewModal(true);
@@ -348,7 +352,7 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
             </p>
             {/* repost */}
             <p
-              className="text-white text-[1.3rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
+              className="text-white text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
               onClick={() => toggleRepostHandler(post._id)}
             >
               {/*  */}
@@ -358,6 +362,14 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
                 <TbRepeat className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
               )}
             </p>
+              
+              {/* share */}
+            <p
+              className="text-white text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
+              onClick={() => copyPostLink(post.creator.username, post._id)}
+            >
+              <FiSend className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
+            </p>
           </div>
           {/* end of icons */}
 
@@ -366,10 +378,6 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
             {postReplies.length > 0 && (
               <Link to={`/${post.creator.username}/post/${post._id}`}>
                 <span
-                  // onClick={() => {
-                  //   setPostData(post);
-                  //   setShowPostPreviewModal(true);
-                  // }}
                   className="cursor-pointer hover:underline underline-offset-2"
                 >
                   {" "}
@@ -392,4 +400,4 @@ const PostCard: FC<IPostCard> = ({ post, token, authenticatedUser, repost, isRep
   );
 };
 
-export default PostCard;
+export const MemoizedPostAndRepostCard = memo(PostAndRepostCard) ;

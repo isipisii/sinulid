@@ -2,6 +2,7 @@ import { RequestHandler } from "express"
 import ReplyModel from "../models/reply"
 import { CustomRequest } from "../app"
 import createHttpError from "http-errors"
+import cloudinary from "cloudinary"
 
 type CreateReplyBody = {
     content: string
@@ -15,12 +16,18 @@ type DeleteReplyParams = {
     replyId: string
 }
 
+type UserRepliesParams = {
+    userId: string
+}
+
 export const createReply: RequestHandler<ReplyParams> = async(req: CustomRequest, res, next) => {
     const { content } = req.body as CreateReplyBody
     const { postId } = req.params
     const authenticatedUserId= req.userId
 
     try {
+        let image = null
+
         if(!postId) {
             throw createHttpError(400, "Bad request, missing param")
         }
@@ -32,11 +39,20 @@ export const createReply: RequestHandler<ReplyParams> = async(req: CustomRequest
         if(!content) {
             throw createHttpError(400, "Bad request, reply missing")
         }
+        
+        if(req.file){
+            const imageResult: any = await cloudinary.v2.uploader.upload(req.file.path)
+            image = {
+                url: imageResult.secure_url,
+                cloudinary_id: imageResult.public_id,
+            }
+        }
 
         const newReply = await ReplyModel.create({
             creator: authenticatedUserId,
             content,
-            post_id : postId
+            post: postId,
+            image
         })
 
         await newReply.populate("creator")
@@ -46,6 +62,28 @@ export const createReply: RequestHandler<ReplyParams> = async(req: CustomRequest
         next(error)   
     }
 } 
+
+// collect all of the replies of the user
+export const getUserReplies: RequestHandler<UserRepliesParams> = async (req, res, next) => {
+    const { userId } = req.params 
+
+    try {
+        if(!userId) {
+            throw createHttpError(400, "Bad request missing params")
+        }
+
+        const userReplies = await ReplyModel.find({creator: userId}).populate(["creator", "post", "parent_reply"]).exec()
+
+        if(!userReplies){
+            throw createHttpError(404, "Replies not found")
+        }
+
+        res.status(201).json(userReplies)
+    } catch (error) {
+        next(error)
+    }
+}
+
 
 export const getPostReplies: RequestHandler<ReplyParams> = async (req, res, next) => {
     const { postId } = req.params

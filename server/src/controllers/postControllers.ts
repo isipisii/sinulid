@@ -121,7 +121,7 @@ export const updatePost: RequestHandler<PostParam> = async (req: CustomRequest, 
     try {
         let image = null
 
-        if(!content){
+        if(!content && !newImageFile){
             throw createHttpError(400, "Bad request, post should have content")
         }
         

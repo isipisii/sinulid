@@ -157,6 +157,10 @@ export const updateUserInfo: RequestHandler = async (req: CustomRequest , res, n
     try {
         let image = null
 
+        if(!name || !username){
+            throw createHttpError(400, "Bad request, username and name are required");
+        }
+
         if(!authenticatedUserId){
             throw createHttpError(403, "Forbidden, unauthorized to update user info")
         } 
@@ -186,8 +190,8 @@ export const updateUserInfo: RequestHandler = async (req: CustomRequest , res, n
 
         user.username = username || user.username
         user.name = name || user.name
-        user.bio = bio || user.bio
-        user.link = link || user.link
+        user.bio = bio !== null ? bio : user.bio;
+        user.link = link !== null ? link : user.link;
         user.displayed_picture = {
             url: image?.url || user.displayed_picture?.url,
             cloudinary_id: image?.cloudinary_id || user.displayed_picture?.cloudinary_id

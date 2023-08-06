@@ -92,12 +92,7 @@ const Profile = (): JSX.Element => {
       }
     }
     getUserRepostsAndPosts();
-  }, [
-    userProfileInfo?._id,
-    dispatch,
-    getPostsAndRepostsQuery,
-    userProfileInfo,
-  ]);
+  }, [userProfileInfo?._id, dispatch, getPostsAndRepostsQuery, userProfileInfo]);
 
   return (
     <section className="bg-matteBlack w-full flex py-[90px] justify-center">
@@ -147,8 +142,8 @@ const Profile = (): JSX.Element => {
                   userProfileInfo?.followerCount > 1
                     ? "followers"
                     : "follower"}{" "}
-                </span>{" "}
-                · <a href={userProfileInfo?.link}>{userProfileInfo?.link}</a>
+                </span>{" "} {userProfileInfo?.link && <span>·</span>} {" "}
+                {userProfileInfo?.link && <a href={userProfileInfo?.link}>{userProfileInfo?.link}</a>}
               </p>
               {authenticatedUser && token && (
                 <div className="flex gap-4">
@@ -204,13 +199,12 @@ const Profile = (): JSX.Element => {
           <div className="flex flex-col w-full">
             {userPostsAndReposts &&
               userPostsAndReposts.map((item) => {
-
                 // Check the type of the item and render the appropriate component
                 // post
                 if (item.type === ItemType.Post) {
                   const post = item as Post;
                   const isReposted = userReposts.some(
-                    (repost) =>
+                  (repost) =>
                       repost.post._id === post._id &&
                       repost.repost_creator._id === authenticatedUser?._id
                   );

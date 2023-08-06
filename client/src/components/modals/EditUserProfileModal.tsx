@@ -5,6 +5,10 @@ import { useAppSelector, useAppDispatch } from "../../features/app/hooks";
 import { setToEditUserInfo, setUserProfileInfo, updateUserInPost } from "../../features/user/userProfileSlice";
 import { useUpdateUserProfileMutation } from "../../services/authAndUserApi";
 import { setUser } from "../../features/auth/authSlice";
+import { useNavigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import { showToast } from "../../util/showToast";
+import Spinner from "../loader/Spinner";
 
 type EditUserInfo = {
     name?: string
@@ -26,6 +30,7 @@ const EditUserProfileModal = (): JSX.Element => {
     })
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>(toEditUserInfo?.displayed_picture?.url || "");
+    const navigate = useNavigate()
 
     function handleOnchange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void{
         const {name, value} = event.target
@@ -79,18 +84,23 @@ const EditUserProfileModal = (): JSX.Element => {
                 dispatch(setUserProfileInfo(updatedUserInfo))
                 dispatch(setUser(updatedUserInfo))
                 dispatch(updateUserInPost(updatedUserInfo))
+                // updates the url of the user profile
+                navigate(`/profile/${updatedUserInfo.username}`);
                 clearFormAndCloseModal()
+                showToast("Profile updated successfully")
             }
         } catch (error) {
             console.error(error)
+            showToast("Error, something went wrong", true)
         }
     }
     
-
     return (
         <div className="bg-[#000000bd] backdrop-blur-sm fixed w-[100vw] h-[100vh] z-20 top-0 left-0 flex items-center justify-center">
+            {/* toast notification */}
+            <Toaster position="bottom-center" reverseOrder={false}/>
             {/* close icon */}
-            <p className="top-5 right-5 text-[#525151] text-[1.5rem] absolute p-3 font-thin rounded-full bg-[#252424ce] hover:bg-[#424141ba] cursor-pointer" onClick={clearFormAndCloseModal}>
+            <p className="top-5 right-5 text-[#525151] text-[1.2rem] md:text-[1.5rem] absolute p-2 md:p-3 font-thin rounded-full bg-[#252424ce] hover:bg-[#424141ba] cursor-pointer" onClick={clearFormAndCloseModal}>
                 <IoMdClose />
             </p>
             <div className="w-[90%] max-w-[600px] h-auto bg-matteBlack mt-8 md:mt-0 rounded-md border-borderColor border p-4">
@@ -162,7 +172,7 @@ const EditUserProfileModal = (): JSX.Element => {
                             onChange={handleOnchange}
                         />
                     </div>
-                    <button className="bg-white py-2 rounded-md text-xs md:text-sm font-medium ">{isLoading ? "Updating" : "Save"}</button>
+                    <button className="bg-white py-2 rounded-md text-xs md:text-sm font-medium flex gap-1 justify-center items-center">{isLoading ? "Saving" : "Save"} {isLoading &&  <Spinner fillColor="fill-black" pathColor="text-gray-400" />}</button>
                 </form>
             </div>
         </div>

@@ -186,7 +186,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
             className="hidden"
           />
           <button
-            className={`bg-white px-6 py-2 font-semibold rounded-md text-sm flex gap-2 items-center ${
+            className={`bg-white px-6 py-2 font-semibold rounded-md text-xs md:text-sm flex gap-2 items-center ${
               textContent || imageFile || isCreating || isUpdating
                 ? "cursor-pointer"
                 : "cursor-not-allowed"

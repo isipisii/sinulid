@@ -73,10 +73,6 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
     useState<boolean>(false);
   const formattedTimeStamp = useFormatTimeStamp(post.createdAt);
   const { userPostsAndReposts } = useAppSelector((state) => state.userProfile);
-
-  // TODO: GIBO KI UTIL FUNCTION PARA SA PAG HANDLE KANG NOTIFY AND ERROR
-  
-
   // custom hook that filters the posts and reposts of the user and returns an array of user reposts
   const userReposts = filteredUserReposts(userPostsAndReposts);
 
@@ -118,6 +114,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
   }
 
   async function toggleRepostHandler(postId: string): Promise<void> {
+    if(!authenticatedUser) return
     // if a post card is marked as reposted, then it will remove the repost
     if (isReposted) {
       // retrieving the repost that will be remove by checking if this card is being reposted by the user
@@ -256,7 +253,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
                   : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
               }
               alt="profile picture"
-              className="rounded-full w-[40px] h-[40px] object-cover"
+              className="rounded-full w-[35px] h-[35px] object-cover"
             />
           </div>
 
@@ -343,7 +340,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
             <img
               src={post?.image?.url}
               alt="post image"
-              className=" w-full mt-2 rounded-md cursor-pointer object-cover max-w-[500px] transition-transform transform-gpu ease-linear duration-100 active:scale-[.98]"
+              className=" w-full mt-2 border border-borderColor rounded-md cursor-pointer object-cover max-w-[600px] transition-transform transform-gpu ease-linear duration-100 active:scale-[.98]"
               onClick={() =>
                 post.image && dispatch(setImageUrl(post?.image?.url))
               }
@@ -392,10 +389,10 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
 
             {/* share */}
             <p
-              className="text-white text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
+              className="text-white text-[1.1rem] p-2 rounded-full  duration-300 hover:bg-[#4e4a4a48] cursor-pointer transition-transform transform-gpu ease-in-out active:scale-90"
               onClick={() => copyPostLink(post.creator.username, post._id)}
             >
-              <FiSend className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
+              <FiSend />
             </p>
           </div>
           {/* end of icons */}

@@ -17,7 +17,7 @@ import SideBarAndBottomNav from "./components/SideBarAndBottomNav";
 import Activity from "./pages/Activity";
 import Profile from "./pages/Profile";
 import EditPostModal from "./components/modals/EditPostModal";
-import PostAndReplies from "./pages/PostAndReplies";
+import PostAndReplies from "./pages/PostAndRepliesPage";
 
 const App: FC = () => {
   const { token } = useAppSelector((state) => state.auth);

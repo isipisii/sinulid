@@ -32,11 +32,13 @@ import {
 import { useAppDispatch, useAppSelector } from "../features/app/hooks";
 import { useFormatTimeStamp } from "../hooks/useFormatTimestamp";
 import { bubbleStyleUserImageWhoReplied } from "../util/bubbleStyle";
-import { filteredUserReposts} from "../util/filteredUserReposts";
+import { filteredUserReposts } from "../util/filteredUserReposts";
 
 import { Link } from "react-router-dom";
 import PostPreviewModal from "./modals/PostPreviewModal";
 import Spinner from "./loader/Spinner";
+import { showToast } from "../util/showToast";
+import { Toaster } from "react-hot-toast";
 
 interface IPostAndRepostCard {
   post: Post;
@@ -44,15 +46,22 @@ interface IPostAndRepostCard {
   authenticatedUser: User | null;
   repost?: Repost;
   type?: string;
-  isReposted?: boolean
+  isReposted?: boolean;
 }
 
-const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedUser, repost, isReposted }) => {
+const PostAndRepostCard: FC<IPostAndRepostCard> = ({
+  post,
+  token,
+  authenticatedUser,
+  repost,
+  isReposted,
+}) => {
   const dispatch = useAppDispatch();
 
   const [likePostMutation] = useLikePostMutation();
   const [unlikePostMutation] = useUnlikePostMutation();
-  const [deletePostMutation, {isLoading: isDeleting}] = useDeletePostMutation();
+  const [deletePostMutation, { isLoading: isDeleting }] =
+    useDeletePostMutation();
   const [createRepostMutation] = useCreateRepostMutation();
   const [removeRepostMutation] = useRemoveRepostMutation();
   const [getPostReplies] = useLazyGetPostRepliesQuery();
@@ -60,25 +69,27 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedU
   const [postReplies, setPostReplies] = useState<Reply[]>([]);
   const [postData, setPostData] = useState<Post | null>(null);
   const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
-  const [showPostPreviewModal, setShowPostPreviewModal] = useState<boolean>(false);
+  const [showPostPreviewModal, setShowPostPreviewModal] =
+    useState<boolean>(false);
   const formattedTimeStamp = useFormatTimeStamp(post.createdAt);
-  const { userPostsAndReposts } = useAppSelector(state => state.userProfile)
+  const { userPostsAndReposts } = useAppSelector((state) => state.userProfile);
+
+  // TODO: GIBO KI UTIL FUNCTION PARA SA PAG HANDLE KANG NOTIFY AND ERROR
+  
 
   // custom hook that filters the posts and reposts of the user and returns an array of user reposts
-  const userReposts = filteredUserReposts(userPostsAndReposts)
+  const userReposts = filteredUserReposts(userPostsAndReposts);
 
   const didLike: boolean = post.liked_by.some(
     (user) => user._id === authenticatedUser?._id
   );
-  
+
   function toggleLikeHandler(postId: string, token: string): void {
     if (!authenticatedUser) {
       return;
     }
     if (didLike) {
-      dispatch(
-        unlikePostOrRepostInUserProfile({ postId, user: authenticatedUser })
-      ); // for user's profile optimistic update
+      dispatch(unlikePostOrRepostInUserProfile({ postId, user: authenticatedUser })); // for user's profile optimistic update
       dispatch(unlikePost({ postId, user: authenticatedUser })); // for feed's optimistic update
       unlikePostMutation({ postId, token });
     } else {
@@ -92,33 +103,41 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedU
 
   async function deletePostHandler(postId: string, token: string): Promise<void> {
     if (!authenticatedUser) return;
-  
+
     try {
       // delete the original post
       await deletePostMutation({ postId, token });
-      dispatch(deletePostOrRepostInUserProfile({postId, repostId: repost?._id})); // for user's profile optimistic update
+      dispatch(
+        deletePostOrRepostInUserProfile({ postId, repostId: repost?._id })
+      ); // for user's profile optimistic update
       dispatch(deletePost(postId)); // for feed's optimistic update
       setShowContextMenu(false);
     } catch (error) {
       console.error(error);
     }
   }
-  
-  async function toggleRepostHandler(postId: string): Promise<void> {
-      // if a post card is marked as reposted, then it will remove the repost
-      if (isReposted) {
-        // retrieving the repost that will be remove by checking if this card is being reposted by the user
-        const repostToRemove = userReposts?.find(repost => repost.post._id === post._id)
 
-        if(repostToRemove) {
-          await removeRepostMutation({token, repostId: repostToRemove?._id})
-          dispatch(deletePostOrRepostInUserProfile({repostId: repostToRemove?._id}))
-        }
+  async function toggleRepostHandler(postId: string): Promise<void> {
+    // if a post card is marked as reposted, then it will remove the repost
+    if (isReposted) {
+      // retrieving the repost that will be remove by checking if this card is being reposted by the user
+      const repostToRemove = userReposts?.find((repost) => repost.post._id === post._id);
+
+      if (repostToRemove) {
+        await removeRepostMutation({ token, repostId: repostToRemove?._id });
+        dispatch(
+          deletePostOrRepostInUserProfile({ repostId: repostToRemove?._id })
+        );
       }
-      else {
-        const newRepost = await createRepostMutation({ postId, token }).unwrap()
-        dispatch(addRepostInUserProfile(newRepost))
-    } 
+    } else {
+      try {
+        const newRepost = await createRepostMutation({ postId, token }).unwrap();
+        showToast("Reposted")
+        dispatch(addRepostInUserProfile(newRepost));
+      } catch (error) {
+        console.error;
+      }
+    }
   }
 
   // gets the users' image unique url who replied on a certain post
@@ -126,13 +145,12 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedU
     const imageUrls: string[] = [];
 
     for (const reply of postReplies) {
+      if (!reply.creator.displayed_picture) break;
 
-      if(!reply.creator.displayed_picture) break
-
-      if(!imageUrls.includes(reply.creator.displayed_picture?.url)){
+      if (!imageUrls.includes(reply.creator.displayed_picture?.url)) {
         imageUrls.push(reply.creator.displayed_picture?.url);
       }
-      if(imageUrls.length > 3) break
+      if (imageUrls.length > 3) break;
     }
     return imageUrls;
   }
@@ -170,18 +188,25 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedU
   }, [post]);
 
   // will copy to clipboard the post's link when the share icon is clicked
-  function copyPostLink(username: string, postId: string): void{
-    const origin = window.location.origin
-    const postLink = `${origin}/${username}/post/${postId}`
+  function copyPostLink(username: string, postId: string): void {
+    const origin = window.location.origin;
+    const postLink = `${origin}/${username}/post/${postId}`;
     navigator.clipboard.writeText(postLink);
+    showToast("Post link was copied to clipboard")
   }
 
   return (
     <div className="w-full h-auto p-3 border-b border-borderColor relative">
+      {/* toast notification */}
+       <Toaster position="bottom-center" reverseOrder={false}/>
       {/* will only show if this component is a repost */}
       {repost && (
         <p className="text-[#ffffff5e] ml-5 text-xs mb-[.5rem] flex items-center gap-3">
-          <FiRepeat /> {repost.repost_creator.username === authenticatedUser?.username ? "You" : repost.repost_creator.username} reposted
+          <FiRepeat />{" "}
+          {repost.repost_creator.username === authenticatedUser?.username
+            ? "You"
+            : repost.repost_creator.username}{" "}
+          reposted
         </p>
       )}
 
@@ -199,7 +224,9 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedU
             onClick={() => deletePostHandler(post._id, token)}
             disabled={isDeleting ? true : false}
           >
-            {isDeleting && <Spinner fillColor="fill-red-600" pathColor="text-gray-400"/>}
+            {isDeleting && (
+              <Spinner fillColor="fill-red-600" pathColor="text-gray-400" />
+            )}
             {isDeleting ? "Deleting" : "Delete"}
           </button>
         </div>
@@ -296,7 +323,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedU
               {authenticatedUser?._id === post.creator._id && (
                 <p
                   className="cursor-pointer text-base text-white rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300 p-1"
-                  onClick={() => setShowContextMenu(prevState => !prevState)}
+                  onClick={() => setShowContextMenu((prevState) => !prevState)}
                 >
                   <BsThreeDots className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
                 </p>
@@ -362,8 +389,8 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedU
                 <TbRepeat className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
               )}
             </p>
-              
-              {/* share */}
+
+            {/* share */}
             <p
               className="text-white text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
               onClick={() => copyPostLink(post.creator.username, post._id)}
@@ -377,9 +404,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedU
           <p className="text-[#7b7575] text-xs flex items-center gap-1">
             {postReplies.length > 0 && (
               <Link to={`/${post.creator.username}/post/${post._id}`}>
-                <span
-                  className="cursor-pointer hover:underline underline-offset-2"
-                >
+                <span className="cursor-pointer hover:underline underline-offset-2">
                   {" "}
                   {postReplies.length}{" "}
                   {postReplies.length > 1 ? "replies" : "reply"}
@@ -400,4 +425,4 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({ post, token, authenticatedU
   );
 };
 
-export const MemoizedPostAndRepostCard = memo(PostAndRepostCard) ;
+export const MemoizedPostAndRepostCard = memo(PostAndRepostCard);

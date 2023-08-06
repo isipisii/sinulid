@@ -4,7 +4,7 @@ import { useAppSelector } from "../features/app/hooks";
 import { filteredUserReposts} from "../util/filteredUserReposts";
 
 const Feed: FC = () => {
-  const { token, user } = useAppSelector((state) => state.auth);
+  const { token, user: authenticatedUser } = useAppSelector((state) => state.auth);
   const { userPostsAndReposts } = useAppSelector((state) => state.userProfile);
   const { posts } = useAppSelector((state) => state.post);
   // helper function that filters the posts and reposts of the user and returns an array of user reposts
@@ -14,18 +14,14 @@ const Feed: FC = () => {
     <div className="flex flex-col w-full">
       {posts.map((post) => {
         // will check every post to identify if it is being reposted by the current user
-        const isReposted = userReposts.some(
-          (repost) =>
-            repost.post._id === post._id &&
-            repost.repost_creator._id === user?._id
-        );
+        const isReposted = userReposts.some((repost) => repost.post._id === post._id && repost.repost_creator._id === authenticatedUser?._id);
 
         return (
           <MemoizedPostAndRepostCard
             key={post._id}
             post={post}
             token={token}
-            authenticatedUser={user}
+            authenticatedUser={authenticatedUser}
             isReposted={isReposted}
           />
         );

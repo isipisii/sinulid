@@ -9,6 +9,8 @@ import { IoMdClose } from "react-icons/io";
 import { addPost, setPostToEdit, updatePost } from "../features/post/postSlice";
 import { updatePostOrRepostInUserProfile } from "../features/user/userProfileSlice";
 
+import { Toaster } from "react-hot-toast";
+import { showToast } from "../util/showToast";
 import Spinner from "./loader/Spinner";
 
 interface ICreatePostForm {
@@ -55,7 +57,9 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
     setImagePreview("");
   }
 
-  async function updatePostHandler(e: FormEvent<HTMLFormElement>): Promise<void> {
+  async function updatePostHandler(
+    e: FormEvent<HTMLFormElement>
+  ): Promise<void> {
     e.preventDefault();
 
     const data = new FormData();
@@ -76,12 +80,16 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
       dispatch(updatePost(updatedPost));
       dispatch(updatePostOrRepostInUserProfile(updatedPost));
       dispatch(setPostToEdit(null));
+      showToast("Post updated");
     } catch (error) {
+      showToast("Error, something went wrong while uploading", true)
       console.error(error);
     }
   }
 
-  async function submitPostHandler(e: FormEvent<HTMLFormElement>): Promise<void> {
+  async function submitPostHandler(
+    e: FormEvent<HTMLFormElement>
+  ): Promise<void> {
     e.preventDefault();
     // the data will be passed to req body
     const data = new FormData();
@@ -97,7 +105,9 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
       }).unwrap();
       dispatch(addPost(newPost));
       clearForm();
+      showToast("Posted");
     } catch (error) {
+      showToast("Error, something went wrong while uploading", true)
       console.error(error);
     }
   }
@@ -110,6 +120,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
 
   return (
     <div className="w-full h-auto">
+      <Toaster position="bottom-center" reverseOrder={false} />
       <form
         className="flex flex-col gap-3 h-auto p-4 bg-matteBlack rounded-md"
         onSubmit={isEditing ? updatePostHandler : submitPostHandler}
@@ -187,13 +198,19 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
             }
             type="submit"
           >
-            {isEditing ? (isUpdating ? "Saving" : "Save") : (isCreating ? "Posting" : "Post")}
-              {isUpdating && (
-                <Spinner fillColor="fill-black" pathColor="text-gray-400"/>
-              )}
-              {isCreating && (
-               <Spinner fillColor="fill-black" pathColor="text-gray-400"/>
-              )}
+            {isEditing
+              ? isUpdating
+                ? "Saving"
+                : "Save"
+              : isCreating
+              ? "Posting"
+              : "Post"}
+            {isUpdating && (
+              <Spinner fillColor="fill-black" pathColor="text-gray-400" />
+            )}
+            {isCreating && (
+              <Spinner fillColor="fill-black" pathColor="text-gray-400" />
+            )}
           </button>
         </div>
       </form>

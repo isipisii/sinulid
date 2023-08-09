@@ -119,12 +119,11 @@ const CreateReplyPage = (): JSX.Element => {
                   />
                 )}
                 {/*end of post content */}
-
-                <div></div>
               </div>
             </div>
           </div>
-
+          
+          {/* form */}
           <div className="w-full h-auto p-3 mt-[-1rem]">
             <div className="flex gap-3">
               {/* left */}
@@ -133,8 +132,8 @@ const CreateReplyPage = (): JSX.Element => {
                 <div className=" w-[35px] h-[35px]">
                   <img
                     src={
-                      postToReply?.creator?.displayed_picture
-                        ? postToReply?.creator?.displayed_picture?.url
+                      authenticatedUser?.displayed_picture
+                        ? authenticatedUser?.displayed_picture.url
                         : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
                     }
                     alt="profile picture"
@@ -145,18 +144,18 @@ const CreateReplyPage = (): JSX.Element => {
 
               {/* right */}
               <div className="w-full flex-col flex gap-1">
-                {/* post creator and other details */}
+                {/* authenticated user */}
                 <div
                   className={`flex flex-col w-full justify-between mb-1`}
                 >
-                  <Link to={`/profile/${postToReply?.creator.username}`}>
+                  <Link to={`/profile/${authenticatedUser?.username}`}>
                     <h2 className="text-white font-medium text-xs hover:underline underline-offset-2">
-                      {postToReply?.creator.username}
+                      {authenticatedUser?.username}
                     </h2>
                   </Link>
                  
                 </div>
-                {/*end of post creator and other details */}
+          
                 <CreatePostForm 
                   isEditing={false} 
                   isReplying={true} 

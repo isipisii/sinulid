@@ -1,13 +1,12 @@
 import { RequestHandler } from "express"
 import PostModel from "../models/post"
-import ReplyModel from "../models/reply"
 import mongoose from "mongoose"
 import createHttpError from "http-errors"
 import cloudinary from "cloudinary"
 import { CustomRequest } from "../app"
 import RepostModel from "../models/repost"
 
-export type CreatePostBody = {
+export type CreatePostOrReplyBody = {
     content: string
 }
 
@@ -24,10 +23,11 @@ type GetUserPostsParam = {
     userId: string
 }
 
+
 // create post
 // NEEDS AUTHENTICATED USER IN ORDER TO ACCESS THIS
 export const createPost: RequestHandler = async (req: CustomRequest, res, next) => {
-    const { content } = req.body as CreatePostBody
+    const { content } = req.body as CreatePostOrReplyBody
     const authenticatedUserId = req.userId
 
     if(!authenticatedUserId){
@@ -35,7 +35,7 @@ export const createPost: RequestHandler = async (req: CustomRequest, res, next) 
     }
 
     if(!content && !req.file?.path){
-        throw createHttpError(400, "Bad request, post should have a content")
+        throw createHttpError(400, "Bad request, post should have a content or image")
     }
     
     try {
@@ -69,7 +69,11 @@ export const getSinglePost: RequestHandler<PostParam> = async (req, res, next) =
             throw createHttpError(400, "Bad request, missing params")
         }
 
-         const post = await PostModel.findById(postId).populate("creator").exec()
+         const post = await PostModel.findById(postId).populate([
+            { path: "creator" }, 
+            { path:"liked_by" },
+            { path:"parent" },
+        ]).exec()
 
         res.status(200).json(post)
     } catch (error) {
@@ -79,13 +83,20 @@ export const getSinglePost: RequestHandler<PostParam> = async (req, res, next) =
 
 // get all post 
 export const getPosts: RequestHandler = async (req, res, next) => {
-        try {
-            // gets post in descending order
-            const posts = await PostModel.find().sort({ createdAt: -1}).populate("creator").populate("liked_by").exec();
-            res.status(200).json(posts);
-        } catch (error) {
-            next(error)
-        }
+    try {
+        // gets post in descending order
+        const posts = await PostModel.find({parent: null}).sort({ createdAt: -1}).populate([
+            { path: "creator" }, 
+            { path:"liked_by" },
+            {
+                path:"children",
+                populate: "creator"
+            }
+        ]).exec();
+        res.status(200).json(posts);
+    } catch (error) {
+        next(error)
+    }
 }
 
 // get user's post
@@ -97,7 +108,7 @@ export const getUserPosts: RequestHandler<GetUserPostsParam> = async (req, res, 
             throw createHttpError(400, "Bad request, missing params")
         }
 
-        const userPosts = await PostModel.find({ creator: userId }).sort({ createdAt: -1}).populate("liked_by").populate("creator").exec()
+        const userPosts = await PostModel.find({ creator: userId, parent: null }).sort({ createdAt: -1}).populate("liked_by").populate("creator").exec()
 
         if(!userPosts){
             throw createHttpError(404, "Posts not found")
@@ -192,15 +203,38 @@ export const deletePost: RequestHandler<PostParam> = async (req: CustomRequest, 
             }
         }
 
-        const cloudinaryId = post.image?.cloudinary_id
+        // if the reply/post has a parent field, then find the parent and remove the id of this post from the children field of parent
+        if(post.parent){
+            const parentPost = await PostModel.findById(post.parent).exec()
 
-        if(cloudinaryId){
-            await cloudinary.v2.api.delete_resources([cloudinaryId]);
-        }   
-        // delete those reply and repost document that has the same post id as with the post to be deleted
-        await ReplyModel.deleteMany({post_id: postId}) 
-        await RepostModel.deleteMany({post: postId})
-        await post.deleteOne()
+            if(!parentPost){
+                throw createHttpError(404, "Parent post not found");
+            }
+
+            parentPost.children = parentPost?.children.filter((childPost) => !childPost.equals(postId))
+
+            await parentPost.save();
+        }
+
+        //will recursively delete post and its children as long as there is a child post
+        async function deletePostAndChildren(post: any) {
+            for (const childId of post.children) {
+                const childPost = await PostModel.findById(childId).exec();
+                if (childPost) {
+                    await deletePostAndChildren(childPost);
+                }
+            }
+
+            if (post.image?.cloudinary_id) {
+                await cloudinary.v2.api.delete_resources([post.image.cloudinary_id]);
+            }
+
+            // delete associated repost documents
+            await RepostModel.deleteMany({ post: post._id });
+            await PostModel.deleteOne({ _id: post._id });
+        }
+
+        await deletePostAndChildren(post);
 
         res.status(204).json(post)
     } catch (error) {
@@ -268,6 +302,74 @@ export const unlikePost: RequestHandler<PostParam> = async (req: CustomRequest, 
         await post.save()
 
         res.status(200).json("Post unliked")
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const createPostReply: RequestHandler<PostParam> = async (req: CustomRequest, res, next) => {
+    const authenticatedUserId = req.userId
+    const { content } = req.body as CreatePostOrReplyBody
+    const { postId: parentId } = req.params
+
+    try {
+        let image = null;
+
+        const originalPost = await PostModel.findById(parentId).exec()
+
+        if(!originalPost){
+            throw createHttpError(404, "Post not found")
+        }
+
+        if(!content && !req.file?.path){
+            throw createHttpError(400, "Bad request, reply should have a content or image")
+        }
+        
+        if (req.file) {
+            const imageResult: any = await cloudinary.v2.uploader.upload(req.file.path)
+            image = {
+                url: imageResult.secure_url,
+                cloudinary_id: imageResult.public_id,
+            };
+        }
+
+        const newPostReply = await PostModel.create({
+            creator: authenticatedUserId,
+            content,
+            image,
+            parent: parentId
+        })
+
+        originalPost.children.push(newPostReply._id)
+
+        await originalPost.save()
+
+        await newPostReply.populate("creator")
+
+        res.status(201).json(newPostReply);
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const getPostReplies: RequestHandler<PostParam> = async (req, res, next) => {
+    const { postId: parentId }  = req.params
+
+    try {
+        const postReplies = await PostModel.find({parent: parentId}).populate([
+            { path: "creator" }, 
+            { path:"liked_by" },
+            {
+                path:"children",
+                populate: "creator"
+            }
+        ]).exec()
+
+        if(!postReplies){
+            throw createHttpError(404, "Post replies not found")
+        }
+
+        res.status(201).json(postReplies)
     } catch (error) {
         next(error)
     }

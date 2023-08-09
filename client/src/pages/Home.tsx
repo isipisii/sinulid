@@ -38,9 +38,9 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
   useEffect(() => {
     async function getPosts() {
       try {
-        const payload = await getLazyPostsQuery();
-        if (payload?.data) {
-          dispatch(setPosts(payload?.data));
+        const postsPayload = await getLazyPostsQuery();
+        if (postsPayload?.data) {
+          dispatch(setPosts(postsPayload?.data));
         }
       } catch (error) {
         console.error(error);

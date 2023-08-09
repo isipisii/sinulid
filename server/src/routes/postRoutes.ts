@@ -20,4 +20,8 @@ router.patch("/like/:postId", PostControllers.likePost)
 
 router.patch("/unlike/:postId", PostControllers.unlikePost)
 
+router.post("/post-reply/:postId", upload.single("image"), PostControllers.createPostReply)
+
+router.get("/post-reply/:postId", PostControllers.getPostReplies)
+
 export default router 

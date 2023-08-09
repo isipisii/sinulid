@@ -24,7 +24,18 @@ const postSchema = new Schema({
             ref: "User",
         },
     ],
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref: "Post"
+    },
+    children: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Post",
+        },
+    ]
 },
+
 {timestamps: true, toJSON: { virtuals: true }})
 
 postSchema.virtual("likes").get(function (){

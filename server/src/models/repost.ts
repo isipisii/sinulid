@@ -8,9 +8,8 @@ const repostSchema = new Schema({
     },
     post: {
         type: Schema.Types.ObjectId, 
-        required: true,
         ref: "Post"
-    }
+    },
 },
 { timestamps: true, toJSON: { virtuals: true }})
 

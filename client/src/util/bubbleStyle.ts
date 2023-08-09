@@ -3,16 +3,16 @@ export function bubbleStyleUserImageWhoReplied(idx: number, imageUrls: string[])
   let style = "";
 
   if (imageUrls.length === 1) {
-    style = "h-[20px] w-[20px]";
+    style = "h-[18px] w-[18px]";
   }
 
   if (imageUrls.length === 2) {
     switch (idx) {
       case 0:
-        style = "absolute top-0 right-1 h-[20px] w-[20px] z-10";
+        style = "absolute top-0 right-1 h-[18px] w-[18px] z-10";
         break;
       case 1:
-        style = "absolute top-0 left-0 h-[20px] w-[20px]";
+        style = "absolute top-0 left-0 h-[18px] w-[18px]";
         break;
     }
   }

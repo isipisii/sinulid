@@ -37,7 +37,9 @@ export type Post = {
     likes: number
     createdAt: string 
     liked_by: User[]
-    type: string
+    type: string,
+    children: Post[]
+    parent: Post
 }
 
 export type Repost = {
@@ -50,10 +52,17 @@ export type Repost = {
 
 export type Reply = {
     _id: string
-    post_id: string
+    post: string
     creator: User
     content: string
-    createdAt: string
+    parentReply: Reply
+    image?: {
+        url: string,
+        cloudinary_id: string
+    }
+    likes: number
+    createdAt: string 
+    liked_by: User[]
 }
 
 export enum ItemType {

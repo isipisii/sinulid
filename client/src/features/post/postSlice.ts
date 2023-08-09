@@ -67,26 +67,53 @@ export const postSlice = createSlice({
         setSinglePost: (state, action: PayloadAction<Post>) => {
             state.post = action.payload
         },
-        likePostInPostAndReplyPage: (state, action: PayloadAction<User>) => {
-            if(!state.post) return
+        likePostInPostAndReplyPage: (state, action: PayloadAction<{ postId: string; user: User }>) => {
+            if(!state.post || action.payload.postId !== state.post._id) return
 
             state.post = {
                 ...state.post,
-                liked_by: [...state.post.liked_by, action.payload],
+                liked_by: [...state.post.liked_by, action.payload.user],
                 likes: state.post.likes + 1
             }
         },
-        unlikePostInPostAndReplyPage: (state, action: PayloadAction<User>) => {
-            if(!state.post) return
+        unlikePostInPostAndReplyPage: (state, action: PayloadAction<{ postId: string; user: User }>) => {
+            if(!state.post || action.payload.postId !== state.post._id) return
 
             state.post = {
                 ...state.post,
-                liked_by: state.post.liked_by.filter((user) => user._id !== action.payload._id),
+                liked_by: state.post.liked_by.filter((user) => user._id !== action.payload.user._id),
                 likes: state.post.likes - 1
             }
         },
         setReplies: (state, action: PayloadAction<Post[]>) => {
             state.replies = action.payload
+        },
+        likePostReply: (state, action: PayloadAction<{ postId: string; user: User }>) => {
+            state.replies = state.replies.map(postReply => {
+                if (postReply._id === action.payload.postId) {
+                return {
+                    ...postReply,
+                    liked_by: [...postReply.liked_by, action.payload.user],
+                    likes: postReply.likes + 1
+                    };
+                }
+                return postReply;
+            });
+        },
+        unlikePostReply: (state, action: PayloadAction<{ postId: string; user: User }>) => {
+            state.replies = state.replies.map(postReply => {
+                if (postReply._id === action.payload.postId) {
+                return {
+                    ...postReply,
+                    liked_by: postReply.liked_by.filter(user => user._id !== action.payload.user._id),
+                    likes: postReply.likes - 1
+                    };
+                }
+                return postReply;
+            });
+        },
+        deletePostReply: (state, action: PayloadAction<string>) => {
+            state.replies = state.replies.filter(postReply => postReply._id !== action.payload)
         }
     },
 })
@@ -103,7 +130,10 @@ export const {
     setSinglePost, 
     likePostInPostAndReplyPage,
     unlikePostInPostAndReplyPage,
-    setReplies
+    setReplies,
+    likePostReply,
+    unlikePostReply,
+    deletePostReply
 } = postSlice.actions
 
 export default postSlice.reducer

@@ -6,6 +6,7 @@ import LogIn from "./pages/LogIn";
 import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
 import UserReplies from "./pages/UserReplies";
+import ScrollToTop from "./components/ScrollToTop";
 
 import { useLazyGetAuthenticatedUserQuery } from "./services/authAndUserApi";
 import { useAppSelector, useAppDispatch } from "./features/app/hooks";
@@ -22,26 +23,27 @@ import CreateReplyPage from "./pages/CreateReplyPage";
 
 const App: FC = () => {
   const { token } = useAppSelector((state) => state.auth);
-  const { userProfileInfo } = useAppSelector((state) => state.userProfile)
+  const { userProfileInfo } = useAppSelector((state) => state.userProfile);
   const dispatch = useAppDispatch();
-  const [getAuthenticatedUserInfo] = useLazyGetAuthenticatedUserQuery()
+  const [getAuthenticatedUserInfo] = useLazyGetAuthenticatedUserQuery();
 
   // gets the user who logs in along with the token to authenticate
   async function getUserInfo(): Promise<void> {
     try {
-      const authenticatedUser = await getAuthenticatedUserInfo(token).unwrap()
+      const authenticatedUser = await getAuthenticatedUserInfo(token).unwrap();
 
-      if(authenticatedUser){
-        dispatch(setUser(authenticatedUser))
+      if (authenticatedUser) {
+        dispatch(setUser(authenticatedUser));
       }
     } catch (error) {
-      console.error(error)
-    } 
+      console.error(error);
+    }
   }
 
   useEffect(() => {
-    getUserInfo()
-  },[])
+    getUserInfo();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -49,40 +51,45 @@ const App: FC = () => {
       <SideBarAndBottomNav />
       <ViewImageModal />
       <EditPostModal />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <Protected isSignedIn={token}>
-              <Home getUserInfo={getUserInfo}/>
-            </Protected>
-          }
-        />
-        <Route
-          path="/create-reply/:postToReplyId"
-          element={
-            <Protected isSignedIn={token}>
-              <CreateReplyPage />
-            </Protected>
-          }
-        />
-        <Route
-          path="/activity"
-          element={
-            <Protected isSignedIn={token}>
-              <Activity />
-            </Protected>
-          }
-        />
-        <Route path="/profile/:username" element={<Profile />}>
-          <Route path="replies" element={<UserReplies userProfileInfo={userProfileInfo} />} />
-        </Route>
-        <Route path="/login" element={<LogIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/:username/post/:postId" element={<PostAndReplies />} />
-        {/* TODO */}
-        {/* <Route path="*" element={<NotFound />} /> */} 
-      </Routes>
+      <ScrollToTop>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Protected isSignedIn={token}>
+                <Home getUserInfo={getUserInfo} />
+              </Protected>
+            }
+          />
+          <Route
+            path="/create-reply/:postToReplyId"
+            element={
+              <Protected isSignedIn={token}>
+                <CreateReplyPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/activity"
+            element={
+              <Protected isSignedIn={token}>
+                <Activity />
+              </Protected>
+            }
+          />
+          <Route path="/profile/:username" element={<Profile />}>
+            <Route
+              path="replies"
+              element={<UserReplies userProfileInfo={userProfileInfo} />}
+            />
+          </Route>
+          <Route path="/login" element={<LogIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/:username/post/:postId" element={<PostAndReplies />} />
+          {/* TODO */}
+          {/* <Route path="*" element={<NotFound />} /> */}
+        </Routes>
+      </ScrollToTop>
     </>
   );
 };

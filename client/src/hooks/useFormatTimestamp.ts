@@ -19,7 +19,7 @@ export const useFormatTimeStamp = (date: string): string => {
         // create the final formatted time string
         const finalFormat: string = finalTimeUnit !== timeUnit ? finalTimeUnit : finalTime + finalTimeUnit;
     
-        // Update the state with the formatted time
+        // update the state with the formatted time
         setFormattedTimeStamp(finalFormat);
       }, [date]);
 

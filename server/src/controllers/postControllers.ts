@@ -356,7 +356,7 @@ export const getPostReplies: RequestHandler<PostParam> = async (req, res, next) 
     const { postId: parentId }  = req.params
 
     try {
-        const postReplies = await PostModel.find({parent: parentId}).populate([
+        const postReplies = await PostModel.find({parent: parentId}).sort({ createdAt: -1}).populate([
             { path: "creator" }, 
             { path:"liked_by" },
             {

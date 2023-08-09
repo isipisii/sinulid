@@ -10,7 +10,6 @@ import "dotenv/config"
 import postRoutes from "./routes/postRoutes"
 import userRoutes from "./routes/userRoutes"
 import repostRoutes from "./routes/repostRoutes"
-import replyRoutes from "./routes/replyRoutes"
 import { authHandler } from "./middlewares/authMiddleware";
 import { errorHandler } from "./middlewares/errorMiddleware";
 import env from "./util/validateEnv"
@@ -40,7 +39,6 @@ cloudinary.v2.config({
 app.use("/posts", postRoutes)
 app.use("/users", userRoutes)
 app.use("/reposts", repostRoutes)
-app.use("/replies", replyRoutes)
 
 // middleware for non existing endpoint
 app.use((res, req, next) => {

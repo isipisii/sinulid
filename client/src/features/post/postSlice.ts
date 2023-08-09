@@ -7,6 +7,7 @@ interface IPostState {
     viewImage: string,
     postToEdit: Post | null
     post: Post | null
+    replies: Post[]
 }
 
 const initialState: IPostState = {
@@ -14,6 +15,7 @@ const initialState: IPostState = {
     viewImage: "",
     postToEdit: null,
     post: null,
+    replies: []
 }  
 
 export const postSlice = createSlice({
@@ -65,7 +67,27 @@ export const postSlice = createSlice({
         setSinglePost: (state, action: PayloadAction<Post>) => {
             state.post = action.payload
         },
-    
+        likePostInPostAndReplyPage: (state, action: PayloadAction<User>) => {
+            if(!state.post) return
+
+            state.post = {
+                ...state.post,
+                liked_by: [...state.post.liked_by, action.payload],
+                likes: state.post.likes + 1
+            }
+        },
+        unlikePostInPostAndReplyPage: (state, action: PayloadAction<User>) => {
+            if(!state.post) return
+
+            state.post = {
+                ...state.post,
+                liked_by: state.post.liked_by.filter((user) => user._id !== action.payload._id),
+                likes: state.post.likes - 1
+            }
+        },
+        setReplies: (state, action: PayloadAction<Post[]>) => {
+            state.replies = action.payload
+        }
     },
 })
 
@@ -79,6 +101,9 @@ export const {
     updatePost, 
     setPostToEdit, 
     setSinglePost, 
+    likePostInPostAndReplyPage,
+    unlikePostInPostAndReplyPage,
+    setReplies
 } = postSlice.actions
 
 export default postSlice.reducer

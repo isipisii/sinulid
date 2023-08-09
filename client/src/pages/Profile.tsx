@@ -102,7 +102,7 @@ const Profile = (): JSX.Element => {
         } flex justify-center`}
       >
         {toEditUserInfo && <EditUserProfileModal />}
-        <main className="w-full flex items-center flex-col gap-3 md-p-4 max-w-[700px]">
+        <main className="w-full flex items-center flex-col gap-3 md-p-4 max-w-[600px]">
           {/* user infos */}
           <div className="w-full flex flex-col gap-4 p-4 md:p-0">
             {/* username and dp */}

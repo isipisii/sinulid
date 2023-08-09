@@ -54,7 +54,7 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
   return (
     <section className="bg-matteBlack w-full flex items-center justify-center pb-[100px]">
       <div className="max-w-[1400px] h-auto w-full flex justify-center gap-4 md:ml-[120px] md:mr-[50px] lg:ml-[250px]">
-        <main className="w-full pt-[90px] flex items-center flex-col justify-center sm:mx-[50px] max-w-[700px]">
+        <main className="w-full pt-[90px] flex items-center flex-col justify-center sm:mx-[50px] max-w-[600px]">
           <div className="border-b border-borderColor w-full">
             <CreateAndEditPostForm isEditing={false} />
           </div>

@@ -48,7 +48,7 @@ const PostAndReplies = (): JSX.Element => {
           authenticatedUser ? "md:ml-[120px] md:mr-[50px] lg:ml-[250px]" : null
         } flex justify-center`}
       >
-        <main className="w-full pt-[90px] flex items-center flex-col justify-center sm:mx-[50px] max-w-[700px]">
+        <main className="w-full pt-[90px] flex items-center flex-col justify-center sm:mx-[50px] max-w-[600px]">
           <div className="w-full relative mb-4">
             {authenticatedUser && <p onClick={() => navigate(-1)} className=" cursor-pointer hover:bg-[#4e4a4a48] ease-in-out duration-300 p-2 rounded-md text-white absolute  my-auto left-2 md:left-0 text-sm flex items-center gap-1"><IoIosArrowBack/> Back</p>}
             <h1 className="text-white font-medium text-center text-[1.3rem]">Thread</h1>
@@ -73,12 +73,11 @@ const PostAndReplies = (): JSX.Element => {
             ) : (
               replies && (
                 <div className="flex flex-col items-center w-full">
-                  {replies.map((reply, index) => {
+                  {replies.map((reply) => {
                     const isReposted = userReposts.some((repost) => repost.post._id === reply?._id && repost.repost_creator._id === authenticatedUser?._id)
-                    
                     return (
                        <MemoizedPostAndRepostCard
-                        key={index}
+                        key={reply._id}
                         post={reply}
                         token={token}
                         authenticatedUser={authenticatedUser}

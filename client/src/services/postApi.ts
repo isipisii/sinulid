@@ -1,9 +1,15 @@
-import { Reply, Post } from "../types/types";
+import { Post } from "../types/types";
 import { api } from "./api";
 
 type CreatePost = {
     postData: FormData
     token: string
+}
+
+type CreatePostReply = {
+    postReplyData: FormData
+    token: string
+    parentId: string
 }
 
 type UpdatePost = {
@@ -22,16 +28,6 @@ type LikePost = {
     token: string
 }
 
-type CreatePostReply = {
-    postId: string
-    token: string
-    content: string
-}
-
-type DeletePostReply = {
-    replyId: string
-    token: string
-}
 
 //wasnt able to use prepareHeaders since some endpoint dont require headers
 const postApi = api.injectEndpoints({
@@ -86,33 +82,23 @@ const postApi = api.injectEndpoints({
                 }
             })
         }),
-        getPostReplies: builder.query<Reply[], string>({
-            query: (postId) => `/replies/${postId}`
+        getSinglePost: builder.query<Post, string>({
+            query: (postId) => `/posts/${postId}`
         }),
-        createPostReply: builder.mutation<Reply, CreatePostReply>({
-            query: ({postId, token, content}) => ({
-                url: `/replies/create/${postId}`,
+        getReplies: builder.query<Post[], string>({
+            query: (postId) => `/posts/post-reply/${postId}`
+        }),
+        // post and reply has the same type thats why the return type of this mutation is Post
+        createPostReply: builder.mutation<Post, CreatePostReply>({
+            query: ({token, postReplyData, parentId}) => ({
+                url: `/posts/post-reply/${parentId}`,
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`
                 },
-                body: {
-                    content
-                }
+                body: postReplyData
             })
-        }),
-        deletePostReply: builder.mutation<void, DeletePostReply>({
-            query:({token, replyId}) => ({
-                url: `/replies/remove/${replyId}`,
-                method: "DELETE",
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            })
-        }),
-        getSinglePost: builder.query<Post, string>({
-            query: (postId) => `/posts/${postId}`
-        }),
+        })
     })
 })
 
@@ -123,8 +109,7 @@ export const {
     useLazyGetPostsQuery, 
     useLikePostMutation, 
     useUnlikePostMutation,  
-    useLazyGetPostRepliesQuery,
-    useCreatePostReplyMutation,
-    useDeletePostReplyMutation,
-    useLazyGetSinglePostQuery
+    useLazyGetSinglePostQuery,
+    useLazyGetRepliesQuery,
+    useCreatePostReplyMutation
 } = postApi

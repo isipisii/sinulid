@@ -175,16 +175,16 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplyi
               {user?.username}
             </h2>
           </div>}
-          <div className="max-h-[330px] overflow-auto">
+          <div className={` ${isReplying ? null : "max-h-[330px] overflow-auto"}`}>
             <div className="w-full h-full flex flex-col flex-grow gap-3">
               <TextareaAutosize 
                 minRows={isReplying ? 1 : 2}
                 maxRows={6}
-                autoFocus={isEditing ? true : false}
+                autoFocus={isEditing || isReplying ? true : false}
                 placeholder={isEditing ? "Edit thread..." : isReplying ? `Reply to ${postToReplyCreatorUsername}...` : "Start a thread..."}
                 onChange={(e) => setTextContent(e.target.value)}
                 value={textContent}
-                className={`h-full outline-none text-white p-2 text-xs w-full ${isReplying ? null : "border-borderColor border"} bg-matteBlack rounded-md placeholder:text-[#4a4545]`} 
+                className={`h-full outline-none text-white text-xs w-full py-2 ${isReplying ? null : "border-borderColor border px-2"} bg-matteBlack rounded-md placeholder:text-[#4a4545]`} 
               />
              
               {imagePreview && (

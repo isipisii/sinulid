@@ -16,7 +16,10 @@ import {
   setImageUrl,
   setPostToEdit,
   likePostInPostAndReplyPage,
-  unlikePostInPostAndReplyPage
+  unlikePostInPostAndReplyPage,
+  likePostReply,
+  unlikePostReply,
+  deletePostReply
 } from "../features/post/postSlice";
 import {
   likePostOrRepostInUserProfile,
@@ -100,13 +103,15 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
     }
     if (didLike) {
       dispatch(unlikePostOrRepostInUserProfile({ postId, user: authenticatedUser })); // for user's profile optimistic update
-      dispatch(unlikePostInPostAndReplyPage(authenticatedUser))
+      dispatch(unlikePostInPostAndReplyPage({ postId, user: authenticatedUser })) // for the root post in post and reply page
       dispatch(unlikePost({ postId, user: authenticatedUser })); // for feed's optimistic update
+      dispatch(unlikePostReply({ postId, user: authenticatedUser })); // for post and reply page
       unlikePostMutation({ postId, token });
     } else {
       dispatch(likePostOrRepostInUserProfile({ postId, user: authenticatedUser })); // for user's profile optimistic update
-      dispatch(likePostInPostAndReplyPage(authenticatedUser))
+      dispatch(likePostInPostAndReplyPage({ postId, user: authenticatedUser })) // for the root post in post and reply page
       dispatch(likePost({ postId, user: authenticatedUser })); // for feed's optimistic update
+      dispatch(likePostReply({ postId, user: authenticatedUser })); // for post and reply page
       likePostMutation({ postId, token });
     }
   }
@@ -121,6 +126,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
         deletePostOrRepostInUserProfile({ postId, repostId: repost?._id })
       ); // for user's profile optimistic update
       dispatch(deletePost(postId)); // for feed's optimistic update
+      dispatch(deletePostReply(postId))
       setShowContextMenu(false);
     } catch (error) {
       console.error(error);
@@ -223,9 +229,10 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
       {/* end of context menu */}
 
       {/* post infos */}
-      <div className="flex gap-2 h-auto w-full ">
+      <div className="flex gap-2 h-auto w-full">
         <div className="items-center flex flex-col gap-3">
-          {!isRootPost && <div className=" w-[35px] h-[35px]">
+          {!isRootPost && 
+          <div className=" w-[35px] h-[35px]">
             <img
               src={
                 post.creator?.displayed_picture
@@ -289,7 +296,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
 
         <div className="w-full flex-col flex gap-1">
           {/* post creator and other details */}
-          <div className={`flex items-center w-full justify-between ${isRootPost ?  "mb-3" : "mb-1"}`}>
+          <div className={`flex items-center w-[100%] justify-between ${isRootPost ?  "mb-3" : "mb-1"}`}>
             <Link to={`/profile/${post.creator.username}`} className="flex items-center gap-2">
               {isRootPost && <div className="w-[35px] h-[35px]">
                 <img
@@ -308,9 +315,9 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
             </Link>
             <div className="flex items-center gap-1">
               <p className="text-xs text-lightText">{formattedTimeStamp}</p>
-              {authenticatedUser?._id === post.creator._id && (
+              {authenticatedUser?._id === post.creator._id && !isRootPost && (
                 <p
-                  className="cursor-pointer text-base text-white rounded-full hover:bg-[#4e4a4a] ease-in-out duration-300 p-1"
+                  className="cursor-pointer text-base text-white rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 p-1"
                   onClick={() => setShowContextMenu((prevState) => !prevState)}
                 >
                   <BsThreeDots className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
@@ -323,7 +330,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
           {/* post content */}
           <div className="w-full">
             <Link to={`/${post.creator.username}/post/${post._id}`}>
-              <p className="text-xs text-[#ffffff] tracking-wide whitespace-pre-wrap break-words w-[320px] sm:w-[550px]">
+              <p className="text-xs text-[#ffffff] tracking-wide whitespace-pre-wrap break-words w-[320px] sm:w-[490px]">
                 {post.content}
               </p>
             </Link>
@@ -333,7 +340,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
             <img
               src={post?.image?.url}
               alt="post image"
-              className=" w-full mt-2 border border-borderColor rounded-md cursor-pointer object-cover max-w-[600px] transition-transform transform-gpu ease-linear duration-100 active:scale-[.98]"
+              className=" w-full mt-2 border border-borderColor rounded-md cursor-pointer object-cover max-w-[500px] transition-transform transform-gpu ease-linear duration-100 active:scale-[.98]"
               onClick={() =>
                 post.image && dispatch(setImageUrl(post?.image?.url))
               }
@@ -381,10 +388,10 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
 
             {/* share */}
             <p
-              className="text-white text-[1.1rem] p-2 rounded-full  duration-300 hover:bg-[#4e4a4a48] cursor-pointer transition-transform transform-gpu ease-in-out active:scale-90"
+              className="text-white text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
               onClick={() => copyPostLink(post.creator.username, post._id)}
             >
-              <FiSend />
+              <FiSend className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
             </p>
           </div>
           {/* end of icons */}

@@ -1,14 +1,13 @@
-import { FC, useEffect, useState, useCallback, memo } from "react";
+import { FC, useEffect, useState, memo, useRef } from "react";
 import { BsHeart, BsChat, BsHeartFill } from "react-icons/bs";
 import { FiRepeat, FiSend } from "react-icons/fi";
 import { TbRepeat, TbRepeatOff } from "react-icons/tb";
 import { BsThreeDots } from "react-icons/bs";
-import { Post, Reply, Repost, User } from "../types/types";
+import { Post, Repost, User } from "../types/types";
 import {
   useUnlikePostMutation,
   useLikePostMutation,
   useDeletePostMutation,
-  useLazyGetPostRepliesQuery,
 } from "../services/postApi";
 import {
   likePost,
@@ -16,6 +15,8 @@ import {
   deletePost,
   setImageUrl,
   setPostToEdit,
+  likePostInPostAndReplyPage,
+  unlikePostInPostAndReplyPage
 } from "../features/post/postSlice";
 import {
   likePostOrRepostInUserProfile,
@@ -34,8 +35,7 @@ import { useFormatTimeStamp } from "../hooks/useFormatTimestamp";
 import { bubbleStyleUserImageWhoReplied } from "../util/bubbleStyle";
 import { filteredUserReposts } from "../util/filteredUserReposts";
 
-import { Link } from "react-router-dom";
-import PostPreviewModal from "./modals/PostPreviewModal";
+import { Link, useNavigate } from "react-router-dom";
 import Spinner from "./loader/Spinner";
 import { showToast } from "../util/showToast";
 import { Toaster } from "react-hot-toast";
@@ -47,6 +47,7 @@ interface IPostAndRepostCard {
   repost?: Repost;
   type?: string;
   isReposted?: boolean;
+  isRootPost?: boolean
 }
 
 const PostAndRepostCard: FC<IPostAndRepostCard> = ({
@@ -55,30 +56,43 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
   authenticatedUser,
   repost,
   isReposted,
+  isRootPost
 }) => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate()
 
   const [likePostMutation] = useLikePostMutation();
   const [unlikePostMutation] = useUnlikePostMutation();
-  const [deletePostMutation, { isLoading: isDeleting }] =
-    useDeletePostMutation();
+  const [deletePostMutation, { isLoading: isDeleting }] = useDeletePostMutation();
   const [createRepostMutation] = useCreateRepostMutation();
   const [removeRepostMutation] = useRemoveRepostMutation();
-  const [getPostReplies] = useLazyGetPostRepliesQuery();
 
-  const [postReplies, setPostReplies] = useState<Reply[]>([]);
-  const [postData, setPostData] = useState<Post | null>(null);
   const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
-  const [showPostPreviewModal, setShowPostPreviewModal] =
-    useState<boolean>(false);
   const formattedTimeStamp = useFormatTimeStamp(post.createdAt);
   const { userPostsAndReposts } = useAppSelector((state) => state.userProfile);
-  // custom hook that filters the posts and reposts of the user and returns an array of user reposts
+  const contextMenuRef = useRef<HTMLDivElement | null>(null)
+
+  // helper function that filters the posts and reposts of the user and returns an array of user reposts
   const userReposts = filteredUserReposts(userPostsAndReposts);
 
   const didLike: boolean = post.liked_by.some(
-    (user) => user._id === authenticatedUser?._id
+    (user) => user._id === authenticatedUser?._id 
   );
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutsideContextMenu, true);
+    // cleanup function whenever the component unmounts
+    return () => {
+      document.removeEventListener("click", handleClickOutsideContextMenu, true);
+    };
+  }, []);
+  
+  // to hide the context menu when the user clicks outside the element or other element
+  function handleClickOutsideContextMenu(e: MouseEvent): void {
+    if (contextMenuRef.current && !contextMenuRef.current.contains(e.target as Node)) {
+      setShowContextMenu(false);
+    }
+  }
 
   function toggleLikeHandler(postId: string, token: string): void {
     if (!authenticatedUser) {
@@ -86,12 +100,12 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
     }
     if (didLike) {
       dispatch(unlikePostOrRepostInUserProfile({ postId, user: authenticatedUser })); // for user's profile optimistic update
+      dispatch(unlikePostInPostAndReplyPage(authenticatedUser))
       dispatch(unlikePost({ postId, user: authenticatedUser })); // for feed's optimistic update
       unlikePostMutation({ postId, token });
     } else {
-      dispatch(
-        likePostOrRepostInUserProfile({ postId, user: authenticatedUser })
-      ); // for user's profile optimistic update
+      dispatch(likePostOrRepostInUserProfile({ postId, user: authenticatedUser })); // for user's profile optimistic update
+      dispatch(likePostInPostAndReplyPage(authenticatedUser))
       dispatch(likePost({ postId, user: authenticatedUser })); // for feed's optimistic update
       likePostMutation({ postId, token });
     }
@@ -141,11 +155,11 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
   function getUserImageUrls(): string[] {
     const imageUrls: string[] = [];
 
-    for (const reply of postReplies) {
-      if (!reply.creator.displayed_picture) break;
+    for (const reply of post.children) {
+      if (!reply?.creator?.displayed_picture) break;
 
-      if (!imageUrls.includes(reply.creator.displayed_picture?.url)) {
-        imageUrls.push(reply.creator.displayed_picture?.url);
+      if (!imageUrls.includes(reply?.creator?.displayed_picture?.url)) {
+        imageUrls.push(reply?.creator?.displayed_picture?.url);
       }
       if (imageUrls.length > 3) break;
     }
@@ -157,39 +171,17 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
     setShowContextMenu(false);
   }
 
-  function closeModal(): void {
-    setPostData(null);
-    setShowPostPreviewModal(false);
-  }
-
-  const getReplies = useCallback(async () => {
-    if (!postData) return;
-    try {
-      const replies = await getPostReplies(postData?._id).unwrap();
-      if (replies) {
-        setPostReplies(replies);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }, [postData, getPostReplies]);
-
-  //this will fetch all the post replies on each post card
-  useEffect(() => {
-    getReplies();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getReplies]);
-
-  useEffect(() => {
-    setPostData(post);
-  }, [post]);
-
-  // will copy to clipboard the post's link when the share icon is clicked
+  // will copy to clipboard the post's link 
   function copyPostLink(username: string, postId: string): void {
     const origin = window.location.origin;
     const postLink = `${origin}/${username}/post/${postId}`;
+
     navigator.clipboard.writeText(postLink);
     showToast("Post link was copied to clipboard")
+  }
+
+  function shouldRender(): boolean{
+    return post?.children.length > 0 && !isRootPost 
   }
 
   return (
@@ -209,7 +201,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
 
       {/* context menu */}
       {showContextMenu && (
-        <div className="bg-matteBlack absolute right-5 top-10 rounded-md h-auto z-10 w-[130px] border border-borderColor p-2 flex flex-col gap-1">
+        <div ref={contextMenuRef} className="bg-matteBlack absolute right-5 top-10 rounded-md h-auto z-10 w-[130px] border border-borderColor p-2 flex flex-col gap-1">
           <button
             className="w-full text-white text-xs p-3 text-left cursor-pointer hover:bg-[#4e4a4a48] rounded-sm ease-in-out duration-300"
             onClick={openEditPostModal}
@@ -230,22 +222,10 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
       )}
       {/* end of context menu */}
 
-      {/* modal when the chat icon is clicked */}
-      {postData && showPostPreviewModal && (
-        <PostPreviewModal
-          postData={postData}
-          didLike={didLike}
-          toggleLike={toggleLikeHandler}
-          repost={toggleRepostHandler}
-          closeModal={closeModal}
-          postReplies={postReplies}
-          setPostReplies={setPostReplies}
-        />
-      )}
       {/* post infos */}
       <div className="flex gap-2 h-auto w-full ">
         <div className="items-center flex flex-col gap-3">
-          <div className=" w-[40px] h-[40px]">
+          {!isRootPost && <div className=" w-[35px] h-[35px]">
             <img
               src={
                 post.creator?.displayed_picture
@@ -255,11 +235,11 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
               alt="profile picture"
               className="rounded-full w-[35px] h-[35px] object-cover"
             />
-          </div>
+          </div>}
 
           {/* line */}
           {/* will only show when there's a reply */}
-          {postReplies.length > 0 && (
+          {shouldRender() && (
             <div className="h-full relative">
               <svg
                 width="3"
@@ -284,7 +264,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
           {/* end of line */}
 
           {/* users who replied */}
-          {postReplies.length > 0 && (
+          {shouldRender() && (
             <div
               className={`h-[30px] w-[39px] ${
                 getUserImageUrls().length >= 2
@@ -309,8 +289,19 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
 
         <div className="w-full flex-col flex gap-1">
           {/* post creator and other details */}
-          <div className="flex items-center w-full justify-between mb-1">
-            <Link to={`/profile/${post.creator.username}`}>
+          <div className={`flex items-center w-full justify-between ${isRootPost ?  "mb-3" : "mb-1"}`}>
+            <Link to={`/profile/${post.creator.username}`} className="flex items-center gap-2">
+              {isRootPost && <div className="w-[35px] h-[35px]">
+                <img
+                  src={
+                    post.creator?.displayed_picture
+                      ? post.creator?.displayed_picture?.url
+                      : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
+                  }
+                  alt="profile picture"
+                  className="rounded-full w-[35px] h-[35px] object-cover"
+                />
+              </div>}
               <h2 className="text-white font-medium text-xs hover:underline underline-offset-2">
                 {post.creator.username}
               </h2>
@@ -331,9 +322,11 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
 
           {/* post content */}
           <div className="w-full">
-            <p className="text-xs text-[#ffffff] tracking-wide whitespace-pre-wrap break-words w-[250px] sm:w-full">
-              {post.content}
-            </p>
+            <Link to={`/${post.creator.username}/post/${post._id}`}>
+              <p className="text-xs text-[#ffffff] tracking-wide whitespace-pre-wrap break-words w-[320px] sm:w-[550px]">
+                {post.content}
+              </p>
+            </Link>
           </div>
 
           {post?.image && (
@@ -368,8 +361,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
             <p
               className="text-white text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
               onClick={() => {
-                setPostData(post);
-                setShowPostPreviewModal(true);
+                navigate(`/create-reply/${post._id}`)
               }}
             >
               <BsChat className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
@@ -398,23 +390,25 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
           {/* end of icons */}
 
           {/* reply and like count */}
+          { !isRootPost && 
           <p className="text-[#7b7575] text-xs flex items-center gap-1">
-            {postReplies.length > 0 && (
+            {/* post.children is an array of replies in a certain post */}
+            {post.children.length > 0 && (
               <Link to={`/${post.creator.username}/post/${post._id}`}>
                 <span className="cursor-pointer hover:underline underline-offset-2">
                   {" "}
-                  {postReplies.length}{" "}
-                  {postReplies.length > 1 ? "replies" : "reply"}
+                  {post.children.length}{" "}
+                  {post.children.length > 1 ? "replies" : "reply"}
                 </span>
               </Link>
             )}
-            {postReplies.length > 0 && post.likes > 0 && <span>·</span>}
+            {post.children.length > 0 && post.likes > 0 && <span>·</span>}
             {post.likes > 0 && (
               <span className="cursor-pointer hover:underline underline-offset-2">
                 {post.likes} {post.likes > 1 ? "likes" : "like"}
               </span>
             )}
-          </p>
+          </p>}
           {/* end of reply and like count */}
         </div>
       </div>

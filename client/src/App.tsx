@@ -1,10 +1,10 @@
 import { FC, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
+
 import SignUp from "./pages/SignUp";
 import LogIn from "./pages/LogIn";
 import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
-// import UserPostsAndReposts from "./pages/UserPostsAndReposts";
 import UserReplies from "./pages/UserReplies";
 
 import { useLazyGetAuthenticatedUserQuery } from "./services/authAndUserApi";
@@ -18,6 +18,7 @@ import Activity from "./pages/Activity";
 import Profile from "./pages/Profile";
 import EditPostModal from "./components/modals/EditPostModal";
 import PostAndReplies from "./pages/PostAndRepliesPage";
+import CreateReplyPage from "./pages/CreateReplyPage";
 
 const App: FC = () => {
   const { token } = useAppSelector((state) => state.auth);
@@ -54,6 +55,14 @@ const App: FC = () => {
           element={
             <Protected isSignedIn={token}>
               <Home getUserInfo={getUserInfo}/>
+            </Protected>
+          }
+        />
+        <Route
+          path="/create-reply/:postToReplyId"
+          element={
+            <Protected isSignedIn={token}>
+              <CreateReplyPage />
             </Protected>
           }
         />

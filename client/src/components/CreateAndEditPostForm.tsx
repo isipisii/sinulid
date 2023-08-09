@@ -1,8 +1,10 @@
 import { useState, FormEvent, FC } from "react";
 import { useAppSelector, useAppDispatch } from "../features/app/hooks";
+import { useNavigate } from "react-router-dom";
 import {
   useCreatePostMutation,
   useUpdatePostMutation,
+  useCreatePostReplyMutation
 } from "../services/postApi";
 import { FiPaperclip } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
@@ -12,12 +14,16 @@ import { updatePostOrRepostInUserProfile } from "../features/user/userProfileSli
 import { Toaster } from "react-hot-toast";
 import { showToast } from "../util/showToast";
 import Spinner from "./loader/Spinner";
+import TextareaAutosize from 'react-textarea-autosize';
 
 interface ICreatePostForm {
   isEditing: boolean;
+  parentPostId?: string
+  isReplying?: boolean
+  postToReplyCreatorUsername?: string
 }
 
-const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
+const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplying, postToReplyCreatorUsername }) => {
   const { postToEdit } = useAppSelector((state) => state.post);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [textContent, setTextContent] = useState<string>(
@@ -27,11 +33,11 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
     isEditing ? postToEdit?.image?.url || "" : ""
   );
   const { user, token } = useAppSelector((state) => state.auth);
-  const [createPostMutation, { isLoading: isCreating }] =
-    useCreatePostMutation();
-  const [updatePostMutation, { isLoading: isUpdating }] =
-    useUpdatePostMutation();
+  const [createPostMutation, { isLoading: isCreating }] = useCreatePostMutation();
+  const [createPostReplyMutation, { isLoading: isCreatingReply }] = useCreatePostReplyMutation();
+  const [updatePostMutation, { isLoading: isUpdating }] = useUpdatePostMutation();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate()
 
   // this will set the selected image file to be uploaded and sets the image path for preview
   function handleSelectedFiles(selectedFiles: FileList | null): void {
@@ -87,9 +93,34 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
     }
   }
 
-  async function submitPostHandler(
-    e: FormEvent<HTMLFormElement>
-  ): Promise<void> {
+  // for submitting the reply
+  async function submitPostReplyHandler(e: FormEvent<HTMLFormElement>): Promise<void> {
+    e.preventDefault();
+    // the data will be passed to req body
+    const data = new FormData();
+    data.append("content", textContent);
+
+    if (imageFile) {
+      data.append("image", imageFile);
+    }
+
+    if(parentPostId){
+      try {
+        await createPostReplyMutation({
+          postReplyData: data,
+          token,
+          parentId: parentPostId
+        }).unwrap();
+        clearForm();
+        navigate(-1)
+      } catch (error) {
+        showToast("Error, something went wrong while creating a reply", true)
+        console.error(error);
+      }
+    }
+  }
+// for posting root post/thread
+  async function submitPostHandler(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     // the data will be passed to req body
     const data = new FormData();
@@ -122,13 +153,14 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
     <div className="w-full h-auto">
       <Toaster position="bottom-center" reverseOrder={false} />
       <form
-        className="flex flex-col gap-3 h-auto p-4 bg-matteBlack rounded-md"
-        onSubmit={isEditing ? updatePostHandler : submitPostHandler}
+        className={`flex flex-col gap-3 h-auto ${isReplying ? null : "p-4"} bg-matteBlack rounded-md`}
+        onSubmit={isEditing ? updatePostHandler : isReplying ? submitPostReplyHandler : submitPostHandler}
       >
         {isEditing && (
           <h2 className="text-center text-white font-medium">Edit post</h2>
         )}
         <div className="h-auto w-full flex flex-col gap-3">
+          {!isReplying &&
           <div className="flex gap-2 items-center">
             <img
               src={
@@ -142,17 +174,19 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
             <h2 className="font-semibold text-sm text-white">
               {user?.username}
             </h2>
-          </div>
+          </div>}
           <div className="max-h-[330px] overflow-auto">
             <div className="w-full h-full flex flex-col flex-grow gap-3">
-              <textarea
-                name="post"
+              <TextareaAutosize 
+                minRows={isReplying ? 1 : 2}
+                maxRows={6}
                 autoFocus={isEditing ? true : false}
-                placeholder={isEditing ? "Edit thread..." : "Start a thread..."}
-                className="h-full outline-none text-white p-2 text-xs w-full border-borderColor border bg-matteBlack rounded-md placeholder:text-[#4a4545]"
-                value={textContent}
+                placeholder={isEditing ? "Edit thread..." : isReplying ? `Reply to ${postToReplyCreatorUsername}...` : "Start a thread..."}
                 onChange={(e) => setTextContent(e.target.value)}
+                value={textContent}
+                className={`h-full outline-none text-white p-2 text-xs w-full ${isReplying ? null : "border-borderColor border"} bg-matteBlack rounded-md placeholder:text-[#4a4545]`} 
               />
+             
               {imagePreview && (
                 <div className="w-full relative max-w-[500px]">
                   <p
@@ -186,13 +220,13 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
             className="hidden"
           />
           <button
-            className={`bg-white px-6 py-2 font-semibold rounded-md text-xs md:text-sm flex gap-2 items-center ${
-              textContent || imageFile || isCreating || isUpdating
+            className={` ${textContent || imageFile ? "bg-white" : "bg-[#ffffff8a]"} px-6 py-2 font-semibold rounded-md text-xs md:text-sm flex gap-2 items-center ${
+              textContent || imageFile || isCreating || isUpdating || isCreatingReply
                 ? "cursor-pointer"
                 : "cursor-not-allowed"
             }`}
             disabled={
-              textContent || imageFile || isCreating || isUpdating
+              textContent || imageFile || isCreating || isUpdating || isCreatingReply
                 ? false
                 : true
             }
@@ -202,13 +236,16 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing }) => {
               ? isUpdating
                 ? "Saving"
                 : "Save"
-              : isCreating
+              : isCreating || isCreatingReply
               ? "Posting"
               : "Post"}
             {isUpdating && (
               <Spinner fillColor="fill-black" pathColor="text-gray-400" />
             )}
             {isCreating && (
+              <Spinner fillColor="fill-black" pathColor="text-gray-400" />
+            )}
+            {isCreatingReply && (
               <Spinner fillColor="fill-black" pathColor="text-gray-400" />
             )}
           </button>

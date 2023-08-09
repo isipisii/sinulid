@@ -115,7 +115,7 @@ const CreateReplyPage = (): JSX.Element => {
                   <img
                     src={postToReply?.image?.url}
                     alt="post image"
-                    className=" w-full mt-2 mb-3 border border-borderColor rounded-md object-cover max-w-[600px]"
+                    className=" w-full mt-2 mb-6 border border-borderColor rounded-md object-cover max-w-[600px]"
                   />
                 )}
                 {/*end of post content */}

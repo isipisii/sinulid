@@ -9,7 +9,6 @@ import env from "../util/validateEnv"
 import { CustomRequest } from "../app";
 import cloudinary from "cloudinary";
 import mongoose from "mongoose";
-import path from "path";
 
 type SignUpBody = { 
     username: string
@@ -106,7 +105,7 @@ export const logIn: RequestHandler<unknown, unknown, LogInBody, unknown> = async
                 throw createHttpError(401, "Invalid credentials")
             }
 
-            // this token will be sent to the client once the user logged in
+            // this token will be sent to the client once the user successfully logged in
             jwt.sign({ userId: user._id}, env.JWT_SECRET, { expiresIn: "1d" }, (error, token) => {
                 if(error) next(error)
                 res.status(201).json({ token: token })
@@ -161,14 +160,21 @@ export const updateUserInfo: RequestHandler = async (req: CustomRequest , res, n
             throw createHttpError(400, "Bad request, username and name are required");
         }
 
+        const existingUsername = await UserModel.findOne({ username })
+
+        if(existingUsername){
+            throw createHttpError(409, "This username is already taken, please use different one.")
+        }
+
         if(!authenticatedUserId){
             throw createHttpError(403, "Forbidden, unauthorized to update user info")
         } 
         const user = await UserModel.findById(authenticatedUserId).exec()
         const currentCloudinaryId = user?.displayed_picture?.cloudinary_id
 
+
         if(!user){
-            throw createHttpError(404, "User not found!")
+            throw createHttpError(404, "User not found")
         }
 
         if(req.file){
@@ -291,13 +297,25 @@ export const getUserPostsAndReposts: RequestHandler<GetUserPostsAndReposts> = as
             throw createHttpError(400, "Bad request, missing param")
         }  
         
-        const userPosts = await PostModel.find({ creator: userId }).populate("liked_by").populate("creator").exec()
+        const userPosts = await PostModel.find({ creator: userId, parent: null }).populate([
+            { path: "creator" }, 
+            { path:"liked_by" },
+            {
+                path:"children", // populate the creator of reply that are inside of children array field
+                populate: "creator"
+            }
+        ]).exec()
+
         const userReposts = await RepostModel.find({ repost_creator: userId }).populate({
             path: "post",
             select: "-updatedAt",
             populate: [
                 {path: "creator"},
                 {path: "liked_by"},
+                {
+                    path:"children", // populate the creator of reply that are inside of children array field
+                    populate: "creator"
+                }
               ],
         }).populate("repost_creator").exec();
           

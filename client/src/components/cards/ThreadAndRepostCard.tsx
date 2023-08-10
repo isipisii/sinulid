@@ -3,12 +3,12 @@ import { BsHeart, BsChat, BsHeartFill } from "react-icons/bs";
 import { FiRepeat, FiSend } from "react-icons/fi";
 import { TbRepeat, TbRepeatOff } from "react-icons/tb";
 import { BsThreeDots } from "react-icons/bs";
-import { Post, Repost, User } from "../types/types";
+import { Post, Repost, User } from "../../types/types";
 import {
   useUnlikePostMutation,
   useLikePostMutation,
   useDeletePostMutation,
-} from "../services/postApi";
+} from "../../services/postApi";
 import {
   likePost,
   unlikePost,
@@ -20,27 +20,27 @@ import {
   likePostReply,
   unlikePostReply,
   deletePostReply
-} from "../features/post/postSlice";
+} from "../../features/post/postSlice";
 import {
   likePostOrRepostInUserProfile,
   unlikePostOrRepostInUserProfile,
   deletePostOrRepostInUserProfile,
   addRepostInUserProfile,
-} from "../features/user/userProfileSlice";
+} from "../../features/user/userProfileSlice";
 
 import {
   useCreateRepostMutation,
   useRemoveRepostMutation,
-} from "../services/repostApi";
+} from "../../services/repostApi";
 
-import { useAppDispatch, useAppSelector } from "../features/app/hooks";
-import { useFormatTimeStamp } from "../hooks/useFormatTimestamp";
-import { bubbleStyleUserImageWhoReplied } from "../util/bubbleStyle";
-import { filteredUserReposts } from "../util/filteredUserReposts";
+import { useAppDispatch, useAppSelector } from "../../features/app/hooks";
+import { useFormatTimeStamp } from "../../hooks/useFormatTimestamp";
+import { bubbleStyleUserImageWhoReplied } from "../../util/bubbleStyle";
+import { filteredUserReposts } from "../../util/filteredUserReposts";
 
 import { Link, useNavigate } from "react-router-dom";
-import Spinner from "./loader/Spinner";
-import { showToast } from "../util/showToast";
+import Spinner from "../loader/Spinner";
+import { showToast } from "../../util/showToast";
 import { Toaster } from "react-hot-toast";
 
 interface IPostAndRepostCard {
@@ -53,7 +53,7 @@ interface IPostAndRepostCard {
   isRootPost?: boolean
 }
 
-const PostAndRepostCard: FC<IPostAndRepostCard> = ({
+const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
   post,
   token,
   authenticatedUser,
@@ -397,7 +397,6 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
           {/* end of icons */}
 
           {/* reply and like count */}
-          { !isRootPost && 
           <p className="text-[#7b7575] text-xs flex items-center gap-1">
             {/* post.children is an array of replies in a certain post */}
             {post.children.length > 0 && (
@@ -415,7 +414,7 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
                 {post.likes} {post.likes > 1 ? "likes" : "like"}
               </span>
             )}
-          </p>}
+          </p>
           {/* end of reply and like count */}
         </div>
       </div>
@@ -423,4 +422,4 @@ const PostAndRepostCard: FC<IPostAndRepostCard> = ({
   );
 };
 
-export const MemoizedPostAndRepostCard = memo(PostAndRepostCard);
+export const MemoizedThreadAndRepostCard = memo(ThreadAndRepostCard);

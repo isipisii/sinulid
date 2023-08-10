@@ -6,12 +6,12 @@ import LogIn from "./pages/LogIn";
 import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
 import UserReplies from "./pages/UserReplies";
-import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTop from "./components/hoc/ScrollToTop";
 
 import { useLazyGetAuthenticatedUserQuery } from "./services/authAndUserApi";
 import { useAppSelector, useAppDispatch } from "./features/app/hooks";
 import { setUser } from "./features/auth/authSlice";
-import Protected from "./components/Protected";
+import Protected from "./components/hoc/Protected";
 
 import ViewImageModal from "./components/modals/ViewImageModal";
 import SideBarAndBottomNav from "./components/SideBarAndBottomNav";

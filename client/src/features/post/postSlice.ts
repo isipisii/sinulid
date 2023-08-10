@@ -11,7 +11,7 @@ interface IPostState {
 }
 
 const initialState: IPostState = {
-    posts: [],
+    posts: [], // posts inside the feed
     viewImage: "",
     postToEdit: null,
     post: null,
@@ -62,11 +62,12 @@ export const postSlice = createSlice({
             state.postToEdit = action.payload
         },
         updatePost: (state, action: PayloadAction<Post>) => {
-            state.posts = state.posts.map(post => post._id === action.payload._id ? {...action.payload} : post)
+            state.posts = state.posts.map(post => post._id === action.payload._id ? action.payload : post)
         },
         setSinglePost: (state, action: PayloadAction<Post>) => {
             state.post = action.payload
         },
+        // for the root or parent post in the post and replies page
         likePostInPostAndReplyPage: (state, action: PayloadAction<{ postId: string; user: User }>) => {
             if(!state.post || action.payload.postId !== state.post._id) return
 
@@ -76,6 +77,7 @@ export const postSlice = createSlice({
                 likes: state.post.likes + 1
             }
         },
+         // for the root or parent post in the post and replies page
         unlikePostInPostAndReplyPage: (state, action: PayloadAction<{ postId: string; user: User }>) => {
             if(!state.post || action.payload.postId !== state.post._id) return
 
@@ -100,6 +102,7 @@ export const postSlice = createSlice({
                 return postReply;
             });
         },
+        // for replies
         unlikePostReply: (state, action: PayloadAction<{ postId: string; user: User }>) => {
             state.replies = state.replies.map(postReply => {
                 if (postReply._id === action.payload.postId) {
@@ -112,8 +115,19 @@ export const postSlice = createSlice({
                 return postReply;
             });
         },
+        // for replies
         deletePostReply: (state, action: PayloadAction<string>) => {
             state.replies = state.replies.filter(postReply => postReply._id !== action.payload)
+            // will update the children array of the parent or root post in post and reply page
+            if(state.post){
+                state.post = {
+                    ...state.post,
+                    children: state.post?.children.filter(postChild => postChild._id !== action.payload)
+                }
+            }
+        },
+        updatePostReply: (state, action: PayloadAction<Post>) => {
+            state.replies = state.replies.map(postReply => postReply._id === action.payload._id ? action.payload : postReply)
         }
     },
 })
@@ -133,7 +147,8 @@ export const {
     setReplies,
     likePostReply,
     unlikePostReply,
-    deletePostReply
+    deletePostReply,
+    updatePostReply
 } = postSlice.actions
 
 export default postSlice.reducer

@@ -3,7 +3,7 @@ import { setPosts } from "../features/post/postSlice";
 import { useLazyGetPostsQuery } from "../services/postApi";
 import { useAppDispatch, useAppSelector } from "../features/app/hooks";
 import Feed from "../components/Feed";
-import CreateAndEditPostForm from "../components/CreateAndEditPostForm";
+import CreateAndEditPostForm from "../components/form/CreateAndEditPostForm";
 import { useLazyGetUserPostsAndRepostsQuery } from "../services/authAndUserApi";
 import { setUserPostsAndReposts } from "../features/user/userProfileSlice";
 

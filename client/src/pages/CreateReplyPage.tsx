@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { IoIosArrowBack } from "react-icons/io";
 import { useLazyGetSinglePostQuery } from "../services/postApi";
 import { Post } from "../types/types";
-import CreatePostForm from "../components/CreateAndEditPostForm";
+import CreatePostForm from "../components/form/CreateAndEditPostForm";
 
 const CreateReplyPage = (): JSX.Element => {
   const { user: authenticatedUser } = useAppSelector((state) => state.auth);

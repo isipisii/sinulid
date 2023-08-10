@@ -1,19 +1,19 @@
 import { useState, FormEvent, FC } from "react";
-import { useAppSelector, useAppDispatch } from "../features/app/hooks";
+import { useAppSelector, useAppDispatch } from "../../features/app/hooks";
 import { useNavigate } from "react-router-dom";
 import {
   useCreatePostMutation,
   useUpdatePostMutation,
   useCreatePostReplyMutation
-} from "../services/postApi";
+} from "../../services/postApi";
 import { FiPaperclip } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
-import { addPost, setPostToEdit, updatePost } from "../features/post/postSlice";
-import { updatePostOrRepostInUserProfile } from "../features/user/userProfileSlice";
+import { addPost, setPostToEdit, updatePost, updatePostReply } from "../../features/post/postSlice";
+import { updatePostOrRepostInUserProfile } from "../../features/user/userProfileSlice";
 
 import { Toaster } from "react-hot-toast";
-import { showToast } from "../util/showToast";
-import Spinner from "./loader/Spinner";
+import { showToast } from "../../util/showToast";
+import Spinner from "../loader/Spinner";
 import TextareaAutosize from 'react-textarea-autosize';
 
 interface ICreatePostForm {
@@ -63,9 +63,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplyi
     setImagePreview("");
   }
 
-  async function updatePostHandler(
-    e: FormEvent<HTMLFormElement>
-  ): Promise<void> {
+  async function updatePostHandler(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
 
     const data = new FormData();
@@ -84,6 +82,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplyi
         updatePostData: data,
       }).unwrap();
       dispatch(updatePost(updatedPost));
+      dispatch(updatePostReply(updatedPost));
       dispatch(updatePostOrRepostInUserProfile(updatedPost));
       dispatch(setPostToEdit(null));
       showToast("Post updated");

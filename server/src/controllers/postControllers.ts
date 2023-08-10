@@ -73,6 +73,10 @@ export const getSinglePost: RequestHandler<PostParam> = async (req, res, next) =
             { path: "creator" }, 
             { path:"liked_by" },
             { path:"parent" },
+            {
+                path:"children",
+                populate: "creator"
+            }
         ]).exec()
 
         res.status(200).json(post)
@@ -176,7 +180,14 @@ export const updatePost: RequestHandler<PostParam> = async (req: CustomRequest, 
         }
         const updatedPost = await post.save()
 
-        await updatedPost.populate("creator")
+        await updatedPost.populate([
+            { path: "creator" }, 
+            { path: "liked_by" },
+            {
+                path:"children",
+                populate: "creator"
+            }
+        ])
         
         res.status(200).json(updatedPost);
     } catch (error) {

@@ -17,7 +17,7 @@ import {
 } from "../features/user/userProfileSlice";
 import { setImageUrl } from "../features/post/postSlice";
 
-import { MemoizedPostAndRepostCard } from "../components/PostAndRepostCard";
+import { MemoizedThreadAndRepostCard } from "../components/cards/ThreadAndRepostCard";
 import EditUserProfileModal from "../components/modals/EditUserProfileModal";
 import { Repost, Post, ItemType } from "../types/types";
 import { filteredUserReposts } from "../util/filteredUserReposts";
@@ -210,7 +210,7 @@ const Profile = (): JSX.Element => {
                   );
 
                   return (
-                    <MemoizedPostAndRepostCard
+                    <MemoizedThreadAndRepostCard
                       key={post._id}
                       post={post}
                       token={token}
@@ -229,7 +229,7 @@ const Profile = (): JSX.Element => {
                       repost.repost_creator._id === authenticatedUser?._id
                   );
                   return (
-                    <MemoizedPostAndRepostCard
+                    <MemoizedThreadAndRepostCard
                       key={repostItem._id}
                       repost={repostItem}
                       type="repost"

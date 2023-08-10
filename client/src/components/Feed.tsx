@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { MemoizedPostAndRepostCard } from "./PostAndRepostCard";
+import { MemoizedThreadAndRepostCard } from "./cards/ThreadAndRepostCard";
 import { useAppSelector } from "../features/app/hooks";
 import { filteredUserReposts } from "../util/filteredUserReposts";
 
@@ -20,7 +20,7 @@ const Feed: FC = () => {
         );
 
         return (
-          <MemoizedPostAndRepostCard
+          <MemoizedThreadAndRepostCard
             key={post._id}
             post={post}
             token={token}

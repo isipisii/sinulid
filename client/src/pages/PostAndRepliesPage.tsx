@@ -6,7 +6,7 @@ import { setSinglePost, setReplies } from "../features/post/postSlice";
 import { filteredUserReposts } from "../util/filteredUserReposts";
 
 import { IoIosArrowBack } from "react-icons/io"
-import { MemoizedPostAndRepostCard } from "../components/PostAndRepostCard";
+import { MemoizedThreadAndRepostCard } from "../components/cards/ThreadAndRepostCard";
 
 const PostAndReplies = (): JSX.Element => {
   const { postId, username } = useParams();
@@ -56,7 +56,7 @@ const PostAndReplies = (): JSX.Element => {
 
           <div className="w-full">
             {post && (
-              <MemoizedPostAndRepostCard
+              <MemoizedThreadAndRepostCard
                 post={post}
                 token={token}
                 authenticatedUser={authenticatedUser}
@@ -76,7 +76,7 @@ const PostAndReplies = (): JSX.Element => {
                   {replies.map((reply) => {
                     const isReposted = userReposts.some((repost) => repost.post._id === reply?._id && repost.repost_creator._id === authenticatedUser?._id)
                     return (
-                       <MemoizedPostAndRepostCard
+                       <MemoizedThreadAndRepostCard
                         key={reply._id}
                         post={reply}
                         token={token}

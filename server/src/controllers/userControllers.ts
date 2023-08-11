@@ -148,7 +148,7 @@ export const getUserInfo: RequestHandler<GetUserInfoParam> = async (req, res, ne
 }
 
 export const updateUserInfo: RequestHandler = async (req: CustomRequest , res, next) => {
-    const authenticatedUserId = req.userId
+    const authenticatedUserId = req.userId 
     const { bio, link, username, name } = req.body as UpdateUserInfoBody
     const newImageFile = req.file?.path
     let newImageResult: any;
@@ -160,21 +160,20 @@ export const updateUserInfo: RequestHandler = async (req: CustomRequest , res, n
             throw createHttpError(400, "Bad request, username and name are required");
         }
 
-        const existingUsername = await UserModel.findOne({ username })
-
-        if(existingUsername){
-            throw createHttpError(409, "This username is already taken, please use different one.")
-        }
-
         if(!authenticatedUserId){
             throw createHttpError(403, "Forbidden, unauthorized to update user info")
         } 
+        
         const user = await UserModel.findById(authenticatedUserId).exec()
         const currentCloudinaryId = user?.displayed_picture?.cloudinary_id
 
-
         if(!user){
             throw createHttpError(404, "User not found")
+        }
+        // will throw an error if the existing user's username is already taken by a different user
+        //and so that it wont throw an error if the user updated his/her profile withouth changing the username
+        if(user.username === username && user._id.toString() !== authenticatedUserId && authenticatedUserId){
+            throw createHttpError(409, "This username is already taken, please use different one.")
         }
 
         if(req.file){

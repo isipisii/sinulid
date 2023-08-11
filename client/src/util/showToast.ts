@@ -4,6 +4,7 @@ export const showToast = (message: string, isError?: boolean) => {
 
   if (isError) {
     return toast.error(message, {
+      duration: 2000,
       style: {
         border: "1px solid #353131f6",
         padding: "12px",
@@ -19,6 +20,7 @@ export const showToast = (message: string, isError?: boolean) => {
   }
 
   return toast.success(message, {
+    duration: 2000,
     style: {
       border: "1px solid #353131f6",
       padding: "12px",

@@ -42,6 +42,10 @@ export const createRepost: RequestHandler<RepostParam> = async (req: CustomReque
                 populate: [
                     { path: "creator" },
                     { path: "liked_by" },
+                    { 
+                        path: "children",
+                        populate: "creator"
+                    },
                 ],
             },
             { path: "repost_creator" },

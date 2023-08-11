@@ -8,6 +8,7 @@ interface IPostState {
     postToEdit: Post | null
     post: Post | null
     replies: Post[]
+    userReplies: Post[]
 }
 
 const initialState: IPostState = {
@@ -15,7 +16,8 @@ const initialState: IPostState = {
     viewImage: "",
     postToEdit: null,
     post: null,
-    replies: []
+    replies: [],
+    userReplies: []
 }  
 
 export const postSlice = createSlice({
@@ -128,7 +130,31 @@ export const postSlice = createSlice({
         },
         updatePostReply: (state, action: PayloadAction<Post>) => {
             state.replies = state.replies.map(postReply => postReply._id === action.payload._id ? action.payload : postReply)
-        }
+        },
+        likeParentOfRootPostInPostAndRepliesPage:  (state, action: PayloadAction<{ postId: string; user: User }>) => {
+            if(state.post && state.post.parent && state.post.parent._id === action.payload.postId){
+                state.post = {
+                    ...state.post,
+                    parent: {
+                        ...state.post.parent,
+                        liked_by: [...state.post.parent.liked_by, action.payload.user],
+                        likes: state.post.parent.likes + 1
+                    }
+                }
+            } 
+        }, 
+        unlikeParentOfRootPostInPostAndRepliesPage:  (state, action: PayloadAction<{ postId: string; user: User }>) => {
+            if(state.post && state.post.parent && state.post.parent._id === action.payload.postId){
+                state.post = {
+                    ...state.post,
+                    parent: {
+                        ...state.post.parent,
+                        liked_by: state.post.parent.liked_by.filter((user) => user._id !== action.payload.user._id),
+                        likes: state.post.parent.likes - 1
+                    }
+                }
+            }
+        }, 
     },
 })
 
@@ -148,7 +174,9 @@ export const {
     likePostReply,
     unlikePostReply,
     deletePostReply,
-    updatePostReply
+    updatePostReply,
+    likeParentOfRootPostInPostAndRepliesPage,
+    unlikeParentOfRootPostInPostAndRepliesPage
 } = postSlice.actions
 
 export default postSlice.reducer

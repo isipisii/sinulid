@@ -6,6 +6,7 @@ import Feed from "../components/Feed";
 import CreateAndEditPostForm from "../components/form/CreateAndEditPostForm";
 import { useLazyGetUserPostsAndRepostsQuery } from "../services/authAndUserApi";
 import { setUserPostsAndReposts } from "../features/user/userProfileSlice";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 interface IHome {
   getUserInfo: () => Promise<void>
@@ -16,6 +17,7 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
   const [getLazyPostsQuery] = useLazyGetPostsQuery();
   const [getPostsAndRepostsQuery] = useLazyGetUserPostsAndRepostsQuery();
   const { user: authenticatedUser } = useAppSelector(state => state.auth)
+  useDocumentTitle('Sinulid')
 
 // gets the user reposts and posts in this component so that is this page rendered, then we can easily identify the post that has been reposted
   useEffect(() => {

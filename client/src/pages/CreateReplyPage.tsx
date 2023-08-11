@@ -157,7 +157,6 @@ const CreateReplyPage = (): JSX.Element => {
                 </div>
           
                 <CreatePostForm 
-                  isEditing={false} 
                   isReplying={true} 
                   parentPostId={postToReplyId}
                   postToReplyCreatorUsername={postToReply?.creator.username}

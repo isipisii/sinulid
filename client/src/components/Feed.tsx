@@ -2,6 +2,7 @@ import { FC } from "react";
 import { MemoizedThreadAndRepostCard } from "./cards/ThreadAndRepostCard";
 import { useAppSelector } from "../features/app/hooks";
 import { filteredUserReposts } from "../util/filteredUserReposts";
+import { repostChecker } from "../util/repostChecker";
 
 const Feed: FC = () => {
   const { token, user: authenticatedUser } = useAppSelector((state) => state.auth);
@@ -13,12 +14,8 @@ const Feed: FC = () => {
     <div className="flex flex-col w-full">
       {posts.map((post) => {
         // Check if userReposts contains reposts and perform null checks
-        const isReposted = userReposts.some(
-          (repost) =>
-            repost?.post?._id === post._id &&
-            repost?.repost_creator?._id === authenticatedUser?._id
-        );
-
+        const isReposted = repostChecker(userReposts, post._id, authenticatedUser?._id ?? "")
+        
         return (
           <MemoizedThreadAndRepostCard
             key={post._id}

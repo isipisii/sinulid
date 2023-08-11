@@ -42,7 +42,7 @@ const App: FC = () => {
 
   useEffect(() => {
     getUserInfo();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -51,45 +51,50 @@ const App: FC = () => {
       <SideBarAndBottomNav />
       <ViewImageModal />
       <EditPostModal />
-      <ScrollToTop>
-        <Routes>
-          <Route
-            path="/"
-            element={
+      {/* Wrap ScrollToTop around routes where you want scroll behavior */}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <ScrollToTop>
               <Protected isSignedIn={token}>
                 <Home getUserInfo={getUserInfo} />
               </Protected>
-            }
-          />
-          <Route
-            path="/create-reply/:postToReplyId"
-            element={
+            </ScrollToTop>
+          }
+        />
+        <Route
+          path="/create-reply/:postToReplyId"
+          element={
+            <ScrollToTop>
               <Protected isSignedIn={token}>
                 <CreateReplyPage />
               </Protected>
-            }
-          />
-          <Route
-            path="/activity"
-            element={
+            </ScrollToTop>
+          }
+        />
+        <Route
+          path="/activity"
+          element={
+            <ScrollToTop>
               <Protected isSignedIn={token}>
                 <Activity />
               </Protected>
-            }
+            </ScrollToTop>
+          }
+        />
+        <Route path="/profile/:username" element={<Profile />}>
+          <Route
+            path="replies"
+            element={<UserReplies userProfileInfo={userProfileInfo} />}
           />
-          <Route path="/profile/:username" element={<Profile />}>
-            <Route
-              path="replies"
-              element={<UserReplies userProfileInfo={userProfileInfo} />}
-            />
-          </Route>
-          <Route path="/login" element={<LogIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/:username/post/:postId" element={<PostAndReplies />} />
-          {/* TODO */}
-          {/* <Route path="*" element={<NotFound />} /> */}
-        </Routes>
-      </ScrollToTop>
+        </Route>
+        <Route path="/login" element={<LogIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/:username/post/:postId" element={<PostAndReplies />} />
+        {/* TODO */}
+        {/* <Route path="*" element={<NotFound />} /> */}
+      </Routes>
     </>
   );
 };

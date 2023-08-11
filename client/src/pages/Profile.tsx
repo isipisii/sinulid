@@ -1,5 +1,5 @@
 import { JSX, useEffect } from "react";
-import { Link, Outlet, useParams } from "react-router-dom";
+import { Link, Outlet, useParams, useLocation } from "react-router-dom";
 import {
   useLazyGetUserInfoQuery,
   useFollowUserMutation,
@@ -21,10 +21,13 @@ import { MemoizedThreadAndRepostCard } from "../components/cards/ThreadAndRepost
 import EditUserProfileModal from "../components/modals/EditUserProfileModal";
 import { Repost, Post, ItemType } from "../types/types";
 import { filteredUserReposts } from "../util/filteredUserReposts";
+import { repostChecker } from "../util/repostChecker";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const Profile = (): JSX.Element => {
   const dispatch = useAppDispatch();
   const { username } = useParams();
+  const location = useLocation()
   const { user: authenticatedUser, token } = useAppSelector(
     (state) => state.auth
   );
@@ -39,11 +42,15 @@ const Profile = (): JSX.Element => {
   const [getUserInfoQuery] = useLazyGetUserInfoQuery();
   const [getPostsAndRepostsQuery] = useLazyGetUserPostsAndRepostsQuery();
 
+  useDocumentTitle(`${userProfileInfo?.name ?? "Sinulid"} · (${userProfileInfo?.username ?? "user"})`)
+
+  const isActive = (currentPath: string): boolean => location.pathname === currentPath
+
   function handleCopyLink(): void {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
   }
-
+  
   const isFollowing = userProfileInfo?.followers.some(
     (follower) => follower._id === authenticatedUser?._id
   );
@@ -145,6 +152,7 @@ const Profile = (): JSX.Element => {
                 </span>{" "} {userProfileInfo?.link && <span>·</span>} {" "}
                 {userProfileInfo?.link && <a href={userProfileInfo?.link}>{userProfileInfo?.link}</a>}
               </p>
+
               {authenticatedUser && token && (
                 <div className="flex gap-4">
                   {username === authenticatedUser?.username ? (
@@ -176,6 +184,7 @@ const Profile = (): JSX.Element => {
                   </button>
                 </div>
               )}
+
             </div>
           </div>
           {/* end of user infos */}
@@ -183,19 +192,20 @@ const Profile = (): JSX.Element => {
           <div className="flex w-full ">
             <Link
               to={`/profile/${username}`}
-              className="w-full text-white border-white border-b text-center text-xs p-3 font-semibold"
+              className={`w-full text-white ${isActive(`/profile/${userProfileInfo?.username}`) ? "border-b border-white" : null} text-center text-xs p-3 font-semibold`}
             >
               Threads
             </Link>
             <Link
               to="replies"
-              className="w-full text-[#ffffff7c] border-[#ffffff46] border-b text-center text-xs p-3 font-semibold"
+              className={`w-full text-white ${isActive(`/profile/${userProfileInfo?.username}/replies`) ? "border-b border-white" : null} text-center text-xs p-3 font-semibold`}
             >
               Replies
             </Link>
           </div>
 
           {/* user posts */}
+          {isActive(`/profile/${userProfileInfo?.username}`) &&
           <div className="flex flex-col w-full">
             {userPostsAndReposts &&
               userPostsAndReposts.map((item) => {
@@ -203,12 +213,8 @@ const Profile = (): JSX.Element => {
                 // post
                 if (item.type === ItemType.Post) {
                   const post = item as Post;
-                  const isReposted = userReposts.some(
-                  (repost) =>
-                      repost.post._id === post._id &&
-                      repost.repost_creator._id === authenticatedUser?._id
-                  );
-
+                  const isReposted = repostChecker(userReposts, post._id, authenticatedUser?._id ?? "")
+                
                   return (
                     <MemoizedThreadAndRepostCard
                       key={post._id}
@@ -223,11 +229,8 @@ const Profile = (): JSX.Element => {
                 // repost
                 if (item.type === ItemType.Repost) {
                   const repostItem = item as Repost;
-                  const isReposted = userReposts.some(
-                    (repost) =>
-                      repost.post._id === repostItem.post._id &&
-                      repost.repost_creator._id === authenticatedUser?._id
-                  );
+                  const isReposted = repostChecker(userReposts, repostItem.post._id, authenticatedUser?._id ?? "")
+                
                   return (
                     <MemoizedThreadAndRepostCard
                       key={repostItem._id}
@@ -241,8 +244,12 @@ const Profile = (): JSX.Element => {
                   );
                 }
               })}
-          </div>
-          <Outlet />
+          </div>}
+
+          {/* nested route */}
+          {/* this is the where the user replies will render */}
+          <Outlet /> 
+
         </main>
       </div>
     </section>

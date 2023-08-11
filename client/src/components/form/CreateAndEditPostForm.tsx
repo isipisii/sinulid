@@ -17,7 +17,7 @@ import Spinner from "../loader/Spinner";
 import TextareaAutosize from 'react-textarea-autosize';
 
 interface ICreatePostForm {
-  isEditing: boolean;
+  isEditing?: boolean;
   parentPostId?: string
   isReplying?: boolean
   postToReplyCreatorUsername?: string
@@ -111,7 +111,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplyi
           parentId: parentPostId
         }).unwrap();
         clearForm();
-        navigate(-1)
+        navigate(`/${postToReplyCreatorUsername}/post/${parentPostId}`)
       } catch (error) {
         showToast("Error, something went wrong while creating a reply", true)
         console.error(error);

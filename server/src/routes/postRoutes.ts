@@ -24,4 +24,6 @@ router.post("/post-reply/:postId", upload.single("image"), PostControllers.creat
 
 router.get("/post-reply/:postId", PostControllers.getPostReplies)
 
+router.get("/user-replies/:userId", PostControllers.getUserReplies)
+
 export default router 

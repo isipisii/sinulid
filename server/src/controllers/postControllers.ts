@@ -19,7 +19,7 @@ type PostParam = {
     postId: string
 }
 
-type GetUserPostsParam = {
+type GetUserPostsOrRepliesParam = {
     userId: string
 }
 
@@ -71,8 +71,11 @@ export const getSinglePost: RequestHandler<PostParam> = async (req, res, next) =
 
          const post = await PostModel.findById(postId).populate([
             { path: "creator" }, 
-            { path:"liked_by" },
-            { path:"parent" },
+            { path: "liked_by" },
+            { 
+                path: "parent",
+                populate: ["creator", "children", "liked_by" ]
+            },
             {
                 path:"children",
                 populate: "creator"
@@ -104,7 +107,7 @@ export const getPosts: RequestHandler = async (req, res, next) => {
 }
 
 // get user's post
-export const getUserPosts: RequestHandler<GetUserPostsParam> = async (req, res, next) => {
+export const getUserPosts: RequestHandler<GetUserPostsOrRepliesParam> = async (req, res, next) => {
     const userId = req.params.userId
 
     try {
@@ -369,10 +372,15 @@ export const getPostReplies: RequestHandler<PostParam> = async (req, res, next) 
     try {
         const postReplies = await PostModel.find({parent: parentId}).sort({ createdAt: -1}).populate([
             { path: "creator" }, 
-            { path:"liked_by" },
+            { path: "liked_by" },
+            { 
+                path: "parent",
+                populate: ["creator", "children", "liked_by", {path: "parent", populate: "creator"}]
+            },
             {
                 path:"children",
                 populate: "creator"
+                
             }
         ]).exec()
 
@@ -385,3 +393,35 @@ export const getPostReplies: RequestHandler<PostParam> = async (req, res, next) 
         next(error)
     }
 }
+
+export const getUserReplies: RequestHandler<GetUserPostsOrRepliesParam> = async (req, res, next) => {
+    const userId = req.params.userId
+
+    try {
+        if(!userId){
+            throw createHttpError(400, "Bad request, missing params")
+        }
+        // get the posts that has not null parent field
+        const userReplies = await PostModel.find({ creator: userId, parent: {$ne: null} }).sort({ createdAt: -1}).populate([
+            { path: "creator" }, 
+            { path: "liked_by" },
+            { 
+                path: "parent",
+                populate: ["creator", "children", "liked_by", {path: "parent", populate: "creator"}]
+            },
+            {
+                path:"children",
+                populate: "creator"
+                
+            }
+        ]).exec()
+
+        if(!userReplies){
+            throw createHttpError(404, "Replies not found")
+        }  
+        
+        res.status(200).json(userReplies)
+    } catch (error) {
+        next(error)
+    }
+} 

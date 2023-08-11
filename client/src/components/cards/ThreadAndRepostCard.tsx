@@ -19,7 +19,9 @@ import {
   unlikePostInPostAndReplyPage,
   likePostReply,
   unlikePostReply,
-  deletePostReply
+  deletePostReply,
+  likeParentOfRootPostInPostAndRepliesPage,
+  unlikeParentOfRootPostInPostAndRepliesPage
 } from "../../features/post/postSlice";
 import {
   likePostOrRepostInUserProfile,
@@ -50,7 +52,9 @@ interface IPostAndRepostCard {
   repost?: Repost;
   type?: string;
   isReposted?: boolean;
-  isRootPost?: boolean
+  isRootPost?: boolean;
+  isParent?: boolean;
+  replyingTo?: string | null
 }
 
 const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
@@ -59,40 +63,50 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
   authenticatedUser,
   repost,
   isReposted,
-  isRootPost
+  isRootPost,
+  isParent,
+  replyingTo
 }) => {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [likePostMutation] = useLikePostMutation();
   const [unlikePostMutation] = useUnlikePostMutation();
-  const [deletePostMutation, { isLoading: isDeleting }] = useDeletePostMutation();
+  const [deletePostMutation, { isLoading: isDeleting }] =
+    useDeletePostMutation();
   const [createRepostMutation] = useCreateRepostMutation();
   const [removeRepostMutation] = useRemoveRepostMutation();
 
   const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
   const formattedTimeStamp = useFormatTimeStamp(post.createdAt);
   const { userPostsAndReposts } = useAppSelector((state) => state.userProfile);
-  const contextMenuRef = useRef<HTMLDivElement | null>(null)
+  const contextMenuRef = useRef<HTMLDivElement | null>(null);
 
   // helper function that filters the posts and reposts of the user and returns an array of user reposts
   const userReposts = filteredUserReposts(userPostsAndReposts);
 
   const didLike: boolean = post.liked_by.some(
-    (user) => user._id === authenticatedUser?._id 
+    (user) => user._id === authenticatedUser?._id
   );
 
   useEffect(() => {
     document.addEventListener("click", handleClickOutsideContextMenu, true);
     // cleanup function whenever the component unmounts
     return () => {
-      document.removeEventListener("click", handleClickOutsideContextMenu, true);
+      document.removeEventListener(
+        "click",
+        handleClickOutsideContextMenu,
+        true
+      );
     };
   }, []);
-  
+
   // to hide the context menu when the user clicks outside the element or other element
   function handleClickOutsideContextMenu(e: MouseEvent): void {
-    if (contextMenuRef.current && !contextMenuRef.current.contains(e.target as Node)) {
+    if (
+      contextMenuRef.current &&
+      !contextMenuRef.current.contains(e.target as Node)
+    ) {
       setShowContextMenu(false);
     }
   }
@@ -102,21 +116,32 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
       return;
     }
     if (didLike) {
-      dispatch(unlikePostOrRepostInUserProfile({ postId, user: authenticatedUser })); // for user's profile optimistic update
-      dispatch(unlikePostInPostAndReplyPage({ postId, user: authenticatedUser })) // for the root post in post and reply page
+      dispatch(
+        unlikePostOrRepostInUserProfile({ postId, user: authenticatedUser })
+      ); // for user's profile optimistic update
+      dispatch(
+        unlikePostInPostAndReplyPage({ postId, user: authenticatedUser })
+      ); // for the root post in post and reply page
       dispatch(unlikePost({ postId, user: authenticatedUser })); // for feed's optimistic update
       dispatch(unlikePostReply({ postId, user: authenticatedUser })); // for post and reply page
+      dispatch(unlikeParentOfRootPostInPostAndRepliesPage({ postId, user: authenticatedUser }))
       unlikePostMutation({ postId, token });
     } else {
-      dispatch(likePostOrRepostInUserProfile({ postId, user: authenticatedUser })); // for user's profile optimistic update
-      dispatch(likePostInPostAndReplyPage({ postId, user: authenticatedUser })) // for the root post in post and reply page
+      dispatch(
+        likePostOrRepostInUserProfile({ postId, user: authenticatedUser })
+      ); // for user's profile optimistic update
+      dispatch(likePostInPostAndReplyPage({ postId, user: authenticatedUser })); // for the root post in post and reply page
       dispatch(likePost({ postId, user: authenticatedUser })); // for feed's optimistic update
       dispatch(likePostReply({ postId, user: authenticatedUser })); // for post and reply page
+      dispatch(likeParentOfRootPostInPostAndRepliesPage({ postId, user: authenticatedUser }))
       likePostMutation({ postId, token });
     }
   }
 
-  async function deletePostHandler(postId: string, token: string): Promise<void> {
+  async function deletePostHandler(
+    postId: string,
+    token: string
+  ): Promise<void> {
     if (!authenticatedUser) return;
 
     try {
@@ -126,7 +151,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
         deletePostOrRepostInUserProfile({ postId, repostId: repost?._id })
       ); // for user's profile optimistic update
       dispatch(deletePost(postId)); // for feed's optimistic update
-      dispatch(deletePostReply(postId))
+      dispatch(deletePostReply(postId));
       setShowContextMenu(false);
     } catch (error) {
       console.error(error);
@@ -134,11 +159,13 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
   }
 
   async function toggleRepostHandler(postId: string): Promise<void> {
-    if(!authenticatedUser) return
+    if (!authenticatedUser) return;
     // if a post card is marked as reposted, then it will remove the repost
     if (isReposted) {
       // retrieving the repost that will be remove by checking if this card is being reposted by the user
-      const repostToRemove = userReposts?.find((repost) => repost.post._id === post._id);
+      const repostToRemove = userReposts?.find(
+        (repost) => repost.post._id === post._id
+      );
 
       if (repostToRemove) {
         await removeRepostMutation({ token, repostId: repostToRemove?._id });
@@ -148,8 +175,11 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
       }
     } else {
       try {
-        const newRepost = await createRepostMutation({ postId, token }).unwrap();
-        showToast("Reposted")
+        const newRepost = await createRepostMutation({
+          postId,
+          token,
+        }).unwrap();
+        showToast("Reposted");
         dispatch(addRepostInUserProfile(newRepost));
       } catch (error) {
         console.error;
@@ -177,23 +207,27 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
     setShowContextMenu(false);
   }
 
-  // will copy to clipboard the post's link 
+  // will copy to clipboard the post's link
   function copyPostLink(username: string, postId: string): void {
     const origin = window.location.origin;
     const postLink = `${origin}/${username}/post/${postId}`;
 
     navigator.clipboard.writeText(postLink);
-    showToast("Post link was copied to clipboard")
+    showToast("Post link was copied to clipboard");
   }
 
-  function shouldRender(): boolean{
-    return post?.children.length > 0 && !isRootPost 
+  function shouldRender(): boolean {
+    return post?.children.length > 0 && !isRootPost;
   }
 
   return (
-    <div className="w-full h-auto p-3 border-b border-borderColor relative">
+    <div
+      className={`w-full h-auto p-3 relative ${
+        isParent ? null : "border-b border-borderColor"
+      }`}
+    >
       {/* toast notification */}
-       <Toaster position="bottom-center" reverseOrder={false}/>
+      <Toaster position="bottom-center" reverseOrder={false} />
       {/* will only show if this component is a repost */}
       {repost && (
         <p className="text-[#ffffff5e] ml-5 text-xs mb-[.5rem] flex items-center gap-3">
@@ -207,7 +241,10 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
 
       {/* context menu */}
       {showContextMenu && (
-        <div ref={contextMenuRef} className="bg-matteBlack absolute right-5 top-10 rounded-md h-auto z-10 w-[130px] border border-borderColor p-2 flex flex-col gap-1">
+        <div
+          ref={contextMenuRef}
+          className="bg-matteBlack absolute right-5 top-10 rounded-md h-auto z-10 w-[130px] border border-borderColor p-2 flex flex-col gap-1"
+        >
           <button
             className="w-full text-white text-xs p-3 text-left cursor-pointer hover:bg-[#4e4a4a48] rounded-sm ease-in-out duration-300"
             onClick={openEditPostModal}
@@ -231,43 +268,69 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
       {/* post infos */}
       <div className="flex gap-2 h-auto w-full">
         <div className="items-center flex flex-col gap-3">
-          {!isRootPost && 
-          <div className=" w-[35px] h-[35px]">
-            <img
-              src={
-                post.creator?.displayed_picture
-                  ? post.creator?.displayed_picture?.url
-                  : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
-              }
-              alt="profile picture"
-              className="rounded-full w-[35px] h-[35px] object-cover"
-            />
-          </div>}
+          {!isRootPost && (
+            <div className=" w-[35px] h-[35px]">
+              <img
+                src={
+                  post.creator?.displayed_picture
+                    ? post.creator?.displayed_picture?.url
+                    : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
+                }
+                alt="profile picture"
+                className="rounded-full w-[35px] h-[35px] object-cover"
+              />
+            </div>
+          )}
 
           {/* line */}
           {/* will only show when there's a reply */}
-          {shouldRender() && (
-            <div className="h-full relative">
-              <svg
-                width="3"
-                height="100%"
-                viewBox="0 0 3 500"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                preserveAspectRatio="none"
-                className="absolute top-0 left-0 "
-              >
-                <path
-                  d="M1 1L1.01805 1000"
-                  stroke="#B0A2A2"
-                  strokeOpacity="0.73"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="stroke-[#ffffff39] stroke-2"
-                />
-              </svg>
-            </div>
-          )}
+          {shouldRender() &&
+            (isParent ? (
+              <div className="h-full flex items-center flex-col">
+                <div className="h-full relative">
+                  <svg
+                    width="3"
+                    height="100%"
+                    viewBox="0 0 3 500"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    preserveAspectRatio="none"
+                    className="absolute top-0 left-0"
+                  >
+                    <path
+                      d="M1 1L1 1000"
+                      stroke="#29292e"
+                      strokeOpacity="0.73"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="stroke-[#33333a] stroke-2"
+                    />
+                  </svg>
+                </div>
+                <img src="/assets/loop.svg" alt="loogp" className="mr-[.9rem]" />
+              </div>
+            ) : (
+              <div className="h-full relative">
+                <svg
+                  width="3"
+                  height="100%"
+                  viewBox="0 0 3 500"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  preserveAspectRatio="none"
+                  className="absolute top-0 left-0"
+                >
+                  <path
+                    d="M1 1L1 1000"
+                    stroke="#29292e"
+                    strokeOpacity="0.73"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="stroke-[#33333a] stroke-2"
+                  />
+                </svg>
+              </div>
+            ))}
           {/* end of line */}
 
           {/* users who replied */}
@@ -294,21 +357,34 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
           {/*end of users who replied */}
         </div>
 
-        <div className="w-full flex-col flex gap-1">
+        <div
+          className={`w-full flex-col flex gap-1 ${
+            isParent ? "mb-[4rem]" : null
+          }`}
+        >
           {/* post creator and other details */}
-          <div className={`flex items-center w-[100%] justify-between ${isRootPost ?  "mb-3" : "mb-1"}`}>
-            <Link to={`/profile/${post.creator.username}`} className="flex items-center gap-2">
-              {isRootPost && <div className="w-[35px] h-[35px]">
-                <img
-                  src={
-                    post.creator?.displayed_picture
-                      ? post.creator?.displayed_picture?.url
-                      : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
-                  }
-                  alt="profile picture"
-                  className="rounded-full w-[35px] h-[35px] object-cover"
-                />
-              </div>}
+          <div
+            className={`flex items-center w-[100%] justify-between ${
+              isRootPost ? "mb-3" : "mb-1"
+            }`}
+          >
+            <Link
+              to={`/profile/${post.creator.username}`}
+              className={`flex items-center gap-3 ${isRootPost ? "ml-[-.3rem]" : null}`}
+            >
+              {isRootPost && (
+                <div className="w-[35px] h-[35px]">
+                  <img
+                    src={
+                      post.creator?.displayed_picture
+                        ? post.creator?.displayed_picture?.url
+                        : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
+                    }
+                    alt="profile picture"
+                    className="rounded-full w-[35px] h-[35px] object-cover"
+                  />
+                </div>
+              )}
               <h2 className="text-white font-medium text-xs hover:underline underline-offset-2">
                 {post.creator.username}
               </h2>
@@ -330,6 +406,12 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
           {/* post content */}
           <div className="w-full">
             <Link to={`/${post.creator.username}/post/${post._id}`}>
+              {/* will pop out when the parent post has a parent post */}
+              {replyingTo &&
+              <div className="mb-2">
+                <p className="text-xs text-lightText">Replying to @{replyingTo}</p>
+              </div>}
+
               <p className="text-xs text-[#ffffff] tracking-wide whitespace-pre-wrap break-words w-[320px] sm:w-[490px]">
                 {post.content}
               </p>
@@ -368,7 +450,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
             <p
               className="text-white text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
               onClick={() => {
-                navigate(`/create-reply/${post._id}`)
+                navigate(`/create-reply/${post._id}`);
               }}
             >
               <BsChat className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />

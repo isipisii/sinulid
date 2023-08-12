@@ -21,7 +21,12 @@ import {
   unlikePostReply,
   deletePostReply,
   likeParentOfRootPostInPostAndRepliesPage,
-  unlikeParentOfRootPostInPostAndRepliesPage
+  unlikeParentOfRootPostInPostAndRepliesPage,
+  likeParentOfRootPostReplyInUserReplies,
+  unlikeParentOfRootPostReplyInUserReplies,
+  likeUserReplyInUserReplies,
+  unlikeUserReplyInUserReplies,
+  deleteUserReplyInUserReplies
 } from "../../features/post/postSlice";
 import {
   likePostOrRepostInUserProfile,
@@ -125,6 +130,8 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
       dispatch(unlikePost({ postId, user: authenticatedUser })); // for feed's optimistic update
       dispatch(unlikePostReply({ postId, user: authenticatedUser })); // for post and reply page
       dispatch(unlikeParentOfRootPostInPostAndRepliesPage({ postId, user: authenticatedUser }))
+      dispatch(unlikeParentOfRootPostReplyInUserReplies({ postId, user: authenticatedUser }))
+      dispatch(unlikeUserReplyInUserReplies({ postId, user: authenticatedUser }))
       unlikePostMutation({ postId, token });
     } else {
       dispatch(
@@ -134,6 +141,8 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
       dispatch(likePost({ postId, user: authenticatedUser })); // for feed's optimistic update
       dispatch(likePostReply({ postId, user: authenticatedUser })); // for post and reply page
       dispatch(likeParentOfRootPostInPostAndRepliesPage({ postId, user: authenticatedUser }))
+      dispatch(likeParentOfRootPostReplyInUserReplies({ postId, user: authenticatedUser }))
+      dispatch(likeUserReplyInUserReplies({ postId, user: authenticatedUser }))
       likePostMutation({ postId, token });
     }
   }
@@ -152,6 +161,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
       ); // for user's profile optimistic update
       dispatch(deletePost(postId)); // for feed's optimistic update
       dispatch(deletePostReply(postId));
+      dispatch(deleteUserReplyInUserReplies(postId))
       setShowContextMenu(false);
     } catch (error) {
       console.error(error);
@@ -391,7 +401,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
             </Link>
             <div className="flex items-center gap-1">
               <p className="text-xs text-lightText">{formattedTimeStamp}</p>
-              {authenticatedUser?._id === post.creator._id && !isRootPost && (
+              {authenticatedUser?._id === post.creator._id && !isRootPost && !isParent && (
                 <p
                   className="cursor-pointer text-base text-white rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 p-1"
                   onClick={() => setShowContextMenu((prevState) => !prevState)}
@@ -460,7 +470,6 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
               className="text-white text-[1.1rem] p-2 rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 cursor-pointer"
               onClick={() => toggleRepostHandler(post._id)}
             >
-              {/*  */}
               {isReposted ? (
                 <TbRepeatOff className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
               ) : (

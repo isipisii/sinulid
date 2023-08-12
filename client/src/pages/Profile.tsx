@@ -137,6 +137,7 @@ const Profile = (): JSX.Element => {
               />
             </div>
             {/*end of username and dp */}
+
             <div className="flex flex-col gap-4">
               {/* bio */}
               <p className="text-white text-xs max-w-[300px]">
@@ -192,13 +193,13 @@ const Profile = (): JSX.Element => {
           <div className="flex w-full ">
             <Link
               to={`/profile/${username}`}
-              className={`w-full text-white ${isActive(`/profile/${userProfileInfo?.username}`) ? "border-b border-white" : null} text-center text-xs p-3 font-semibold`}
+              className={`w-full ${isActive(`/profile/${userProfileInfo?.username}`) ? "border-b border-white text-white" : "text-lightText"} text-center text-sm p-3 font-medium`}
             >
               Threads
             </Link>
             <Link
               to="replies"
-              className={`w-full text-white ${isActive(`/profile/${userProfileInfo?.username}/replies`) ? "border-b border-white" : null} text-center text-xs p-3 font-semibold`}
+              className={`w-full ${isActive(`/profile/${userProfileInfo?.username}/replies`) ? "border-b border-white text-white" : "text-lightText"} text-center text-sm p-3 font-medium`}
             >
               Replies
             </Link>

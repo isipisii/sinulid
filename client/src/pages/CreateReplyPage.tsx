@@ -9,7 +9,7 @@ import CreatePostForm from "../components/form/CreateAndEditPostForm";
 const CreateReplyPage = (): JSX.Element => {
   const { user: authenticatedUser } = useAppSelector((state) => state.auth);
   const [getSinglePostQuery] = useLazyGetSinglePostQuery();
-  const [postToReply, setPostReply] = useState<Post | null>(null);
+  const [postToReply, setPostToReply] = useState<Post | null>(null);
 
   const navigate = useNavigate();
   const { postToReplyId } = useParams();
@@ -20,7 +20,7 @@ const CreateReplyPage = (): JSX.Element => {
 
       try {
         const post = await getSinglePostQuery(postToReplyId).unwrap();
-        setPostReply(post);
+        setPostToReply(post);
         console.log(post)
       } catch (error) {
         console.error(error);

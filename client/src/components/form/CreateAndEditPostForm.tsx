@@ -8,7 +8,7 @@ import {
 } from "../../services/postApi";
 import { FiPaperclip } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
-import { addPost, setPostToEdit, updatePost, updatePostReply } from "../../features/post/postSlice";
+import { addPost, setPostToEdit, updatePost, updatePostReply, updateUserReplyInUserReplies } from "../../features/post/postSlice";
 import { updatePostOrRepostInUserProfile } from "../../features/user/userProfileSlice";
 
 import { Toaster } from "react-hot-toast";
@@ -25,6 +25,7 @@ interface ICreatePostForm {
 
 const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplying, postToReplyCreatorUsername }) => {
   const { postToEdit } = useAppSelector((state) => state.post);
+  const { userDefaultProfileImage } = useAppSelector(state => state.userProfile)
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [textContent, setTextContent] = useState<string>(
     isEditing ? postToEdit?.content || "" : ""
@@ -84,6 +85,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplyi
       dispatch(updatePost(updatedPost));
       dispatch(updatePostReply(updatedPost));
       dispatch(updatePostOrRepostInUserProfile(updatedPost));
+      dispatch(updateUserReplyInUserReplies(updatedPost))
       dispatch(setPostToEdit(null));
       showToast("Post updated");
     } catch (error) {
@@ -150,7 +152,6 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplyi
 
   return (
     <div className="w-full h-auto">
-      <Toaster position="bottom-center" reverseOrder={false} />
       <form
         className={`flex flex-col gap-3 h-auto ${isReplying ? null : "p-4"} bg-matteBlack rounded-md`}
         onSubmit={isEditing ? updatePostHandler : isReplying ? submitPostReplyHandler : submitPostHandler}
@@ -165,7 +166,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplyi
               src={
                 user?.displayed_picture
                   ? user?.displayed_picture?.url
-                  : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
+                  : userDefaultProfileImage
               }
               alt="user profile"
               className="h-[40px] w-[40px] rounded-full object-cover"
@@ -183,7 +184,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplyi
                 placeholder={isEditing ? "Edit thread..." : isReplying ? `Reply to ${postToReplyCreatorUsername}...` : "Start a thread..."}
                 onChange={(e) => setTextContent(e.target.value)}
                 value={textContent}
-                className={`h-full outline-none text-white text-xs w-full py-2 ${isReplying ? null : "border-borderColor border px-2"} bg-matteBlack rounded-md placeholder:text-[#4a4545]`} 
+                className={`h-full outline-none text-white text-sm w-full py-2 ${isReplying ? null : "border-borderColor border px-2"} bg-matteBlack rounded-md placeholder:text-[#4a4545]`} 
               />
              
               {imagePreview && (
@@ -249,6 +250,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({ isEditing, parentPostId, isReplyi
             )}
           </button>
         </div>
+        <Toaster position="bottom-center" reverseOrder={false} />
       </form>
     </div>
   );

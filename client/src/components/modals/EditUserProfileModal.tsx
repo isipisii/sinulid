@@ -64,6 +64,12 @@ const EditUserProfileModal = (): JSX.Element => {
         dispatch(setToEditUserInfo(null))
     }
 
+    function isLinkValid(link: string): boolean{
+        const linkRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*([?][^\s]*)?([/][^\s]*)?$/;
+        
+        return linkRegex.test(link)
+    }
+
     async function handleUpdateUserInfo(e: FormEvent<HTMLFormElement>): Promise<void>{
         e.preventDefault();
         const data = new FormData();
@@ -78,7 +84,13 @@ const EditUserProfileModal = (): JSX.Element => {
         if(imageFile) data.append("image", imageFile);
 
         try {
+            if(userInfo?.link && !isLinkValid(userInfo?.link)) {
+                showToast("The link you provided is invalid", true)
+                return
+            }
+
             const updatedUserInfo = await updateUserProfileMutation({ newUserInfo: data, token }).unwrap()
+
             // update the states
             if(updatedUserInfo){
                 dispatch(setUserProfileInfo(updatedUserInfo))
@@ -94,6 +106,7 @@ const EditUserProfileModal = (): JSX.Element => {
             showToast("Error, something went wrong", true)
         }
     }
+
     
     return (
         <div className="bg-[#000000bd] backdrop-blur-sm fixed w-[100vw] h-[100vh] z-20 top-0 left-0 flex items-center justify-center">

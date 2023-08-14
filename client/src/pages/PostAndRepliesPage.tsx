@@ -13,6 +13,8 @@ import { IoIosArrowBack } from "react-icons/io";
 import { MemoizedThreadAndRepostCard } from "../components/cards/ThreadAndRepostCard";
 import RootPostAndReplyCard from "../components/cards/RootPostAndReplyCard";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { RotatingLines } from "react-loader-spinner";
+import ThreadCardLoader from "../components/loader/ThreadCardLoader";
 
 const PostAndReplies = (): JSX.Element => {
   const { postId, username } = useParams();
@@ -23,10 +25,10 @@ const PostAndReplies = (): JSX.Element => {
   const { userPostsAndReposts } = useAppSelector((state) => state.userProfile);
   const { post, replies } = useAppSelector((state) => state.post);
 
-  const [getSinglePostQuery] = useLazyGetSinglePostQuery();
-  const [getReplies] = useLazyGetRepliesQuery();
+  const [getSinglePostQuery, { isFetching: isGetSinglePostLoading }] = useLazyGetSinglePostQuery();
+  const [getReplies, { isFetching: isGetRepliesLoading }] = useLazyGetRepliesQuery();
   const userReposts = filteredUserReposts(userPostsAndReposts);
-  useDocumentTitle(`${post?.creator.username} ${post?.content}`)
+  useDocumentTitle(post ? `${post.creator.username} · ${post.content} · Threads` : "Threads");
 
   useEffect(() => {
     async function getSinglePostAndReplies() {
@@ -63,35 +65,49 @@ const PostAndReplies = (): JSX.Element => {
                 <IoIosArrowBack /> Back
               </p>
             )}
-            <h1 className="text-white font-medium text-center text-[1.3rem]">
+            <h1 className="text-white font-medium text-center text-[2rem]">
               Thread
             </h1>
           </div>
 
-          {post && <RootPostAndReplyCard post={post} isRootPost={true} />}
-
-          {replies.length === 0 ? (
-            <p className="text-lightText text-xs font-light mt-4">
-              No replies yet
-            </p>
+          {!post || isGetSinglePostLoading ? (
+            <ThreadCardLoader index={2}/>
           ) : (
-            replies && (
-              <div className="flex flex-col items-center w-full">
-                {replies.map((reply) => {
-                 const isReposted = repostChecker(userReposts, reply._id, authenticatedUser?._id ?? "")
+            <RootPostAndReplyCard post={post} isRootPost={true} />
+          )}
 
-                  return (
-                    <MemoizedThreadAndRepostCard
-                      key={reply._id}
-                      post={reply}
-                      token={token}
-                      authenticatedUser={authenticatedUser}
-                      isReposted={isReposted}
-                    />
-                  );
-                })}
-              </div>
-            )
+          {!post || isGetSinglePostLoading || isGetRepliesLoading ? (
+            <div className="h-[50vh] flex items-center justify-center">
+              <RotatingLines
+                strokeColor="grey"
+                strokeWidth="4"
+                animationDuration="0.75"
+                width="25"
+                visible={true}
+              />
+            </div>
+          ) : replies.length === 0 ? (
+            <p className="text-lightText text-sm mt-4">No replies yet.</p>
+          ) : (
+            <div className="flex flex-col items-center w-full">
+              {replies.map((reply) => {
+                const isReposted = repostChecker(
+                  userReposts,
+                  reply._id,
+                  authenticatedUser?._id ?? ""
+                );
+
+                return (
+                  <MemoizedThreadAndRepostCard
+                    key={reply._id}
+                    post={reply}
+                    token={token}
+                    authenticatedUser={authenticatedUser}
+                    isReposted={isReposted}
+                  />
+                );
+              })}
+            </div>
           )}
         </main>
       </div>

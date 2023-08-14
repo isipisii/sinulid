@@ -7,34 +7,44 @@ import CreateAndEditPostForm from "../components/form/CreateAndEditPostForm";
 import { useLazyGetUserPostsAndRepostsQuery } from "../services/authAndUserApi";
 import { setUserPostsAndReposts } from "../features/user/userProfileSlice";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import ThreadCardLoader from "../components/loader/ThreadCardLoader";
 
 interface IHome {
-  getUserInfo: () => Promise<void>
+  getUserInfo: () => Promise<void>;
 }
 
 const Home: FC<IHome> = ({ getUserInfo }) => {
   const dispatch = useAppDispatch();
-  const [getLazyPostsQuery] = useLazyGetPostsQuery();
-  const [getPostsAndRepostsQuery] = useLazyGetUserPostsAndRepostsQuery();
-  const { user: authenticatedUser } = useAppSelector(state => state.auth)
-  useDocumentTitle('Sinulid')
+  const [getLazyPostsQuery, { isLoading: isGetPostsLoading }] =
+    useLazyGetPostsQuery();
+  const [getPostsAndRepostsQuery, { isLoading: isGetPostsAndRepostsLoading }] =
+    useLazyGetUserPostsAndRepostsQuery();
+  const { user: authenticatedUser } = useAppSelector((state) => state.auth);
+  useDocumentTitle("Sinulid");
 
-// gets the user reposts and posts in this component so that is this page rendered, then we can easily identify the post that has been reposted
+  // gets the user reposts and posts in this component so that is this page rendered, then we can easily identify the post that has been reposted
   useEffect(() => {
     async function getUserRepostsAndPosts(): Promise<void> {
       if (!authenticatedUser) return;
 
       try {
-        const userPostsAndRepostsPayload = await getPostsAndRepostsQuery(authenticatedUser?._id).unwrap();
-        if(userPostsAndRepostsPayload){
-          dispatch(setUserPostsAndReposts(userPostsAndRepostsPayload))
+        const userPostsAndRepostsPayload = await getPostsAndRepostsQuery(
+          authenticatedUser?._id
+        ).unwrap();
+        if (userPostsAndRepostsPayload) {
+          dispatch(setUserPostsAndReposts(userPostsAndRepostsPayload));
         }
       } catch (error) {
         console.error(error);
       }
     }
-    getUserRepostsAndPosts()
-  }, [authenticatedUser?._id, dispatch, getPostsAndRepostsQuery, authenticatedUser ]);
+    getUserRepostsAndPosts();
+  }, [
+    authenticatedUser?._id,
+    dispatch,
+    getPostsAndRepostsQuery,
+    authenticatedUser,
+  ]);
 
   // get the user info  and posts once rendered
   useEffect(() => {
@@ -60,7 +70,15 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
           <div className="border-b border-borderColor w-full">
             <CreateAndEditPostForm isEditing={false} />
           </div>
-          <Feed />
+          {isGetPostsAndRepostsLoading || isGetPostsLoading ? (
+            <div className="w-full flex flex-col">
+              {[...new Array(6)].map((_, index) => (
+                <ThreadCardLoader index={index} key={index} />
+              ))} 
+          </div>
+          ) : (
+            <Feed />
+          )}
         </main>
       </div>
     </section>

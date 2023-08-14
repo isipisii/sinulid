@@ -49,7 +49,7 @@ const postApi = api.injectEndpoints({
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }, 
-            })
+            }),
         }),
         updatePost: builder.mutation<Post, UpdatePost>({
             query: ({updatePostData, postId ,token }) => ({
@@ -59,7 +59,7 @@ const postApi = api.injectEndpoints({
                     "Authorization": `Bearer ${token}`
                 },
                 body: updatePostData
-            })
+            }),
         }),
         getPosts: builder.query<Post[], void>({
             query:() => "/posts"
@@ -71,7 +71,7 @@ const postApi = api.injectEndpoints({
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
-            })
+            }),
         }),
         unlikePost: builder.mutation<void, LikePost>({
             query: ({token, postId}) => ({
@@ -80,13 +80,13 @@ const postApi = api.injectEndpoints({
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
-            })
+            }),
         }),
         getSinglePost: builder.query<Post, string>({
             query: (postId) => `/posts/${postId}`
         }),
         getReplies: builder.query<Post[], string>({
-            query: (postId) => `/posts/post-reply/${postId}`
+            query: (postId) => `/posts/post-reply/${postId}`,
         }),
         // post and reply has the same type thats why the return type of this mutation is Post
         createPostReply: builder.mutation<Post, CreatePostReply>({

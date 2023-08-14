@@ -5,7 +5,7 @@ import SignUp from "./pages/SignUp";
 import LogIn from "./pages/LogIn";
 import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
-import UserReplies from "./pages/UserReplies";
+import UserReplies from "./components/UserReplies";
 import ScrollToTop from "./components/hoc/ScrollToTop";
 
 import { useLazyGetAuthenticatedUserQuery } from "./services/authAndUserApi";
@@ -20,6 +20,7 @@ import Profile from "./pages/Profile";
 import EditPostModal from "./components/modals/EditPostModal";
 import PostAndReplies from "./pages/PostAndRepliesPage";
 import CreateReplyPage from "./pages/CreateReplyPage";
+import SearchUserPage from "./pages/SearchUserPage";
 
 const App: FC = () => {
   const { token } = useAppSelector((state) => state.auth);
@@ -83,6 +84,16 @@ const App: FC = () => {
             </ScrollToTop>
           }
         />
+        <Route
+          path="/search"
+          element={
+            <ScrollToTop>
+              <Protected isSignedIn={token}>
+                <SearchUserPage />
+              </Protected>
+            </ScrollToTop>
+          }
+        />
         <Route path="/profile/:username" element={<Profile />}>
           <Route
             path="replies"
@@ -91,7 +102,14 @@ const App: FC = () => {
         </Route>
         <Route path="/login" element={<LogIn />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/:username/post/:postId" element={<PostAndReplies />} />
+        <Route
+          path="/:username/post/:postId"
+          element={
+            <ScrollToTop>
+              <PostAndReplies />
+            </ScrollToTop>
+          }
+        />
         {/* TODO */}
         {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>

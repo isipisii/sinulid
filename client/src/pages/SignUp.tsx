@@ -31,9 +31,9 @@ const SignUp = (): JSX.Element => {
     }
 
     return (
-    <div className='h-[100vh] flex items-center justify-center bg-matteBlack'>
-        <form className='flex items-center justify-center flex-col gap-6 border border-borderColor p-5 rounded-md w-[400px] mx-4' onSubmit={handleSubmit(handleSignUp)}>
-            <h1 className='text-white font-semibold text-[1.5rem] self-start'><span className='font-light text-lightText'>Join</span> Sinulid <span className='font-light text-lightText'>today</span></h1>
+    <div className='h-[100vh] flex items-center justify-center bg-matteBlack bg-threads-bg bg-cover bg-center'>
+        <form className='flex items-center justify-center flex-col gap-6 border  bg-matteBlack border-borderColor p-5 rounded-md w-[400px] mx-4' onSubmit={handleSubmit(handleSignUp)}>
+            <h1 className='text-white font-semibold text-[1.5rem] self-start'><span className='font-light text-lightText'>Join</span> <span className='gradient'> Threads </span> <span className='font-light text-lightText'>today</span></h1>
             <div className='flex justify-center flex-col gap-3 w-full'>
                 {/* name */}
                 <input
@@ -110,7 +110,7 @@ const SignUp = (): JSX.Element => {
                 {errors.confirmPassword  && (<p className={errorStyle}>{errors.confirmPassword.message}</p>)}
 
             </div>  
-            <button type='submit' className='bg-gradient-to-br from-[#393939] to-[#ffffff] w-full p-2 rounded-sm text-matteBlack font-bold text-sm'>Sign Up</button>
+            <button type='submit' className='bg-white w-full p-2 rounded-sm text-matteBlack font-bold text-sm'>Sign Up</button>
             <p className='text-lightText text-xs'>Got an account?  <Link to="/login" className='text-white'>Log in</Link></p>
         </form>
     </div>

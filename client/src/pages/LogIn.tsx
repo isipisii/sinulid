@@ -29,13 +29,13 @@ const LogIn = (): JSX.Element => {
   }
 
   return (
-    <div className="h-[100vh] flex items-center justify-center bg-matteBlack px-4">
+    <div className='h-[100vh] flex items-center justify-center bg-matteBlack bg-threads-bg bg-cover bg-center'>
       <form
-        className="flex items-center justify-center flex-col gap-6 border border-borderColor p-5 rounded-md w-[400px]"
+        className="flex items-center justify-center flex-col gap-6 border bg-matteBlack border-borderColor p-5 mx-4 rounded-md w-[400px]"
         onSubmit={handleSubmit(handleLogIn)}
       >
         <h1 className="text-white font-semibold text-[1.5rem] self-start">
-          <span className="font-light text-lightText">Log in to</span> Sinulid
+          <span className="font-light text-lightText">Log in to</span> <span className='gradient'> Threads </span>
         </h1>
         <div className="flex flex-col gap-3 w-full">
           {/* email */}
@@ -69,7 +69,7 @@ const LogIn = (): JSX.Element => {
         </div>
         <button
           type="submit"
-          className="bg-gradient-to-br from-[#393939] to-[#ffffff] w-full p-2 rounded-sm text-matteBlack font-bold text-sm"
+          className="bg-white w-full p-2 rounded-sm text-matteBlack font-bold text-sm"
         >
           Log in
         </button>
@@ -85,3 +85,4 @@ const LogIn = (): JSX.Element => {
 };
 
 export default LogIn;
+ 

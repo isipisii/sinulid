@@ -27,16 +27,16 @@ const SideBarAndBottomNav = (): JSX.Element => {
       linkTo: "/activity",
     },
     {
+      linkName: "Search",
+      activeIcon: <BiSolidSearch />,
+      inactiveIcon: <BiSearch />,
+      linkTo: "/search",
+    },
+    {
       linkName: "Profile",
       activeIcon: <HiUser />,
       inactiveIcon: <HiOutlineUser />,
       linkTo: `/profile/${authenticatedUser?.username}`,
-    },
-    {
-      linkName: "Search",
-      activeIcon: <BiSolidSearch />,
-      inactiveIcon: <BiSearch />,
-      linkTo: "",
     },
   ];
 

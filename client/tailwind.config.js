@@ -14,7 +14,9 @@ export default {
         cta: "#FAF906",
         borderColor: "#353131f6"
       },
-      
+      backgroundImage: {
+        'threads-bg': "url('/assets/threadsbg.svg')",
+      }
     },
   },
   plugins: [],

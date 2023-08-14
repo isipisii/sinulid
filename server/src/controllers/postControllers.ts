@@ -186,6 +186,10 @@ export const updatePost: RequestHandler<PostParam> = async (req: CustomRequest, 
         await updatedPost.populate([
             { path: "creator" }, 
             { path: "liked_by" },
+            { 
+                path: "parent",
+                populate: ["creator", "children", "liked_by", {path: "parent", populate: "creator"}]
+            },
             {
                 path:"children",
                 populate: "creator"

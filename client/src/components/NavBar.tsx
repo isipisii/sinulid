@@ -9,6 +9,7 @@ const NavBar = (): JSX.Element => {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const { user, token } = useAppSelector((state) => state.auth);
+  const { userDefaultProfileImage } = useAppSelector(state => state.userProfile)
 
   function handleLogout() {
     localStorage.removeItem("token");
@@ -33,7 +34,7 @@ const NavBar = (): JSX.Element => {
                   src={
                     user?.displayed_picture
                       ? user.displayed_picture?.url
-                      : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
+                      : userDefaultProfileImage
                   }
                   alt=""
                   className="h-[20px] w-[20px] rounded-full object-cover"

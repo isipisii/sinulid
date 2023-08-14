@@ -7,13 +7,15 @@ interface IUserProfileState {
     userPostsAndReposts: (Post | Repost) []
     toEditUserInfo: User | null
     userReposts: Repost[]
+    userDefaultProfileImage: string
 }
 
 const initialState: IUserProfileState = {
     userProfileInfo: null,
     userPostsAndReposts: [],
     toEditUserInfo: null,
-    userReposts: []
+    userReposts: [],
+    userDefaultProfileImage: "https://img.myloview.com/posters/default-avatar-profile-icon-vector-social-media-user-photo-700-205577532.jpg"
 }
 
 export const userProfileSlice = createSlice({
@@ -128,7 +130,7 @@ export const userProfileSlice = createSlice({
                         ...post,
                         creator: action.payload
                     }
-                } else if (item._id === ItemType.Repost){
+                } else if (item.type === ItemType.Repost){
                     const repost = item as Repost
                     return {
                         ...repost,
@@ -164,7 +166,7 @@ export const userProfileSlice = createSlice({
         },
         setUserReposts: (state, action: PayloadAction<Repost[]>) => {
             state.userReposts = action.payload
-        }
+        },
     }
 })
 
@@ -180,7 +182,7 @@ export const {
     followUser,
     unfollowUser,
     addRepostInUserProfile,
-    setUserReposts
+    setUserReposts,
 } = userProfileSlice.actions
 
 export default userProfileSlice

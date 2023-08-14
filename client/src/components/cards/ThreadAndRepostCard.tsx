@@ -84,7 +84,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
 
   const [showContextMenu, setShowContextMenu] = useState<boolean>(false);
   const formattedTimeStamp = useFormatTimeStamp(post.createdAt);
-  const { userPostsAndReposts } = useAppSelector((state) => state.userProfile);
+  const { userPostsAndReposts, userDefaultProfileImage } = useAppSelector((state) => state.userProfile);
   const contextMenuRef = useRef<HTMLDivElement | null>(null);
 
   // helper function that filters the posts and reposts of the user and returns an array of user reposts
@@ -240,9 +240,9 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
       <Toaster position="bottom-center" reverseOrder={false} />
       {/* will only show if this component is a repost */}
       {repost && (
-        <p className="text-[#ffffff5e] ml-5 text-xs mb-[.5rem] flex items-center gap-3">
+        <p className="text-[#ffffff5e] ml-5 text-sm mb-[.5rem] flex items-center gap-3">
           <FiRepeat />{" "}
-          {repost.repost_creator.username === authenticatedUser?.username
+          {repost.repost_creator._id === authenticatedUser?._id
             ? "You"
             : repost.repost_creator.username}{" "}
           reposted
@@ -284,7 +284,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
                 src={
                   post.creator?.displayed_picture
                     ? post.creator?.displayed_picture?.url
-                    : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
+                    : userDefaultProfileImage
                 }
                 alt="profile picture"
                 className="rounded-full w-[35px] h-[35px] object-cover"
@@ -317,7 +317,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
                     />
                   </svg>
                 </div>
-                <img src="/assets/loop.svg" alt="loogp" className="mr-[.9rem]" />
+                <img src="/assets/loop.svg" alt="loop" className="mr-[.86rem]" />
               </div>
             ) : (
               <div className="h-full relative">
@@ -371,11 +371,11 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
           className={`w-full flex-col flex gap-1 ${
             isParent ? "mb-[4rem]" : null
           }`}
-        >
+          >
           {/* post creator and other details */}
           <div
             className={`flex items-center w-[100%] justify-between ${
-              isRootPost ? "mb-3" : "mb-1"
+              isRootPost ? "mb-1" : "mb-0"
             }`}
           >
             <Link
@@ -388,19 +388,19 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
                     src={
                       post.creator?.displayed_picture
                         ? post.creator?.displayed_picture?.url
-                        : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
+                        : userDefaultProfileImage
                     }
                     alt="profile picture"
                     className="rounded-full w-[35px] h-[35px] object-cover"
                   />
                 </div>
               )}
-              <h2 className="text-white font-medium text-xs hover:underline underline-offset-2">
+              <h2 className="text-white font-medium text-sm hover:underline underline-offset-2">
                 {post.creator.username}
               </h2>
             </Link>
             <div className="flex items-center gap-1">
-              <p className="text-xs text-lightText">{formattedTimeStamp}</p>
+              <p className="text-sm text-lightText">{formattedTimeStamp}</p>
               {authenticatedUser?._id === post.creator._id && !isRootPost && !isParent && (
                 <p
                   className="cursor-pointer text-base text-white rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 p-1"
@@ -416,13 +416,13 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
           {/* post content */}
           <div className="w-full">
             <Link to={`/${post.creator.username}/post/${post._id}`}>
-              {/* will pop out when the parent post has a parent post */}
+              {/* will pop out when the parent post or the reposted post has a parent post  */}
               {replyingTo &&
               <div className="mb-2">
-                <p className="text-xs text-lightText">Replying to @{replyingTo}</p>
+                <p className="text-sm text-lightText">Replying to @{replyingTo}</p>
               </div>}
 
-              <p className="text-xs text-[#ffffff] tracking-wide whitespace-pre-wrap break-words w-[320px] sm:w-[490px]">
+              <p className="text-sm text-[#ffffff] tracking-wide whitespace-pre-wrap break-words w-[320px] sm:w-[490px]">
                 {post.content}
               </p>
             </Link>
@@ -432,7 +432,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
             <img
               src={post?.image?.url}
               alt="post image"
-              className=" w-full mt-2 border border-borderColor rounded-md cursor-pointer object-cover max-w-[500px] transition-transform transform-gpu ease-linear duration-100 active:scale-[.98]"
+              className=" w-full mt-1 border border-borderColor rounded-md cursor-pointer object-cover max-w-[500px] transition-transform transform-gpu ease-linear duration-100 active:scale-[.98]"
               onClick={() =>
                 post.image && dispatch(setImageUrl(post?.image?.url))
               }
@@ -486,9 +486,9 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
             </p>
           </div>
           {/* end of icons */}
-
+          
           {/* reply and like count */}
-          <p className="text-[#7b7575] text-xs flex items-center gap-1">
+          <p className="text-[#7b7575] text-sm flex items-center gap-1">
             {/* post.children is an array of replies in a certain post */}
             {post.children.length > 0 && (
               <Link to={`/${post.creator.username}/post/${post._id}`}>

@@ -41,6 +41,10 @@ type GetUserPostsAndReposts = {
     userId: string
 }
 
+type SearchUserQuery = {
+    user: string
+}
+
 // account sign up
 export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = async (req, res, next) => {
     const { username, email, password: rawPassword, name } = req.body
@@ -171,7 +175,7 @@ export const updateUserInfo: RequestHandler = async (req: CustomRequest , res, n
             throw createHttpError(404, "User not found")
         }
         // will throw an error if the existing user's username is already taken by a different user
-        //and so that it wont throw an error if the user updated his/her profile withouth changing the username
+        //and so that it wont throw an error if the user updated his/her profile without changing the username
         if(user.username === username && user._id.toString() !== authenticatedUserId && authenticatedUserId){
             throw createHttpError(409, "This username is already taken, please use different one.")
         }
@@ -218,6 +222,7 @@ export const followUser: RequestHandler<FollowAndUnfollowParam> = async (req: Cu
 
     try {
         const userToFollow = await UserModel.findById(userToFollowId).exec();
+        const authenticatedFollower = await UserModel.findById(authenticatedFollowerId).exec();
 
         if (!authenticatedFollowerId) {
             throw createHttpError(403, "Forbidden, unauthorized to update user info");
@@ -235,6 +240,10 @@ export const followUser: RequestHandler<FollowAndUnfollowParam> = async (req: Cu
             throw createHttpError(404, "User not found");
         }
 
+        if (!authenticatedFollower) {
+            throw createHttpError(404, "User not found");
+        }
+
         const isFollowing = userToFollow.followers.some(followerId => followerId.equals(new mongoose.Types.ObjectId(authenticatedFollowerId)));
 
         if (isFollowing) {
@@ -242,7 +251,9 @@ export const followUser: RequestHandler<FollowAndUnfollowParam> = async (req: Cu
         }
 
         userToFollow.followers.push(new mongoose.Types.ObjectId(authenticatedFollowerId));
+        authenticatedFollower.following.push(new mongoose.Types.ObjectId(userToFollowId));
 
+        await authenticatedFollower.save()
         await userToFollow.save();
 
         res.sendStatus(201) 
@@ -257,6 +268,7 @@ export const unfollowUser: RequestHandler<FollowAndUnfollowParam> = async (req: 
 
     try {
         const userToUnfollow = await UserModel.findById(userToUnfollowId).exec()
+        const authenticatedFollower = await UserModel.findById(authenticatedFollowerId).exec();
 
         if(!authenticatedFollowerId) {
             throw createHttpError(403, "Forbidden, unauthorized to update user info")
@@ -274,13 +286,20 @@ export const unfollowUser: RequestHandler<FollowAndUnfollowParam> = async (req: 
             throw createHttpError(404, "User not found")
         }
 
+        if (!authenticatedFollower) {
+            throw createHttpError(404, "User not found");
+        }
+
+
         const isFollowing = userToUnfollow.followers.some((followerId) => followerId.equals(new mongoose.Types.ObjectId(authenticatedFollowerId)))
 
         if(!isFollowing) throw createHttpError(400, "You already unfollowed this user")
         
         userToUnfollow.followers = userToUnfollow.followers.filter((followerId => !followerId.equals(new mongoose.Types.ObjectId(authenticatedFollowerId))))
+        authenticatedFollower.following = authenticatedFollower.following.filter((followerId => !followerId.equals(new mongoose.Types.ObjectId(userToUnfollowId))))
 
         await userToUnfollow.save()
+        await authenticatedFollower.save()
 
         res.sendStatus(201)
     } catch (error) {
@@ -309,11 +328,16 @@ export const getUserPostsAndReposts: RequestHandler<GetUserPostsAndReposts> = as
             path: "post",
             select: "-updatedAt",
             populate: [
-                {path: "creator"},
-                {path: "liked_by"},
-                {
-                    path:"children", // populate the creator of reply that are inside of children array field
+                { path: "creator" }, 
+                { path: "liked_by" },
+                { 
+                    path: "parent",
                     populate: "creator"
+                },
+                {
+                    path:"children",
+                    populate: "creator"
+                    
                 }
               ],
         }).populate("repost_creator").exec();
@@ -337,3 +361,24 @@ export const getUserPostsAndReposts: RequestHandler<GetUserPostsAndReposts> = as
         next(error)
     }
 }
+
+export const searchUsers: RequestHandler<SearchUserQuery> = async(req, res, next) => {
+    // const user = req.query  bug in query
+    const { user } = req.params
+
+    try {
+        if (!user) {
+          throw createHttpError(400, 'Bad request, missing query');
+        }
+        const users = await UserModel.find({
+          $or: [
+            { username: { $regex: user, $options: 'i' } },
+            { name: { $regex: user, $options: 'i' } },
+          ],
+        }).populate("followers")
+    
+        res.status(200).json(users);
+      } catch (error) {
+        next(error); // Pass the error to the error handling middleware
+      }
+};

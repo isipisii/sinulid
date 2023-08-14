@@ -20,4 +20,6 @@ router.patch("/unfollow/:userId", UserControllers.unfollowUser)
 
 router.get("/:userId/posts-and-reposts", UserControllers.getUserPostsAndReposts)
 
+router.get("/search/:user", UserControllers.searchUsers)
+
 export default router

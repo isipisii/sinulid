@@ -216,6 +216,9 @@ export const postSlice = createSlice({
         },
         deleteUserReplyInUserReplies: (state, action: PayloadAction<string>) => {
             state.userReplies = state.userReplies.filter(userReply => userReply._id !== action.payload)
+        },
+        updateUserReplyInUserReplies: (state, action: PayloadAction<Post>) => {
+            state.userReplies = state.userReplies.map(userReply => userReply._id === action.payload._id ? action.payload : userReply )
         }
     },
 })
@@ -245,7 +248,8 @@ export const {
     likeUserReplyInUserReplies,
     unlikeUserReplyInUserReplies,
     setUserRepliesInProfilePage,
-    deleteUserReplyInUserReplies
+    deleteUserReplyInUserReplies,
+    updateUserReplyInUserReplies
 } = postSlice.actions
 
 export default postSlice.reducer

@@ -4,53 +4,52 @@ import {
   useLazyGetUserInfoQuery,
   useFollowUserMutation,
   useUnfollowUserMutation,
-  useLazyGetUserPostsAndRepostsQuery,
 } from "../services/authAndUserApi";
 import { useAppDispatch, useAppSelector } from "../features/app/hooks";
 
 import {
   setUserProfileInfo,
-  setUserPostsAndReposts,
-  setToEditUserInfo,
   unfollowUser,
   followUser,
 } from "../features/user/userProfileSlice";
-import { setImageUrl } from "../features/post/postSlice";
 
-import { MemoizedThreadAndRepostCard } from "../components/cards/ThreadAndRepostCard";
 import EditUserProfileModal from "../components/modals/EditUserProfileModal";
-import { Repost, Post, ItemType } from "../types/types";
-import { filteredUserReposts } from "../util/filteredUserReposts";
-import { repostChecker } from "../util/repostChecker";
+import UserProfileInfo from "../components/UserProfileInfo";
+
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import UserPostsAndReposts from "../components/UserPostsAndReposts";
+import UserProfileInfoLoader from "../components/loader/UserProfileInfoLoader";
 
 const Profile = (): JSX.Element => {
   const dispatch = useAppDispatch();
   const { username } = useParams();
-  const location = useLocation()
+  const location = useLocation();
   const { user: authenticatedUser, token } = useAppSelector(
     (state) => state.auth
   );
-  const { userPostsAndReposts, userProfileInfo, toEditUserInfo } =
+  const { userProfileInfo, toEditUserInfo } =
     useAppSelector((state) => state.userProfile);
-  // helper function that filters the posts and reposts of the user and returns an array of user reposts
-  const userReposts = filteredUserReposts(userPostsAndReposts)
 
   const [followMutation] = useFollowUserMutation();
   const [unfollowMutation] = useUnfollowUserMutation();
 
-  const [getUserInfoQuery] = useLazyGetUserInfoQuery();
-  const [getPostsAndRepostsQuery] = useLazyGetUserPostsAndRepostsQuery();
+  const [getUserInfoQuery, { isLoading: isUserInfoLoading }] =
+    useLazyGetUserInfoQuery();
+    
+  useDocumentTitle(
+    userProfileInfo
+      ? `${userProfileInfo?.name} (${userProfileInfo?.username}) on Threads`
+      : "Threads"
+  );
 
-  useDocumentTitle(`${userProfileInfo?.name ?? "Sinulid"} · (${userProfileInfo?.username ?? "user"})`)
-
-  const isActive = (currentPath: string): boolean => location.pathname === currentPath
+  const isActive = (currentPath: string): boolean =>
+    location.pathname === currentPath;
 
   function handleCopyLink(): void {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
   }
-  
+
   const isFollowing = userProfileInfo?.followers.some(
     (follower) => follower._id === authenticatedUser?._id
   );
@@ -81,25 +80,8 @@ const Profile = (): JSX.Element => {
       }
     }
     getUserInfo();
-  }, [username, dispatch, getUserInfoQuery]);
-
-  useEffect(() => {
-    async function getUserRepostsAndPosts(): Promise<void> {
-      if (!userProfileInfo) return;
-
-      try {
-        const userPostsAndRepostsPayload = await getPostsAndRepostsQuery(
-          userProfileInfo?._id
-        ).unwrap();
-        if (userPostsAndRepostsPayload) {
-          dispatch(setUserPostsAndReposts(userPostsAndRepostsPayload));
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    getUserRepostsAndPosts();
-  }, [userProfileInfo?._id, dispatch, getPostsAndRepostsQuery, userProfileInfo]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username]);
 
   return (
     <section className="bg-matteBlack w-full flex py-[90px] justify-center">
@@ -111,146 +93,56 @@ const Profile = (): JSX.Element => {
         {toEditUserInfo && <EditUserProfileModal />}
         <main className="w-full flex items-center flex-col gap-3 md-p-4 max-w-[600px]">
           {/* user infos */}
-          <div className="w-full flex flex-col gap-4 p-4 md:p-0">
-            {/* username and dp */}
-            <div className="flex items-center justify-between w-full">
-              <div className="flex flex-col">
-                <h1 className="text-white text-[1.5rem] font-semibold">
-                  {userProfileInfo?.name}
-                </h1>
-                <p className="text-white text-sm">
-                  {userProfileInfo?.username}
-                </p>
-              </div>
-              <img
-                src={
-                  userProfileInfo?.displayed_picture
-                    ? userProfileInfo?.displayed_picture?.url
-                    : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"
-                }
-                alt="profile picture"
-                className="h-[80px] w-[80px] rounded-full object-cover cursor-pointer"
-                onClick={() =>
-                  userProfileInfo?.displayed_picture &&
-                  dispatch(setImageUrl(userProfileInfo?.displayed_picture?.url))
-                }
+          {isUserInfoLoading ? (
+            <UserProfileInfoLoader />
+          ) : (
+            <>
+              <UserProfileInfo
+                authenticatedUser={authenticatedUser}
+                token={token}
+                userProfileInfo={userProfileInfo}
+                username={username ?? ""}
+                toggleFollowAndUnfollowHandler={toggleFollowAndUnfollowHandler}
+                handleCopyLink={handleCopyLink}
               />
-            </div>
-            {/*end of username and dp */}
 
-            <div className="flex flex-col gap-4">
-              {/* bio */}
-              <p className="text-white text-xs max-w-[300px]">
-                {userProfileInfo?.bio}
-              </p>
-              <p className="text-[#959494c9] text-xs">
-                <span>
-                  {userProfileInfo?.followerCount}{" "}
-                  {userProfileInfo?.followerCount &&
-                  userProfileInfo?.followerCount > 1
-                    ? "followers"
-                    : "follower"}{" "}
-                </span>{" "} {userProfileInfo?.link && <span>·</span>} {" "}
-                {userProfileInfo?.link && <a href={userProfileInfo?.link}>{userProfileInfo?.link}</a>}
-              </p>
-
-              {authenticatedUser && token && (
-                <div className="flex gap-4">
-                  {username === authenticatedUser?.username ? (
-                    <button
-                      className="text-white text-xs px-6 border hover:bg-[#2322225e] border-[#8d8c8c] py-2 rounded-md w-full"
-                      onClick={() =>
-                        dispatch(setToEditUserInfo(userProfileInfo))
-                      }
-                    >
-                      Edit Profile
-                    </button>
-                  ) : (
-                    <button
-                      className={`${
-                        isFollowing
-                          ? "border border-[#8d8c8c] hover:bg-[#2322225e] text-white"
-                          : "bg-white text-black font-semibold"
-                      } text-xs px-6 border py-2 rounded-md w-full`}
-                      onClick={toggleFollowAndUnfollowHandler}
-                    >
-                      {isFollowing ? "Unfollow" : "Follow"}
-                    </button>
-                  )}
-                  <button
-                    className="text-white hover:bg-[#2322225e] text-xs px-6 border border-[#8d8c8c] py-2 rounded-md w-full"
-                    onClick={handleCopyLink}
-                  >
-                    Share Profile
-                  </button>
-                </div>
-              )}
-
-            </div>
-          </div>
+              <div className="flex w-full ">
+                <Link
+                  to={`/profile/${username}`}
+                  className={`w-full ${
+                    isActive(`/profile/${userProfileInfo?.username}`)
+                      ? " border-white text-white"
+                      : "text-lightText border-borderColor"
+                  } border-b text-center text-sm p-3 font-medium`}
+                >
+                  Threads
+                </Link>
+                <Link
+                  to="replies"
+                  className={`w-full ${
+                    isActive(`/profile/${userProfileInfo?.username}/replies`)
+                      ? "border-b border-white text-white"
+                      : "text-lightText border-borderColor"
+                  } border-b text-center text-sm p-3 font-medium`}
+                >
+                  Replies
+                </Link>
+              </div>
+            </>
+          )}
           {/* end of user infos */}
 
-          <div className="flex w-full ">
-            <Link
-              to={`/profile/${username}`}
-              className={`w-full ${isActive(`/profile/${userProfileInfo?.username}`) ? "border-b border-white text-white" : "text-lightText"} text-center text-sm p-3 font-medium`}
-            >
-              Threads
-            </Link>
-            <Link
-              to="replies"
-              className={`w-full ${isActive(`/profile/${userProfileInfo?.username}/replies`) ? "border-b border-white text-white" : "text-lightText"} text-center text-sm p-3 font-medium`}
-            >
-              Replies
-            </Link>
-          </div>
-
-          {/* user posts */}
-          {isActive(`/profile/${userProfileInfo?.username}`) &&
-          <div className="flex flex-col w-full">
-            {userPostsAndReposts &&
-              userPostsAndReposts.map((item) => {
-                // Check the type of the item and render the appropriate component
-                // post
-                if (item.type === ItemType.Post) {
-                  const post = item as Post;
-                  const isReposted = repostChecker(userReposts, post._id, authenticatedUser?._id ?? "")
-                
-                  return (
-                    <MemoizedThreadAndRepostCard
-                      key={post._id}
-                      post={post}
-                      token={token}
-                      authenticatedUser={authenticatedUser}
-                      isReposted={isReposted}
-                    />
-                  );
-                }
-                
-                // repost
-                if (item.type === ItemType.Repost) {
-                  const repostItem = item as Repost;
-                  const isReposted = repostChecker(userReposts, repostItem.post._id, authenticatedUser?._id ?? "")
-                
-                  return (
-                    <MemoizedThreadAndRepostCard
-                      key={repostItem._id}
-                      repost={repostItem}
-                      type="repost"
-                      post={repostItem.post}
-                      token={token}
-                      authenticatedUser={authenticatedUser}
-                      isReposted={isReposted}
-                    />
-                  );
-                }
-              })}
-          </div>}
-
+          {/* user posts  and reposts*/}
+          <UserPostsAndReposts
+            authenticatedUser={authenticatedUser}
+            userProfileInfo={userProfileInfo}
+            token={token}
+            isActive={isActive}
+          />
+          
           {/* nested route */}
           {/* this is the where the user replies will render */}
-          <Outlet /> 
-
+          <Outlet />
         </main>
       </div>
     </section>

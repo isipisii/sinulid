@@ -40,12 +40,17 @@ export const createRepost: RequestHandler<RepostParam> = async (req: CustomReque
                 path: "post",
                 select: "-updatedAt",
                 populate: [
-                    { path: "creator" },
+                    { path: "creator" }, 
                     { path: "liked_by" },
                     { 
-                        path: "children",
-                        populate: "creator"
+                        path: "parent",
+                        populate: ["creator", "children", "liked_by", {path: "parent", populate: "creator"}]
                     },
+                    {
+                        path:"children",
+                        populate: "creator"
+                        
+                    }
                 ],
             },
             { path: "repost_creator" },
@@ -58,25 +63,6 @@ export const createRepost: RequestHandler<RepostParam> = async (req: CustomReque
     }
 } 
 
-export const getUserReposts: RequestHandler<GetRepostParam> = async (req, res, next) => {
-    const { userId } = req.params
-
-    try {
-        if(!userId){
-            throw createHttpError(400, "Bad request, missing params")
-        }
-        
-        const reposts = await RepostModel.find({repost_creator: userId}).populate("repost_creator").populate("post_id")
-        
-        if(!reposts){
-            throw createHttpError(404, "Reposts not found")
-        }
-        
-        res.status(200).json(reposts)
-    } catch (error) {
-        next(error)
-    }
-}
 
 export const deleteRepost: RequestHandler<DeleteRepostParam> = async (req: CustomRequest, res, next) => {
     const { repostId } = req.params

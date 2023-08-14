@@ -76,8 +76,11 @@ const authAndUserApi = api.injectEndpoints({
             query:(userId) =>  `/users/${userId}/posts-and-reposts`
         }),
         getUserReplies: builder.query<Post[], string>({
-           query:(userId) => `/posts/user-replies/${userId}`
-        })
+           query:(userId) => `/posts/user-replies/${userId}`,
+        }),
+        getSearchedUsers: builder.query<User[], string>({
+            query:(username) => `/users/search/${username}`,
+         })
     }),
 })
 
@@ -90,5 +93,6 @@ export const {
     useFollowUserMutation, 
     useUnfollowUserMutation,
     useLazyGetUserPostsAndRepostsQuery,
-    useGetUserRepliesQuery
+    useLazyGetUserRepliesQuery,
+    useLazyGetSearchedUsersQuery
 } = authAndUserApi

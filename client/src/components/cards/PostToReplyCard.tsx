@@ -4,11 +4,12 @@ import { Link } from "react-router-dom";
 import { useAppSelector } from "../../features/app/hooks";
 
 interface IPost {
-  postToReply: Post | null;
+  postToReply: Post;
 }
 
 const PostToReplyCard: FC<IPost> = ({ postToReply }) => {
   const { userDefaultProfileImage } = useAppSelector(state => state.userProfile)
+
   return (
     <div className="w-full h-auto p-3">
       <div className="flex gap-3">

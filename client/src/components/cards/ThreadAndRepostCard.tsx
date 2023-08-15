@@ -189,8 +189,10 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
           postId,
           token,
         }).unwrap();
+        
         showToast("Reposted");
         dispatch(addRepostInUserProfile(newRepost));
+
       } catch (error) {
         console.error;
       }

@@ -65,7 +65,7 @@ const SideBarAndBottomNav = (): JSX.Element => {
           </aside>
 
           {/* bottom nav */}
-          <div className="block md:hidden fixed m-auto bottom-0 left-0 right-0 z-20 w-full bg-matteBlack border-white  rounded-xl p-2 shadow-2xl shadow-[#100f0faf]">
+          <div className="block md:hidden fixed m-auto bottom-0 left-0 right-0 z-20 w-full bg-matteBlack border-white  p-2 shadow-2xl shadow-[#100f0faf]">
             <ul className="flex flex-row justify-around w-full">
               {barLinks.map((link, index) => (
                 <Link to={link.linkTo} key={index}>

@@ -111,5 +111,6 @@ export const {
     useUnlikePostMutation,  
     useLazyGetSinglePostQuery,
     useLazyGetRepliesQuery,
-    useCreatePostReplyMutation
+    useCreatePostReplyMutation,
+    useGetSinglePostQuery
 } = postApi

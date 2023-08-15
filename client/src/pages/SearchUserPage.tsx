@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChangeEvent } from "react";
-import { useLazyGetSearchedUsersQuery } from "../services/authAndUserApi";
+import { useLazyGetSearchedUsersQuery, useGetRandomUsersQuery } from "../services/authAndUserApi";
 import { useDebounce } from "use-debounce";
 import { BiSearch } from "react-icons/bi";
 import { RotatingLines } from "react-loader-spinner";
@@ -14,6 +14,7 @@ const SearchUserPage = () => {
   const [search, setSearch] = useSearchParams();
   const [getSearchedUsers, { isFetching }] = useLazyGetSearchedUsersQuery();
   const [debounceSearchTerm] = useDebounce(search.get("user"), 900);
+  const { data } = useGetRandomUsersQuery()
   const [users, setUsers] = useState<User[]>([]);
   const { userDefaultProfileImage } = useAppSelector(
     (state) => state.userProfile
@@ -78,9 +79,16 @@ const SearchUserPage = () => {
               <div className="w-full mt-8">
                 <p className="text-sm text-lightText font-light pb-8 border-b border-borderColor">No results found for "{debounceSearchTerm}"</p>
               </div>
-              : 
+              : debounceSearchTerm ?
               <div className="flex flex-col mt-4">
                 {users.map((user, index) => (
+                  <UserCard user={user} userDefaultProfileImage={userDefaultProfileImage} key={index}/>
+                ))}
+              </div>
+              : 
+              data && 
+              <div className="flex flex-col mt-4">
+                {data.map((user, index) => (
                   <UserCard user={user} userDefaultProfileImage={userDefaultProfileImage} key={index}/>
                 ))}
               </div>

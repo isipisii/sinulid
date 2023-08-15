@@ -10,16 +10,24 @@ interface IUserProfileInfo {
     token:string
     username: string
     toggleFollowAndUnfollowHandler: () => void
-    handleCopyLink: () => void
 }
 
-const UserProfileInfo: FC<IUserProfileInfo> = ({ userProfileInfo, token, authenticatedUser, username, toggleFollowAndUnfollowHandler, handleCopyLink }) => {
+const UserProfileInfo: FC<IUserProfileInfo> = ({ userProfileInfo, token, authenticatedUser, username, toggleFollowAndUnfollowHandler }) => {
   const dispatch = useAppDispatch() 
   const { userDefaultProfileImage } = useAppSelector(state => state.userProfile)
   
   const isFollowing = userProfileInfo?.followers.some(
     (follower) => follower._id === authenticatedUser?._id
   );
+
+  function shareProfile(){
+    const data = {
+        title: "Threads",
+        text: `Come and check @${userProfileInfo?.username}'s profile on threads!`,
+        url: `http://127.0.0.1:5173/profile/${userProfileInfo?.username}`
+    }
+    if(navigator.share) navigator.share(data)
+  }
 
   return (
     <div className="w-full flex flex-col gap-4 p-4 md:p-0">
@@ -82,7 +90,7 @@ const UserProfileInfo: FC<IUserProfileInfo> = ({ userProfileInfo, token, authent
                     className={`${
                     isFollowing
                         ? "border border-[#8d8c8c] hover:bg-[#2322225e] text-white"
-                        : "bg-white text-black font-semibold"
+                        : "bg-white text-black "
                     } text-sm px-6 border py-2 rounded-md w-full`}
                     onClick={toggleFollowAndUnfollowHandler}
                 >
@@ -91,7 +99,7 @@ const UserProfileInfo: FC<IUserProfileInfo> = ({ userProfileInfo, token, authent
                 )}
                 <button
                     className="text-white hover:bg-[#2322225e] text-xs md:text-sm px-6 border border-[#8d8c8c] py-2 rounded-lg w-full"
-                    onClick={handleCopyLink}
+                    onClick={shareProfile}
                 >
                 Share Profile
                 </button>

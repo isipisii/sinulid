@@ -81,8 +81,13 @@ const authAndUserApi = api.injectEndpoints({
         getSearchedUsers: builder.query<User[], string>({
             query:(username) => `/users/search/${username}`,
         }),
-        getRandomUsers: builder.query<User[], void>({
-            query:() => "/users/random",
+        getRandomUsers: builder.query<User[], string>({
+            query:(token) => ({
+                url:  "/users/random",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
         }),
     }),
 })

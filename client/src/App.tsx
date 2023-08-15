@@ -1,9 +1,15 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import SignUp from "./pages/SignUp";
 import LogIn from "./pages/LogIn";
-import Home from "./pages/Home";
+import Activity from "./pages/Activity";
+const Home = lazy(() => import("./pages/Home"));
+const Profile = lazy(() => import("./pages/Profile"));
+const PostAndReplies = lazy(() => import("./pages/PostAndRepliesPage"));
+const CreateReplyPage = lazy(() => import("./pages/CreateReplyPage"));
+import SearchUserPage from "./pages/SearchUserPage";
+
 import NavBar from "./components/NavBar";
 import UserReplies from "./components/UserReplies";
 import ScrollToTop from "./components/hoc/ScrollToTop";
@@ -13,14 +19,10 @@ import { useAppSelector, useAppDispatch } from "./features/app/hooks";
 import { setUser } from "./features/auth/authSlice";
 import Protected from "./components/hoc/Protected";
 
-import ViewImageModal from "./components/modals/ViewImageModal";
+const ViewImageModal = lazy(() => import("./components/modals/ViewImageModal"));
+const EditPostModal = lazy(() => import("./components/modals/EditPostModal"));
 import SideBarAndBottomNav from "./components/SideBarAndBottomNav";
-import Activity from "./pages/Activity";
-import Profile from "./pages/Profile";
-import EditPostModal from "./components/modals/EditPostModal";
-import PostAndReplies from "./pages/PostAndRepliesPage";
-import CreateReplyPage from "./pages/CreateReplyPage";
-import SearchUserPage from "./pages/SearchUserPage";
+import NotFound from "./pages/NotFound";
 
 const App: FC = () => {
   const { token } = useAppSelector((state) => state.auth);
@@ -50,16 +52,19 @@ const App: FC = () => {
     <>
       <NavBar />
       <SideBarAndBottomNav />
-      <ViewImageModal />
-      <EditPostModal />
-      {/* Wrap ScrollToTop around routes where you want scroll behavior */}
+      <Suspense fallback={<div>Loading...</div>}>
+        <ViewImageModal />
+        <EditPostModal />
+      </Suspense>
       <Routes>
         <Route
           path="/"
           element={
             <ScrollToTop>
               <Protected isSignedIn={token}>
-                <Home getUserInfo={getUserInfo} />
+                <Suspense fallback={<div>Loading...</div>}>
+                  <Home getUserInfo={getUserInfo} />
+                </Suspense>
               </Protected>
             </ScrollToTop>
           }
@@ -69,7 +74,9 @@ const App: FC = () => {
           element={
             <ScrollToTop>
               <Protected isSignedIn={token}>
-                <CreateReplyPage />
+                <Suspense fallback={<div>Loading...</div>}>
+                  <CreateReplyPage />
+                </Suspense>
               </Protected>
             </ScrollToTop>
           }
@@ -94,10 +101,15 @@ const App: FC = () => {
             </ScrollToTop>
           }
         />
-        <Route path="/profile/:username" element={<Profile />}>
+        <Route path="/profile/:username" element={
+          <Suspense>
+              <Profile />
+          </Suspense>
+        }>
           <Route
             path="replies"
-            element={<UserReplies userProfileInfo={userProfileInfo} />}
+            element={
+            <UserReplies userProfileInfo={userProfileInfo} />}
           />
         </Route>
         <Route path="/login" element={<LogIn />} />
@@ -106,12 +118,14 @@ const App: FC = () => {
           path="/:username/post/:postId"
           element={
             <ScrollToTop>
-              <PostAndReplies />
+              <Suspense>
+                <PostAndReplies />
+              </Suspense>
             </ScrollToTop>
           }
         />
         {/* TODO */}
-        {/* <Route path="*" element={<NotFound />} /> */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );

@@ -9,6 +9,8 @@ interface IUserProfileState {
     userReposts: Repost[]
     userDefaultProfileImage: string
     otherUserPostsAndReposts: (Post | Repost) []
+    users: User[]
+    searchedUsers: User[]
 }
 
 const initialState: IUserProfileState = {
@@ -17,7 +19,9 @@ const initialState: IUserProfileState = {
     otherUserPostsAndReposts: [],
     toEditUserInfo: null,
     userReposts: [],
-    userDefaultProfileImage: "https://img.myloview.com/posters/default-avatar-profile-icon-vector-social-media-user-photo-700-205577532.jpg"
+    userDefaultProfileImage: "https://img.myloview.com/posters/default-avatar-profile-icon-vector-social-media-user-photo-700-205577532.jpg",
+    users: [],
+    searchedUsers: []
 }
 
 export const userProfileSlice = createSlice({
@@ -224,6 +228,61 @@ export const userProfileSlice = createSlice({
         setUserReposts: (state, action: PayloadAction<Repost[]>) => {
             state.userReposts = action.payload
         },
+        setUsers: (state, action: PayloadAction<User[]>) => {
+            state.users = action.payload
+        },
+        setSearchedUsers: (state, action: PayloadAction<User[]>) => {
+            state.searchedUsers = action.payload
+        },
+        followRandomUser: (state, action: PayloadAction<{userTofollowId: string, authenticatedUser: User}>) => {
+
+            state.users = state.users.map((randomUser) => {
+                if(randomUser._id === action.payload.userTofollowId){
+                    return{
+                        ...randomUser,
+                        followers: [...randomUser.followers, action.payload.authenticatedUser]
+                    }
+                }
+                return randomUser
+            })
+        },
+        unfollowRandomUser: (state, action: PayloadAction<{userTofollowId: string, authenticatedUser: User}>) => {
+
+            state.users = state.users.map((randomUser) => {
+                if(randomUser._id === action.payload.userTofollowId){
+                    return{
+                        ...randomUser,
+                        followers: randomUser.followers.filter((follower) => follower._id !== action.payload.authenticatedUser._id)
+                    }
+                }
+                return randomUser
+            })
+        },
+
+        followSearchedUser: (state, action: PayloadAction<{userTofollowId: string, authenticatedUser: User}>) => {
+
+            state.searchedUsers = state.searchedUsers.map((searchedUser) => {
+                if(searchedUser._id === action.payload.userTofollowId){
+                    return{
+                        ...searchedUser,
+                        followers: [...searchedUser.followers, action.payload.authenticatedUser]
+                    }
+                }
+                return searchedUser
+            })
+        },
+        unfollowSearchedUser: (state, action: PayloadAction<{userTofollowId: string, authenticatedUser: User}>) => {
+
+            state.searchedUsers = state.searchedUsers.map((searchedUser) => {
+                if(searchedUser._id === action.payload.userTofollowId){
+                    return{
+                        ...searchedUser,
+                        followers: searchedUser.followers.filter((follower) => follower._id !== action.payload.authenticatedUser._id)
+                    }
+                }
+                return searchedUser
+            })
+        }
     }
 })
 
@@ -240,7 +299,13 @@ export const {
     unfollowUser,
     addRepostInUserProfile,
     setUserReposts,
-    setOtherUserPostsAndReposts
+    setOtherUserPostsAndReposts,
+    setUsers,
+    setSearchedUsers,
+    followSearchedUser,
+    unfollowSearchedUser,
+    followRandomUser,
+    unfollowRandomUser
 } = userProfileSlice.actions
 
 export default userProfileSlice

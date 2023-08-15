@@ -39,7 +39,7 @@ const UserProfileInfo: FC<IUserProfileInfo> = ({ userProfileInfo, token, authent
                 </h1>
                 <div className='flex items-center gap-1'>
                     <p className="text-white text-sm">{userProfileInfo?.username} </p>
-                    <p className='text-[.65rem] bg-[#514c4c50] text-[#737272] py-[.30rem] px-2 rounded-full font-light'>threads.net</p>
+                    <p className='text-[.65rem] bg-[#36353560] text-[#989696] py-[.35rem] px-2 rounded-full font-light'>threads.net</p>
                 </div>
             </div>
             <img
@@ -78,7 +78,7 @@ const UserProfileInfo: FC<IUserProfileInfo> = ({ userProfileInfo, token, authent
             <div className="flex gap-4">
                 {username === authenticatedUser?.username ? (
                 <button
-                    className="text-white text-xs md:text-sm px-6 border hover:bg-[#2322225e] border-[#8d8c8c] py-2 rounded-lg w-full"
+                    className="text-white text-xs md:text-sm px-6 border hover:bg-[#3a383830] border-[#8d8c8c] py-2 rounded-lg w-full"
                     onClick={() =>
                     dispatch(setToEditUserInfo(userProfileInfo))
                     }
@@ -89,16 +89,16 @@ const UserProfileInfo: FC<IUserProfileInfo> = ({ userProfileInfo, token, authent
                 <button
                     className={`${
                     isFollowing
-                        ? "border border-[#8d8c8c] hover:bg-[#2322225e] text-white"
+                        ? "border border-[#8d8c8c] hover:bg-[#3a383830] text-white"
                         : "bg-white text-black "
-                    } text-sm px-6 border py-2 rounded-md w-full`}
+                    } text-sm px-6 border py-2 rounded-lg w-full`}
                     onClick={toggleFollowAndUnfollowHandler}
                 >
                     {isFollowing ? "Unfollow" : "Follow"}
                 </button>
                 )}
                 <button
-                    className="text-white hover:bg-[#2322225e] text-xs md:text-sm px-6 border border-[#8d8c8c] py-2 rounded-lg w-full"
+                    className="text-white hover:bg-[#3a383830] text-xs md:text-sm px-6 border border-[#8d8c8c] py-2 rounded-lg w-full"
                     onClick={shareProfile}
                 >
                 Share Profile

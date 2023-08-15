@@ -7,13 +7,16 @@ import { setToken } from '../features/auth/authSlice'
 import { useSignUpMutation } from '../services/authAndUserApi'
 import { useForm } from 'react-hook-form';
 import { FiEye, FiEyeOff } from 'react-icons/fi'
+import { Toaster } from 'react-hot-toast'
+import { showToast } from '../util/showToast'
+import Spinner from '../components/loader/Spinner'
 
 const SignUp = (): JSX.Element => {
     const [isPasswordShown, setIsPasswordShown] = useState<boolean>(false)
     const [isConfirmPasswordShown, setIsConfirmPasswordShown] = useState<boolean>(false)
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
-    const [signUp] = useSignUpMutation()
+    const [signUp, { isLoading: isSigningUp }] = useSignUpMutation()
     const { register, handleSubmit, getValues, formState: { errors } } = useForm<SignUpCredentials>()
     const errorStyle = "text-red-500 text-[.7rem] mt-[-.5rem]"
 
@@ -25,8 +28,15 @@ const SignUp = (): JSX.Element => {
                 dispatch(setToken(payload.token))
                 navigate("/")
             }
-        } catch (error) {
-            console.error(error)
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            if (error.status === 409){
+                showToast("This username is already taken, please use different one.", true)
+            } else {
+                console.error(error)
+                showToast("Error, something went wrong.", true);
+            }
         }
     }
 
@@ -109,10 +119,16 @@ const SignUp = (): JSX.Element => {
                 {errors.confirmPassword && errors.confirmPassword.type === "required"  && (<p className={errorStyle}>Confirm password is required</p>)}
                 {errors.confirmPassword  && (<p className={errorStyle}>{errors.confirmPassword.message}</p>)}
 
-            </div>  
-            <button type='submit' className='bg-white w-full p-2 rounded-sm text-matteBlack font-bold text-sm'>Sign Up</button>
+            </div> 
+            <button type='submit' className="bg-white w-full p-2 rounded-sm text-matteBlack font-bold text-sm flex items-center justify-center">
+                <div className="flex items-center gap-2">
+                    {isSigningUp ? "Signing in" : "Sign in"}
+                    {isSigningUp && <Spinner fillColor="fill-black" pathColor="text-gray-400" />}
+                </div>
+            </button>
             <p className='text-lightText text-xs'>Got an account?  <Link to="/login" className='text-white'>Log in</Link></p>
         </form>
+        <Toaster position="bottom-center" reverseOrder={false} />
     </div>
 )}
 

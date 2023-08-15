@@ -1,24 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChangeEvent } from "react";
-import { useLazyGetSearchedUsersQuery, useGetRandomUsersQuery } from "../services/authAndUserApi";
+import { useLazyGetSearchedUsersQuery, useGetUsersQuery } from "../services/authAndUserApi";
 import { useDebounce } from "use-debounce";
 import { BiSearch } from "react-icons/bi";
 import { RotatingLines } from "react-loader-spinner";
-import { User } from "../types/types";
-import { useAppSelector } from "../features/app/hooks";
-
 import UserCard from "../components/cards/UserCard";
+import { useAppSelector, useAppDispatch } from "../features/app/hooks";
+import { setSearchedUsers, setUsers } from "../features/user/userProfileSlice";
 
 const SearchUserPage = () => {
   const [search, setSearch] = useSearchParams();
+  const { token } = useAppSelector(state => state.auth)
   const [getSearchedUsers, { isFetching }] = useLazyGetSearchedUsersQuery();
   const [debounceSearchTerm] = useDebounce(search.get("user"), 900);
-  const { data } = useGetRandomUsersQuery()
-  const [users, setUsers] = useState<User[]>([]);
-  const { userDefaultProfileImage } = useAppSelector(
-    (state) => state.userProfile
-  );
+  const { data: usersQuery } = useGetUsersQuery(token)
+  const { users, searchedUsers } = useAppSelector(state => state.userProfile)
+  const dispatch = useAppDispatch()
 
   const handleUsername = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch({ user: e.target.value });
@@ -30,7 +28,7 @@ const SearchUserPage = () => {
       if (!debounceSearchTerm) return;
       try {
         const users = await getSearchedUsers(debounceSearchTerm).unwrap();
-        setUsers(users);
+        dispatch(setSearchedUsers(users))
       } catch (error) {
         console.error(error);
       }
@@ -39,6 +37,13 @@ const SearchUserPage = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounceSearchTerm]);
+
+  useEffect(() => {
+    if(usersQuery){
+      dispatch(setUsers(users))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[usersQuery])
 
   return (
     <section className="bg-matteBlack w-full flex items-center justify-center pb-[100px]">
@@ -58,7 +63,7 @@ const SearchUserPage = () => {
                 placeholder="Search"
                 value={search.get("user") ?? ""}
                 onChange={handleUsername}
-                className="pl-8 bg-transparent border-borderColor border p-2 placeholder:text-[#4a4545] text-sm text-white focus:border-white focus:outline-none w-full rounded-md"
+                className="pl-8 bg-transparent border-borderColor border p-2 placeholder:text-[#4a4545] text-sm text-white focus:border-white focus:outline-none w-full rounded-lg"
               />
             </div>
           </div>
@@ -75,21 +80,21 @@ const SearchUserPage = () => {
                 />
               </div>
             ) : (
-              users.length === 0 && debounceSearchTerm ? 
+              searchedUsers.length === 0 && debounceSearchTerm ? 
               <div className="w-full mt-8">
                 <p className="text-sm text-lightText font-light pb-8 border-b border-borderColor">No results found for "{debounceSearchTerm}"</p>
               </div>
               : debounceSearchTerm ?
               <div className="flex flex-col mt-4">
-                {users.map((user, index) => (
-                  <UserCard user={user} userDefaultProfileImage={userDefaultProfileImage} key={index}/>
+                {searchedUsers.map((user, index) => (
+                  <UserCard user={user} key={index} />
                 ))}
               </div>
               : 
-              data && 
+              users && 
               <div className="flex flex-col mt-4">
-                {data.map((user, index) => (
-                  <UserCard user={user} userDefaultProfileImage={userDefaultProfileImage} key={index}/>
+                {users.map((user, index) => (
+                  <UserCard user={user} key={index} />
                 ))}
               </div>
             )}

@@ -61,7 +61,8 @@ const authAndUserApi = api.injectEndpoints({
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
-            })
+            }),
+            invalidatesTags: ["Users"]
         }),
         unfollowUser: builder.mutation<void, FollowAndUnfollow>({
             query: ({ token, userToFollowId }) => ({
@@ -70,7 +71,8 @@ const authAndUserApi = api.injectEndpoints({
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
-            })
+            }),
+            invalidatesTags: ["Users"]
         }),
         getUserPostsAndReposts: builder.query<(Post | Repost)[],string>({
             query:(userId) =>  `/users/${userId}/posts-and-reposts`
@@ -81,13 +83,17 @@ const authAndUserApi = api.injectEndpoints({
         getSearchedUsers: builder.query<User[], string>({
             query:(username) => `/users/search/${username}`,
         }),
-        getRandomUsers: builder.query<User[], string>({
+        getUsers: builder.query<User[], string>({
             query:(token) => ({
                 url:  "/users/random",
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
-            })
+            }),
+            providesTags: (result, error, arg) =>
+            result
+              ? [...result.map(({ _id }) => ({ type: "Users" as const, _id })), "Users"]
+              : ["Users"],
         }),
     }),
 })
@@ -103,5 +109,5 @@ export const {
     useLazyGetUserPostsAndRepostsQuery,
     useLazyGetUserRepliesQuery,
     useLazyGetSearchedUsersQuery,
-    useGetRandomUsersQuery,
+    useGetUsersQuery,
 } = authAndUserApi

@@ -107,7 +107,6 @@ const EditUserProfileModal = (): JSX.Element => {
         }
     }
 
-    
     return (
         <div className="bg-[#000000bd] backdrop-blur-sm fixed w-[100vw] h-[100vh] z-20 top-0 left-0 flex items-center justify-center">
             {/* close icon */}

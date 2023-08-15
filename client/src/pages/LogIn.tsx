@@ -6,12 +6,15 @@ import { useLogInMutation } from "../services/authAndUserApi";
 import { setToken } from "../features/auth/authSlice";
 import { useForm } from 'react-hook-form';
 import { FiEye, FiEyeOff } from 'react-icons/fi'
+import Spinner from "../components/loader/Spinner";
+import { showToast } from "../util/showToast";
+import { Toaster } from "react-hot-toast";
 
 const LogIn = (): JSX.Element => {
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const [logIn] = useLogInMutation();
+  const [logIn, { isLoading: isLoggingIn }] = useLogInMutation();
   const { register, handleSubmit, formState: { errors } } = useForm<LogInCredentials>()
   const errorStyle = "text-red-500 text-[.7rem] mt-[-.5rem]"
 
@@ -23,8 +26,14 @@ const LogIn = (): JSX.Element => {
         dispatch(setToken(payload.token));
         navigate("/");
       }
-    } catch (error) {
-      console.error(error);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if(error.status === 401){
+        showToast("Th username or password you are trying to log in with are incorrect", true);
+      } else {
+        console.error(error);
+        showToast("Error, something went wrong.", true);
+      } 
     }
   }
 
@@ -69,9 +78,12 @@ const LogIn = (): JSX.Element => {
         </div>
         <button
           type="submit"
-          className="bg-white w-full p-2 rounded-sm text-matteBlack font-bold text-sm"
-        >
-          Log in
+          className="bg-white w-full p-2 rounded-sm text-matteBlack font-bold text-sm flex items-center justify-center"
+        > 
+          <div className="flex items-center gap-2">
+            {isLoggingIn ? "Logging in" : "Log in"}
+            {isLoggingIn && <Spinner fillColor="fill-black" pathColor="text-gray-400" />}
+          </div>
         </button>
         <p className="text-lightText text-xs">
           Don't have an account?{" "}
@@ -80,6 +92,7 @@ const LogIn = (): JSX.Element => {
           </Link>
         </p>
       </form>
+      <Toaster position="bottom-center" reverseOrder={false} />
     </div>
   );
 };

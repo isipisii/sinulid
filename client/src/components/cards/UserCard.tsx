@@ -1,16 +1,47 @@
 import { FC } from "react";
 import { User } from "../../types/types";
 import { Link } from "react-router-dom";
-import { useAppSelector } from "../../features/app/hooks";
+import { useAppSelector, useAppDispatch } from "../../features/app/hooks";
+import { useFollowUserMutation, useUnfollowUserMutation } from "../../services/authAndUserApi";
+import {
+  followRandomUser,
+  unfollowRandomUser,
+  followSearchedUser,
+  unfollowSearchedUser,
+  followUser,
+  unfollowUser,
+} from "../../features/user/userProfileSlice";
 
 interface IUserCard {
   user: User;
 }
 
 const UserCard: FC<IUserCard> = ({ user }) => {
-
+  const dispatch = useAppDispatch()
   const { userDefaultProfileImage } = useAppSelector((state) => state.userProfile);
-  const { user: authenticatedUser } = useAppSelector((state) => state.auth);
+  const { user: authenticatedUser, token } = useAppSelector((state) => state.auth);
+  const [followMutation] = useFollowUserMutation();
+  const [unfollowMutation] = useUnfollowUserMutation();
+
+  const isFollowing = user.followers.some(
+    (follower) => follower._id === authenticatedUser?._id
+  );
+
+  function toggleFollowAndUnfollowHandler(): void {
+    if (!authenticatedUser) return;
+
+    if (isFollowing) {
+      dispatch(followUser(authenticatedUser));
+      dispatch(unfollowRandomUser({ userTofollowId: user._id , authenticatedUser}));
+      dispatch(unfollowSearchedUser({ userTofollowId: user._id , authenticatedUser}));
+      unfollowMutation({ token, userToFollowId: user._id });
+    } else {
+      dispatch(unfollowUser(authenticatedUser));
+      dispatch(followRandomUser({ userTofollowId: user._id , authenticatedUser}));
+      dispatch(followSearchedUser({ userTofollowId: user._id , authenticatedUser}));
+      followMutation({ token, userToFollowId: user._id });
+    }
+  }
 
   return (
     <div className="w-full flex gap-3 items-center">
@@ -31,10 +62,11 @@ const UserCard: FC<IUserCard> = ({ user }) => {
             <p className="text-sm text-lightText font-light">{user.name}</p>
           </div>
         </Link>
-       {user._id !== authenticatedUser?._id && 
-       <button className="border border-borderColor text-sm text-white py-[.30rem] px-5 rounded-lg">
-          Follow
-        </button>}
+        {user._id !== authenticatedUser?._id && (
+          <button className="border border-borderColor text-sm text-white py-[.30rem] px-5 rounded-lg" onClick={toggleFollowAndUnfollowHandler}>
+            {isFollowing ? "Unfollow" : "Follow"}
+          </button>
+        )}
       </div>
     </div>
   );

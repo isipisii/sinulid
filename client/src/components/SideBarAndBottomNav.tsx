@@ -24,7 +24,7 @@ const SideBarAndBottomNav = (): JSX.Element => {
       linkName: "Activity",
       activeIcon: <AiFillHeart />,
       inactiveIcon: <AiOutlineHeart />,
-      linkTo: "/activity",
+      linkTo: "/activity/all",
     },
     {
       linkName: "Search",
@@ -50,7 +50,7 @@ const SideBarAndBottomNav = (): JSX.Element => {
                 {barLinks.map((link, index) => (
                   <Link to={link.linkTo} key={index}>
                     <li
-                      className={`flex items-center gap-2 md:p-4 lg:pl-3 lg:py-3 lg:pr-[6rem] hover:bg-[#4e4a4a48] rounded-md 
+                      className={`flex items-center gap-2 md:p-4 lg:pl-3 lg:py-3 lg:pr-[6rem] hover:bg-[#4e4a4a48] rounded-lg 
                       ${isActive(link.linkTo) ? "bg-[#4e4a4a48]  text-white" : "text-[#787878]"}`}
                     >
                       <p className="text-[1.7rem]">{isActive(link.linkTo) ? link.activeIcon : link.inactiveIcon}</p>

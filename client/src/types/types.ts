@@ -23,7 +23,7 @@ export type User = {
     link?: string
     followerCount: number
     following: User[]
-    followers: User[]
+    followers: User[] 
 }
 
 export type Post = {
@@ -48,21 +48,6 @@ export type Repost = {
     post: Post
     createdAt: string 
     type: string
-}
-
-export type Reply = {
-    _id: string
-    post: string
-    creator: User
-    content: string
-    parentReply: Reply
-    image?: {
-        url: string,
-        cloudinary_id: string
-    }
-    likes: number
-    createdAt: string 
-    liked_by: User[]
 }
 
 export enum ItemType {

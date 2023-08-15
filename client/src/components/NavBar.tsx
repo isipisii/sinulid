@@ -18,10 +18,6 @@ const NavBar = (): JSX.Element => {
     navigate("/login");
   }
 
-  // function test(){
-  //   document.body.classList.add('body-dark');
-  // }
-
   return (
     <>
       {location.pathname !== "/signup" && location.pathname !== "/login" && (
@@ -29,7 +25,7 @@ const NavBar = (): JSX.Element => {
           <div className=" flex items-center justify-between p-4 w-full h-auto">
             <h1 className="text-white font-bold">sinolid.</h1>
             {user && token ? (
-              <div className="border border-borderColor p-2 flex gap-2 items-center rounded-md">
+              <div className="border border-borderColor p-2 flex gap-2 items-center rounded-lg">
                 <img
                   src={
                     user?.displayed_picture

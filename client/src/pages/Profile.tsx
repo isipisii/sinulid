@@ -13,7 +13,11 @@ import {
   unfollowUser,
   followUser,
   setUserPostsAndReposts,
-  setOtherUserPostsAndReposts
+  setOtherUserPostsAndReposts,
+  unfollowRandomUser,
+  unfollowSearchedUser,
+  followRandomUser,
+  followSearchedUser
 } from "../features/user/userProfileSlice";
 
 import EditUserProfileModal from "../components/modals/EditUserProfileModal";
@@ -56,9 +60,13 @@ const Profile = (): JSX.Element => {
     if (!authenticatedUser || !userProfileInfo) return;
 
     if (isFollowing) {
+      dispatch(unfollowRandomUser({ userTofollowId: userProfileInfo._id , authenticatedUser}));
+      dispatch(unfollowSearchedUser({ userTofollowId: userProfileInfo._id , authenticatedUser}));
       dispatch(unfollowUser(authenticatedUser));
       unfollowMutation({ token, userToFollowId: userProfileInfo._id });
     } else {
+      dispatch(followRandomUser({ userTofollowId: userProfileInfo._id , authenticatedUser}));
+      dispatch(followSearchedUser({ userTofollowId: userProfileInfo._id , authenticatedUser}));
       dispatch(followUser(authenticatedUser));
       followMutation({ token, userToFollowId: userProfileInfo._id });
     }

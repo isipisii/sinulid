@@ -1,9 +1,9 @@
 import { FC, useEffect } from "react";
-import { User } from "../types/types";
-import RootPostAndReplyCard from "./cards/RootPostAndReplyCard";
-import { useLazyGetUserRepliesQuery } from "../services/authAndUserApi";
-import { useAppDispatch, useAppSelector } from "../features/app/hooks";
-import { setUserRepliesInProfilePage } from "../features/post/postSlice";
+import { User } from "../../types/types";
+import RootPostAndReplyCard from "../cards/RootPostAndReplyCard";
+import { useLazyGetUserRepliesQuery } from "../../services/authAndUserApi";
+import { useAppDispatch, useAppSelector } from "../../features/app/hooks";
+import { setUserRepliesInProfilePage } from "../../features/post/postSlice";
 import { RotatingLines } from "react-loader-spinner";
 
 interface IUserReplies {

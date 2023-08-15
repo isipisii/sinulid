@@ -49,39 +49,33 @@ type SearchUserQuery = {
 export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = async (req, res, next) => {
     const { username, email, password: rawPassword, name } = req.body
     
-    try {   
-            // error handlers
-            if(!username || !email || !rawPassword || !name){
-                throw createHttpError(400, "Missing credentials")
-            }
-            
-            const existingUsername = await UserModel.findOne({ username }).exec()
-            
-            if(existingUsername){
-                throw createHttpError(409, "This username is already taken, please use different one.")
-            }
+    try { 
+        // error handlers
+        if(!username || !email || !rawPassword || !name){
+            throw createHttpError(400, "Missing credentials")
+        }
+        
+        const existingUsername = await UserModel.findOne({ username }).exec()
+        
+        if(existingUsername){
+            throw createHttpError(409, "This username is already taken, please use different one.")
+        }
 
-            const existingEmail = await UserModel.findOne({ email }).exec()
-            
-            if(existingEmail){
-                throw createHttpError(409, "This email is already taken, please use different one.")
-            }
+        //password hashing
+        const hashedPassword = await bcrypt.hash(rawPassword, 10)
 
-            //password hashing
-            const hashedPassword = await bcrypt.hash(rawPassword, 10)
-
-            const newUser = await UserModel.create({
-                username,
-                email,
-                name,
-                password: hashedPassword
-            })
-            
-            // this token will be sent to the client once the creation of user is done
-            jwt.sign({ userId: newUser._id}, env.JWT_SECRET, { expiresIn: "1d" }, (error, token) => {
-                if(error) next(error)
-                res.status(201).json({ token: token })
-            })
+        const newUser = await UserModel.create({
+            username,
+            email,
+            name,
+            password: hashedPassword
+        })
+        
+        // this token will be sent to the client once the creation of user is done
+        jwt.sign({ userId: newUser._id}, env.JWT_SECRET, { expiresIn: "1d" }, (error, token) => {
+            if(error) next(error)
+            res.status(201).json({ token: token })
+        })
 
     } catch (error) {
         next(error)
@@ -398,12 +392,9 @@ export const getUsers: RequestHandler = async (req: CustomRequest, res, next) =>
             throw createHttpError(404, "User not found")
         }
 
-        const randomUsers = await UserModel.aggregate([
-            { $match: { username: {$ne: authenticatedUser.username } } }, // this will exclude the authenticated user 
-            { $sample: { size: 5 } }, //will get 5 randomized user document 
-        ]).exec();
-
-        res.status(200).json(randomUsers)
+        const populatedUsers = await UserModel.find({ username: {$ne: authenticatedUser.username } }).populate('followers').exec();
+      
+        res.status(200).json(populatedUsers);
     } catch (error) {
         next(error)
     }

@@ -1,39 +1,21 @@
-import { JSX, useEffect, useState } from "react";
+import { JSX } from "react";
 import { useAppSelector } from "../features/app/hooks";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { IoIosArrowBack } from "react-icons/io";
-import { useLazyGetSinglePostQuery } from "../services/postApi";
-import { Post } from "../types/types";
+import { useGetSinglePostQuery } from "../services/postApi";
 
 import CreatePostForm from "../components/form/CreateAndEditPostForm";
 import PostToReplyCard from "../components/cards/PostToReplyCard";
 import { RotatingLines } from "react-loader-spinner";
 
 const CreateReplyPage = (): JSX.Element => {
+  const { postToReplyId } = useParams();
   const { user: authenticatedUser } = useAppSelector((state) => state.auth);
   const { userDefaultProfileImage } = useAppSelector(
     (state) => state.userProfile
   );
-  const [getSinglePostQuery, { isFetching }] = useLazyGetSinglePostQuery();
-  const [postToReply, setPostToReply] = useState<Post | null>(null);
-
+  const {data: postToReply, isFetching} = useGetSinglePostQuery(postToReplyId ?? "")
   const navigate = useNavigate();
-  const { postToReplyId } = useParams();
-
-  useEffect(() => {
-    async function getSinglePostAndReplies() {
-      if (!postToReplyId) return;
-
-      try {
-        const post = await getSinglePostQuery(postToReplyId).unwrap();
-        setPostToReply(post);
-        console.log(post);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    getSinglePostAndReplies();
-  }, [postToReplyId, getSinglePostQuery]);
 
   return (
     <section className="bg-matteBlack w-full flex items-center justify-center pb-[100px]">
@@ -55,7 +37,7 @@ const CreateReplyPage = (): JSX.Element => {
             </h1>
           </div>
 
-          {isFetching ? (
+          {isFetching || !postToReply? (
             <div className="h-[50vh] flex items-center justify-center">
               <RotatingLines
                 strokeColor="grey"

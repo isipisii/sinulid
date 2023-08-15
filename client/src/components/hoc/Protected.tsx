@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { Navigate } from "react-router-dom";
 
 interface IProtected {
-  children: React.ReactElement;
+  children: React.ReactElement | React.ReactElement[];
   isSignedIn: string | null;
 }
 

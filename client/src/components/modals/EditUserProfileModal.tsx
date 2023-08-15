@@ -21,7 +21,7 @@ const EditUserProfileModal = (): JSX.Element => {
     const dispatch = useAppDispatch()
     const [updateUserProfileMutation,  { isLoading }] = useUpdateUserProfileMutation()
     const { token } = useAppSelector(state => state.auth)
-    const { toEditUserInfo } = useAppSelector(state => state.userProfile)
+    const { toEditUserInfo, userDefaultProfileImage } = useAppSelector(state => state.userProfile)
     const [userInfo, setUserInfo] = useState<EditUserInfo | null>({
         name: toEditUserInfo?.name, 
         username: toEditUserInfo?.username,
@@ -110,8 +110,6 @@ const EditUserProfileModal = (): JSX.Element => {
     
     return (
         <div className="bg-[#000000bd] backdrop-blur-sm fixed w-[100vw] h-[100vh] z-20 top-0 left-0 flex items-center justify-center">
-            {/* toast notification */}
-            <Toaster position="bottom-center" reverseOrder={false}/>
             {/* close icon */}
             <p className="top-5 right-5 text-[#525151] text-[1.2rem] md:text-[1.5rem] absolute p-2 md:p-3 font-thin rounded-full bg-[#252424ce] hover:bg-[#424141ba] cursor-pointer" onClick={clearFormAndCloseModal}>
                 <IoMdClose />
@@ -140,7 +138,7 @@ const EditUserProfileModal = (): JSX.Element => {
                                 <div className="flex opacity-0 hover:opacity-100 hover:bg-[#1715153c] w-full cursor-pointer rounded-full h-full absolute top-0 left-0 ease-in-out duration-300 items-center justify-center">
                                     <p className="text-[#fff] text-[1.4rem] ml-1"><FaUserPen/></p>
                                 </div>
-                                <img src={imagePreview ? imagePreview : "https://greenacresportsmed.com.au/wp-content/uploads/2018/01/dummy-image.jpg"} alt="profile pic" className="rounded-full h-[60px] w-[60px] md:h-[80px] md:w-[80px] object-cover"/>
+                                <img src={imagePreview ? imagePreview : userDefaultProfileImage} alt="profile pic" className="rounded-full h-[60px] w-[60px] md:h-[80px] md:w-[80px] object-cover"/>
                             </label>
                             <input
                                 id="file-input"
@@ -188,6 +186,8 @@ const EditUserProfileModal = (): JSX.Element => {
                     <button className="bg-white py-2 rounded-md text-xs md:text-sm font-medium flex gap-1 justify-center items-center">{isLoading ? "Saving" : "Save"} {isLoading &&  <Spinner fillColor="fill-black" pathColor="text-gray-400" />}</button>
                 </form>
             </div>
+            {/* toast notification */}
+            <Toaster position="bottom-center" reverseOrder={false}/>
         </div>
     );
 };

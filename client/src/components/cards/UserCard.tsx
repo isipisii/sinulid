@@ -1,18 +1,22 @@
 import { FC } from "react";
 import { User } from "../../types/types";
 import { Link } from "react-router-dom";
+import { useAppSelector } from "../../features/app/hooks";
 
 interface IUserCard {
   user: User;
-  userDefaultProfileImage: string
 }
 
-const UserCard: FC<IUserCard> = ({ user, userDefaultProfileImage }) => {
+const UserCard: FC<IUserCard> = ({ user }) => {
+
+  const { userDefaultProfileImage } = useAppSelector((state) => state.userProfile);
+  const { user: authenticatedUser } = useAppSelector((state) => state.auth);
+
   return (
     <div className="w-full flex gap-3 items-center">
       <img
         src={
-          user.displayed_picture
+          user.displayed_picture?.url
             ? user.displayed_picture.url
             : userDefaultProfileImage
         }
@@ -27,9 +31,10 @@ const UserCard: FC<IUserCard> = ({ user, userDefaultProfileImage }) => {
             <p className="text-sm text-lightText font-light">{user.name}</p>
           </div>
         </Link>
-        <button className="border border-borderColor text-sm text-white py-[.30rem] px-5 rounded-lg">
+       {user._id !== authenticatedUser?._id && 
+       <button className="border border-borderColor text-sm text-white py-[.30rem] px-5 rounded-lg">
           Follow
-        </button>
+        </button>}
       </div>
     </div>
   );

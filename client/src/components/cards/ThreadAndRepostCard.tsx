@@ -95,25 +95,23 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
   );
 
   useEffect(() => {
-    document.addEventListener("click", handleClickOutsideContextMenu, true);
+    document.addEventListener("click", handleClickOutsideContextMenu, false);
     // cleanup function whenever the component unmounts
     return () => {
-      document.removeEventListener(
-        "click",
-        handleClickOutsideContextMenu,
-        true
-      );
+      document.removeEventListener("click", handleClickOutsideContextMenu, false);
     };
   }, []);
 
   // to hide the context menu when the user clicks outside the element or other element
   function handleClickOutsideContextMenu(e: MouseEvent): void {
-    if (
-      contextMenuRef.current &&
-      !contextMenuRef.current.contains(e.target as Node)
-    ) {
+    if (contextMenuRef.current && !contextMenuRef.current.contains(e.target as Node) ) {
       setShowContextMenu(false);
     }
+  }
+
+  function toggleContextMenu(e: React.MouseEvent<HTMLDivElement>): void {
+    e.stopPropagation();
+    setShowContextMenu((prevState) => !prevState);
   }
 
   function toggleLikeHandler(postId: string, token: string): void {
@@ -360,8 +358,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
                   src={imageUrl}
                   alt=""
                   className={`object-cover rounded-full 
-                  ${bubbleStyleUserImageWhoReplied(index, getUserImageUrls())}
-                  `}
+                  ${bubbleStyleUserImageWhoReplied(index, getUserImageUrls())}`}
                 />
               ))}
             </div>
@@ -406,7 +403,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
               {authenticatedUser?._id === post.creator._id && !isRootPost && !isParent && (
                 <p
                   className="cursor-pointer text-base text-white rounded-full hover:bg-[#4e4a4a48] ease-in-out duration-300 p-1"
-                  onClick={() => setShowContextMenu((prevState) => !prevState)}
+                  onClick={toggleContextMenu}
                 >
                   <BsThreeDots className="transition-transform transform-gpu ease-linear duration-100 active:scale-90" />
                 </p>

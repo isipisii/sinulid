@@ -10,8 +10,13 @@ const PostAndReplies = lazy(() => import("./pages/PostAndRepliesPage"));
 const CreateReplyPage = lazy(() => import("./pages/CreateReplyPage"));
 import SearchUserPage from "./pages/SearchUserPage";
 
+import AllActivity from "./components/outlets/AllActivity";
+import FollowsActivity from "./components/outlets/FollowsActivity";
+import LikesActivity from "./components/outlets/LikesActivity";
+import RepliesActivity from "./components/outlets/RepliesActivity";
+
 import NavBar from "./components/NavBar";
-import UserReplies from "./components/UserReplies";
+import UserReplies from "./components/outlets/UserReplies";
 import ScrollToTop from "./components/hoc/ScrollToTop";
 
 import { useLazyGetAuthenticatedUserQuery } from "./services/authAndUserApi";
@@ -48,6 +53,7 @@ const App: FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // todo lzay loading sa user replies, 
   return (
     <>
       <NavBar />
@@ -81,6 +87,7 @@ const App: FC = () => {
             </ScrollToTop>
           }
         />
+        
         <Route
           path="/activity"
           element={
@@ -90,7 +97,13 @@ const App: FC = () => {
               </Protected>
             </ScrollToTop>
           }
-        />
+        >
+          <Route path="all" element={<AllActivity />} />
+          <Route path="follows" element={<FollowsActivity />} />
+          <Route path="replies" element={<RepliesActivity />} />
+          <Route path="likes" element={<LikesActivity />} />
+        </Route>
+
         <Route
           path="/search"
           element={
@@ -112,6 +125,8 @@ const App: FC = () => {
             <UserReplies userProfileInfo={userProfileInfo} />}
           />
         </Route>
+
+
         <Route path="/login" element={<LogIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route

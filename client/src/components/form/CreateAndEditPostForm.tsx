@@ -225,7 +225,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({
                 value={textContent}
                 className={`h-full outline-none text-white text-sm w-full py-2 ${
                   isReplying ? null : "border-borderColor border px-2"
-                } bg-matteBlack rounded-md placeholder:text-[#4a4545]`}
+                } bg-matteBlack rounded-lg placeholder:text-[#4a4545]`}
               />
 
               {imagePreview && (

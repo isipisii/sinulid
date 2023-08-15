@@ -368,7 +368,7 @@ export const searchUsers: RequestHandler<SearchUserQuery> = async (req, res, nex
 
     try {
         if (!user) {
-          throw createHttpError(400, 'Bad request, missing query');
+            throw createHttpError(403, "Forbidden, unauthorized to get the random users")
         }
         const users = await UserModel.find({
           $or: [
@@ -384,10 +384,23 @@ export const searchUsers: RequestHandler<SearchUserQuery> = async (req, res, nex
 };
 
 
-export const getUsers: RequestHandler = async (req, res, next) => { 
+export const getUsers: RequestHandler = async (req: CustomRequest, res, next) => { 
+    const authenticatedUserId = req.userId
+
     try {
+        if(!authenticatedUserId){
+            throw createHttpError(403)
+        }
+        
+        const authenticatedUser = await UserModel.findById(authenticatedUserId)
+
+        if(!authenticatedUser){
+            throw createHttpError(404, "User not found")
+        }
+
         const randomUsers = await UserModel.aggregate([
-            { $sample: { size: 5 } } //will get 5 randomized user document 
+            { $match: { username: {$ne: authenticatedUser.username } } }, // this will exclude the authenticated user 
+            { $sample: { size: 5 } }, //will get 5 randomized user document 
         ]).exec();
 
         res.status(200).json(randomUsers)

@@ -15,7 +15,7 @@ const Feed: FC = () => {
       {posts.map((post) => {
         // Check if userReposts contains reposts and perform null checks
         const isReposted = repostChecker(userReposts, post._id, authenticatedUser?._id ?? "")
-        
+  
         return (
           <MemoizedThreadAndRepostCard
             key={post._id}

@@ -8,11 +8,13 @@ interface IUserProfileState {
     toEditUserInfo: User | null
     userReposts: Repost[]
     userDefaultProfileImage: string
+    otherUserPostsAndReposts: (Post | Repost) []
 }
 
 const initialState: IUserProfileState = {
     userProfileInfo: null,
     userPostsAndReposts: [],
+    otherUserPostsAndReposts: [],
     toEditUserInfo: null,
     userReposts: [],
     userDefaultProfileImage: "https://img.myloview.com/posters/default-avatar-profile-icon-vector-social-media-user-photo-700-205577532.jpg"
@@ -27,6 +29,9 @@ export const userProfileSlice = createSlice({
         },
         setUserPostsAndReposts: (state, action: PayloadAction<(Post | Repost)[]>) => {
             state.userPostsAndReposts = action.payload
+        },
+        setOtherUserPostsAndReposts: (state, action: PayloadAction<(Post | Repost)[]>) => {
+            state.otherUserPostsAndReposts = action.payload
         },
         setToEditUserInfo:(state, action: PayloadAction<User | null>) => {
             state.toEditUserInfo = action.payload
@@ -57,9 +62,61 @@ export const userProfileSlice = createSlice({
                 }
                 return item;
             });
+
+            state.otherUserPostsAndReposts = state.otherUserPostsAndReposts.map(item => {
+                if (item.type === ItemType.Post) {
+                    const post = item as Post;
+                    if (post._id === action.payload.postId) {
+                        return {
+                            ...post,
+                            liked_by: [...post.liked_by, action.payload.user],
+                            likes: post.likes + 1,
+                        };
+                    }
+                } else if (item.type === ItemType.Repost) {
+                    const repost = item as Repost;
+                    if (repost.post._id === action.payload.postId) {
+                        return {
+                            ...repost,
+                            post: {
+                                ...repost.post,
+                                liked_by: [...repost.post.liked_by, action.payload.user],
+                                likes: repost.post.likes + 1,
+                            }
+                        };
+                    }
+                }
+                return item;
+            });
         },
         unlikePostOrRepostInUserProfile: (state, action: PayloadAction<{ postId: string; user: User }>) => {
             state.userPostsAndReposts = state.userPostsAndReposts.map(item => {
+                if (item.type === ItemType.Post) {
+                    const post = item as Post;
+                    if (post._id === action.payload.postId) {
+                        return {
+                            ...post,
+                            liked_by: post.liked_by.filter(user => user._id !== action.payload.user._id),
+                            likes: post.likes - 1,
+                        };
+                    }
+                } else if (item.type === ItemType.Repost) {
+                    const repost = item as Repost;
+                    if (repost.post._id === action.payload.postId) {
+                        return {
+                            ...repost,
+                            post: {
+                                ...repost.post,
+                                liked_by: repost.post.liked_by.filter(user => user._id !== action.payload.user._id),
+                                likes: repost.post.likes - 1,
+                            }
+                        };
+                    }
+                }
+                return item;
+            });
+
+            state.otherUserPostsAndReposts = state.otherUserPostsAndReposts.map(item => {
                 if (item.type === ItemType.Post) {
                     const post = item as Post;
                     if (post._id === action.payload.postId) {
@@ -183,6 +240,7 @@ export const {
     unfollowUser,
     addRepostInUserProfile,
     setUserReposts,
+    setOtherUserPostsAndReposts
 } = userProfileSlice.actions
 
 export default userProfileSlice

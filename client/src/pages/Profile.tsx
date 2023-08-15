@@ -4,6 +4,7 @@ import {
   useLazyGetUserInfoQuery,
   useFollowUserMutation,
   useUnfollowUserMutation,
+  useLazyGetUserPostsAndRepostsQuery,
 } from "../services/authAndUserApi";
 import { useAppDispatch, useAppSelector } from "../features/app/hooks";
 
@@ -11,6 +12,8 @@ import {
   setUserProfileInfo,
   unfollowUser,
   followUser,
+  setUserPostsAndReposts,
+  setOtherUserPostsAndReposts
 } from "../features/user/userProfileSlice";
 
 import EditUserProfileModal from "../components/modals/EditUserProfileModal";
@@ -33,8 +36,8 @@ const Profile = (): JSX.Element => {
   const [followMutation] = useFollowUserMutation();
   const [unfollowMutation] = useUnfollowUserMutation();
 
-  const [getUserInfoQuery, { isLoading: isUserInfoLoading }] =
-    useLazyGetUserInfoQuery();
+  const [getUserInfoQuery, { isLoading: isUserInfoLoading }] = useLazyGetUserInfoQuery();
+  const [getPostsAndRepostsQuery, { isFetching: isFetchingPostsAndReposts }] = useLazyGetUserPostsAndRepostsQuery();
     
   useDocumentTitle(
     userProfileInfo
@@ -44,11 +47,6 @@ const Profile = (): JSX.Element => {
 
   const isActive = (currentPath: string): boolean =>
     location.pathname === currentPath;
-
-  function handleCopyLink(): void {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
-  }
 
   const isFollowing = userProfileInfo?.followers.some(
     (follower) => follower._id === authenticatedUser?._id
@@ -67,7 +65,7 @@ const Profile = (): JSX.Element => {
   }
 
   useEffect(() => {
-    async function getUserInfo(): Promise<void> {
+    async function getUserInfoAndPostsAndReposts(): Promise<void> {
       if (!username) return;
 
       try {
@@ -75,13 +73,23 @@ const Profile = (): JSX.Element => {
         if (user) {
           dispatch(setUserProfileInfo(user));
         }
+        const userPostsAndRepostsPayload = await getPostsAndRepostsQuery(user._id).unwrap();
+  
+        if (userPostsAndRepostsPayload) {
+          if (user._id === authenticatedUser?._id && authenticatedUser) {
+            dispatch(setUserPostsAndReposts(userPostsAndRepostsPayload));
+          } else {
+            dispatch(setOtherUserPostsAndReposts(userPostsAndRepostsPayload));
+          }
+        }
       } catch (error) {
         console.error(error);
       }
     }
-    getUserInfo();
+    getUserInfoAndPostsAndReposts();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username]);
+
 
   return (
     <section className="bg-matteBlack w-full flex py-[90px] justify-center">
@@ -103,7 +111,6 @@ const Profile = (): JSX.Element => {
                 userProfileInfo={userProfileInfo}
                 username={username ?? ""}
                 toggleFollowAndUnfollowHandler={toggleFollowAndUnfollowHandler}
-                handleCopyLink={handleCopyLink}
               />
 
               <div className="flex w-full ">
@@ -138,6 +145,7 @@ const Profile = (): JSX.Element => {
             userProfileInfo={userProfileInfo}
             token={token}
             isActive={isActive}
+            isFetchingPostsAndReposts={isFetchingPostsAndReposts}
           />
           
           {/* nested route */}

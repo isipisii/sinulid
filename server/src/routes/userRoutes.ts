@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.post("/signup", UserControllers.signUp)
 
+router.get("/random", UserControllers.getUsers)
+
 router.get("/", UserControllers.getAuthenticatedUserInfo)
 
 router.get("/:username", UserControllers.getUserInfo)

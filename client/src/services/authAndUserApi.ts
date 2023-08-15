@@ -80,7 +80,10 @@ const authAndUserApi = api.injectEndpoints({
         }),
         getSearchedUsers: builder.query<User[], string>({
             query:(username) => `/users/search/${username}`,
-         })
+        }),
+        getRandomUsers: builder.query<User[], void>({
+            query:() => "/users/random",
+        }),
     }),
 })
 
@@ -94,5 +97,6 @@ export const {
     useUnfollowUserMutation,
     useLazyGetUserPostsAndRepostsQuery,
     useLazyGetUserRepliesQuery,
-    useLazyGetSearchedUsersQuery
+    useLazyGetSearchedUsersQuery,
+    useGetRandomUsersQuery,
 } = authAndUserApi

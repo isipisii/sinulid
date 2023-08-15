@@ -100,6 +100,7 @@ export const getPosts: RequestHandler = async (req, res, next) => {
                 populate: "creator"
             }
         ]).exec();
+        
         res.status(200).json(posts);
     } catch (error) {
         next(error)

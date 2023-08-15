@@ -1,4 +1,4 @@
-import { RequestHandler, raw } from "express";
+import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import UserModel from "../models/user";
 import PostModel from "../models/post"
@@ -362,7 +362,7 @@ export const getUserPostsAndReposts: RequestHandler<GetUserPostsAndReposts> = as
     }
 }
 
-export const searchUsers: RequestHandler<SearchUserQuery> = async(req, res, next) => {
+export const searchUsers: RequestHandler<SearchUserQuery> = async (req, res, next) => {
     // const user = req.query  bug in query
     const { user } = req.params
 
@@ -379,6 +379,19 @@ export const searchUsers: RequestHandler<SearchUserQuery> = async(req, res, next
     
         res.status(200).json(users);
       } catch (error) {
-        next(error); // Pass the error to the error handling middleware
+        next(error);
       }
 };
+
+
+export const getUsers: RequestHandler = async (req, res, next) => { 
+    try {
+        const randomUsers = await UserModel.aggregate([
+            { $sample: { size: 5 } } //will get 5 randomized user document 
+        ]).exec();
+
+        res.status(200).json(randomUsers)
+    } catch (error) {
+        next(error)
+    }
+}

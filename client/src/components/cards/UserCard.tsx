@@ -63,7 +63,7 @@ const UserCard: FC<IUserCard> = ({ user }) => {
           </div>
         </Link>
         {user._id !== authenticatedUser?._id && (
-          <button className="border border-borderColor text-sm text-white py-[.30rem] px-5 rounded-lg" onClick={toggleFollowAndUnfollowHandler}>
+          <button className="border border-borderColor text-sm text-white py-[.30rem] px-5 rounded-lg hover:bg-[#3a383830]" onClick={toggleFollowAndUnfollowHandler}>
             {isFollowing ? "Unfollow" : "Follow"}
           </button>
         )}

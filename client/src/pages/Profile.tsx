@@ -81,6 +81,7 @@ const Profile = (): JSX.Element => {
         if (user) {
           dispatch(setUserProfileInfo(user));
         }
+        
         const userPostsAndRepostsPayload = await getPostsAndRepostsQuery(user._id).unwrap();
   
         if (userPostsAndRepostsPayload) {

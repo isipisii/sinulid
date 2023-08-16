@@ -262,7 +262,7 @@ const CreatePostForm: FC<ICreatePostForm> = ({
           />
           <button
             className={` ${
-              textContent || imageFile ? "bg-white" : "bg-[#ffffff8a]"
+              textContent || imageFile ? "bg-white hover:bg-[#e5e2e2bd] ease-in-out duration-300 " : "bg-[#ffffff8a]"
             } px-6 py-2 font-semibold rounded-md text-xs md:text-sm flex gap-2 items-center ${
               textContent ||
               imageFile ||

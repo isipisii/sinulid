@@ -182,7 +182,7 @@ const EditUserProfileModal = (): JSX.Element => {
                             onChange={handleOnchange}
                         />
                     </div>
-                    <button className="bg-white py-2 rounded-md text-xs md:text-sm font-medium flex gap-1 justify-center items-center">{isLoading ? "Saving" : "Save"} {isLoading &&  <Spinner fillColor="fill-black" pathColor="text-gray-400" />}</button>
+                    <button className="bg-white hover:bg-[#e5e2e2bd] ease-in-out duration-300 py-2 rounded-md text-xs md:text-sm font-medium flex gap-1 justify-center items-center">{isLoading ? "Saving" : "Save"} {isLoading &&  <Spinner fillColor="fill-black" pathColor="text-gray-400" />}</button>
                 </form>
             </div>
             {/* toast notification */}

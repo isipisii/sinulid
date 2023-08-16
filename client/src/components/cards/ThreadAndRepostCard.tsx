@@ -256,13 +256,13 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
           className="bg-matteBlack absolute right-5 top-10 rounded-md h-auto z-10 w-[130px] border border-borderColor p-2 flex flex-col gap-1"
         >
           <button
-            className="w-full text-white text-xs p-3 text-left cursor-pointer hover:bg-[#4e4a4a48] rounded-sm ease-in-out duration-300"
+            className="w-full text-white text-xs p-3 text-left cursor-pointer hover:bg-[#3a383830] rounded-sm ease-in-out duration-300"
             onClick={openEditPostModal}
           >
             Edit
           </button>
           <button
-            className={`w-full text-red-600 text-xs p-3 text-left cursor-pointer rounded-sm hover:bg-[#4e4a4a48] ease-in-out duration-300 flex gap-2 items-center`}
+            className={`w-full text-red-600 text-xs p-3 text-left cursor-pointer rounded-sm hover:bg-[#3a383830] ease-in-out duration-300 flex gap-2 items-center`}
             onClick={() => deletePostHandler(post._id, token)}
             disabled={isDeleting ? true : false}
           >

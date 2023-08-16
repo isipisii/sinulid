@@ -8,6 +8,7 @@ import { RotatingLines } from "react-loader-spinner";
 import UserCard from "../components/cards/UserCard";
 import { useAppSelector, useAppDispatch } from "../features/app/hooks";
 import { setSearchedUsers, setUsers } from "../features/user/userProfileSlice";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const SearchUserPage = () => {
   const [search, setSearch] = useSearchParams();
@@ -16,6 +17,7 @@ const SearchUserPage = () => {
   const [debounceSearchTerm] = useDebounce(search.get("user"), 900);
   const { data: usersQuery } = useGetUsersQuery(token)
   const { users, searchedUsers } = useAppSelector(state => state.userProfile)
+  useDocumentTitle("Threads Clone");
   const dispatch = useAppDispatch()
 
   const handleUsername = (e: ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +42,7 @@ const SearchUserPage = () => {
 
   useEffect(() => {
     if(usersQuery){
-      dispatch(setUsers(users))
+      dispatch(setUsers(usersQuery))
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[usersQuery])

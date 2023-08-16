@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { useAppSelector } from "../features/app/hooks";
 
 const SideBarAndBottomNav = (): JSX.Element => {
-  const { user: authenticatedUser } = useAppSelector(state => state.auth)
+  const { user: authenticatedUser, token } = useAppSelector(state => state.auth)
   const location = useLocation();
   const isActive = (currentPath: string): boolean => location.pathname === currentPath
 
@@ -42,7 +42,7 @@ const SideBarAndBottomNav = (): JSX.Element => {
 
   return (
     <>
-      {location.pathname !== "/signup" && location.pathname !== "/login" && authenticatedUser !== null && (
+      {location.pathname !== "/signup" && location.pathname !== "/login" && (authenticatedUser !== null && token) && (
         <>
           <aside className="md:w-[20%] lg:w-[40%] hidden md:block">
             <div className="w-auto flex flex-col h-[100vh] mt-[70px] fixed overflow-auto border-r border-borderColor p-3">
@@ -50,7 +50,7 @@ const SideBarAndBottomNav = (): JSX.Element => {
                 {barLinks.map((link, index) => (
                   <Link to={link.linkTo} key={index}>
                     <li
-                      className={`flex items-center gap-2 md:p-4 lg:pl-3 lg:py-3 lg:pr-[6rem] hover:bg-[#4e4a4a48] rounded-lg 
+                      className={`flex items-center gap-2 md:p-4 lg:pl-3 lg:py-3 lg:pr-[6rem] ease-in-out duration-300 hover:bg-[#4e4a4a48] rounded-lg 
                       ${isActive(link.linkTo) ? "bg-[#4e4a4a48]  text-white" : "text-[#787878]"}`}
                     >
                       <p className="text-[1.7rem]">{isActive(link.linkTo) ? link.activeIcon : link.inactiveIcon}</p>

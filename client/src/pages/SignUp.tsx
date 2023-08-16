@@ -120,7 +120,7 @@ const SignUp = (): JSX.Element => {
                 {errors.confirmPassword  && (<p className={errorStyle}>{errors.confirmPassword.message}</p>)}
 
             </div> 
-            <button type='submit' className="bg-white w-full p-2 rounded-sm text-matteBlack font-bold text-sm flex items-center justify-center">
+            <button type='submit' className="bg-white hover:bg-[#e5e2e2bd]  ease-in-out duration-300 w-full p-2 rounded-sm text-matteBlack font-bold text-sm flex items-center justify-center">
                 <div className="flex items-center gap-2">
                     {isSigningUp ? "Signing in" : "Sign in"}
                     {isSigningUp && <Spinner fillColor="fill-black" pathColor="text-gray-400" />}

@@ -78,7 +78,7 @@ const UserProfileInfo: FC<IUserProfileInfo> = ({ userProfileInfo, token, authent
             <div className="flex gap-4">
                 {username === authenticatedUser?.username ? (
                 <button
-                    className="text-white text-xs md:text-sm px-6 border hover:bg-[#3a383830] border-[#8d8c8c] py-2 rounded-lg w-full"
+                    className="text-white text-xs md:text-sm px-6 border ease-in-out duration-300 hover:bg-[#3a383830] border-[#8d8c8c] py-2 rounded-lg w-full"
                     onClick={() =>
                     dispatch(setToEditUserInfo(userProfileInfo))
                     }
@@ -91,14 +91,14 @@ const UserProfileInfo: FC<IUserProfileInfo> = ({ userProfileInfo, token, authent
                     isFollowing
                         ? "border border-[#8d8c8c] hover:bg-[#3a383830] text-white"
                         : "bg-white text-black "
-                    } text-sm px-6 border py-2 rounded-lg w-full`}
+                    } text-sm px-6 border py-2 rounded-lg w-full ease-in-out duration-300`}
                     onClick={toggleFollowAndUnfollowHandler}
                 >
                     {isFollowing ? "Unfollow" : "Follow"}
                 </button>
                 )}
                 <button
-                    className="text-white hover:bg-[#3a383830] text-xs md:text-sm px-6 border border-[#8d8c8c] py-2 rounded-lg w-full"
+                    className="text-white hover:bg-[#3a383830] ease-in-out duration-300 text-xs md:text-sm px-6 border border-[#8d8c8c] py-2 rounded-lg w-full"
                     onClick={shareProfile}
                 >
                 Share Profile

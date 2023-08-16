@@ -1,9 +1,11 @@
 import { JSX } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const Activity = (): JSX.Element => {
   const location = useLocation()
+  useDocumentTitle("Threads Clone");
 
   const isActive = (pathname: string):boolean => pathname === location.pathname
 

@@ -85,12 +85,12 @@ const authAndUserApi = api.injectEndpoints({
         }),
         getUsers: builder.query<User[], string>({
             query:(token) => ({
-                url:  "/users/random",
+                url:  "/users/all",
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
             }),
-            providesTags: (result, error, arg) =>
+            providesTags: (result) =>
             result
               ? [...result.map(({ _id }) => ({ type: "Users" as const, _id })), "Users"]
               : ["Users"],

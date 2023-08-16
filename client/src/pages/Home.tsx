@@ -20,7 +20,7 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
   const [getPostsAndRepostsQuery, { isLoading: isGetPostsAndRepostsLoading }] =
     useLazyGetUserPostsAndRepostsQuery();
   const { user: authenticatedUser } = useAppSelector((state) => state.auth);
-  useDocumentTitle("Sinulid");
+  useDocumentTitle("Threads Clone");
 
   // gets the user reposts and posts in this component so that is this page rendered, then we can easily identify the post that has been reposted
   useEffect(() => {
@@ -45,7 +45,7 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
     getPostsAndRepostsQuery,
     authenticatedUser,
   ]);
-
+  
   // get the user info  and posts once rendered
   useEffect(() => {
     async function getPosts() {

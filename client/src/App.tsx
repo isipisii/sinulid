@@ -43,8 +43,11 @@ const App: FC = () => {
       if (authenticatedUser) {
         dispatch(setUser(authenticatedUser));
       }
-    } catch (error) {
-      console.error(error);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if(error.status === 401){
+        localStorage.removeItem("token")
+      } else console.error(error);
     }
   }
 

@@ -29,7 +29,7 @@ const LogIn = (): JSX.Element => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if(error.status === 401){
-        showToast("Th username or password you are trying to log in with are incorrect", true);
+        showToast("The username or password you are trying to log in with are incorrect", true);
       } else {
         console.error(error);
         showToast("Error, something went wrong.", true);
@@ -78,7 +78,7 @@ const LogIn = (): JSX.Element => {
         </div>
         <button
           type="submit"
-          className="bg-white w-full p-2 rounded-sm text-matteBlack font-bold text-sm flex items-center justify-center"
+          className="bg-white hover:bg-[#e5e2e2bd] ease-in-out duration-300 w-full p-2 rounded-sm text-matteBlack font-bold text-sm flex items-center justify-center"
         > 
           <div className="flex items-center gap-2">
             {isLoggingIn ? "Logging in" : "Log in"}

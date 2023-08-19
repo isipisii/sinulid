@@ -56,7 +56,6 @@ const App: FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // todo lzay loading sa user replies, 
   return (
     <>
       <NavBar />

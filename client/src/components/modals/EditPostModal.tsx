@@ -1,7 +1,7 @@
 import { JSX } from "react";
 import { useAppSelector, useAppDispatch } from "../../features/app/hooks";
 import { setPostToEdit } from "../../features/post/postSlice";
-import CreateAndEditPostForm from "../form/CreateAndEditPostForm";
+import CreateAndEditPostForm from "../forms/CreateAndEditPostForm";
 import { IoMdClose } from "react-icons/io";
 
 const EditPostModal = (): JSX.Element => {

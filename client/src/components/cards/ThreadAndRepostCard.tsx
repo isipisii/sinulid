@@ -77,8 +77,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
 
   const [likePostMutation] = useLikePostMutation();
   const [unlikePostMutation] = useUnlikePostMutation();
-  const [deletePostMutation, { isLoading: isDeleting }] =
-    useDeletePostMutation();
+  const [deletePostMutation, { isLoading: isDeleting }] = useDeletePostMutation();
   const [createRepostMutation] = useCreateRepostMutation();
   const [removeRepostMutation] = useRemoveRepostMutation();
 
@@ -119,12 +118,8 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
       return;
     }
     if (didLike) {
-      dispatch(
-        unlikePostOrRepostInUserProfile({ postId, user: authenticatedUser })
-      ); // for user's profile optimistic update
-      dispatch(
-        unlikePostInPostAndReplyPage({ postId, user: authenticatedUser })
-      ); // for the root post in post and reply page
+      dispatch(unlikePostOrRepostInUserProfile({ postId, user: authenticatedUser })); // for user's profile optimistic update
+      dispatch(unlikePostInPostAndReplyPage({ postId, user: authenticatedUser })); // for the root post in post and reply page
       dispatch(unlikePost({ postId, user: authenticatedUser })); // for feed's optimistic update
       dispatch(unlikePostReply({ postId, user: authenticatedUser })); // for post and reply page
       dispatch(unlikeParentOfRootPostInPostAndRepliesPage({ postId, user: authenticatedUser }))
@@ -132,9 +127,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
       dispatch(unlikeUserReplyInUserReplies({ postId, user: authenticatedUser }))
       unlikePostMutation({ postId, token });
     } else {
-      dispatch(
-        likePostOrRepostInUserProfile({ postId, user: authenticatedUser })
-      ); // for user's profile optimistic update
+      dispatch(likePostOrRepostInUserProfile({ postId, user: authenticatedUser })); // for user's profile optimistic update
       dispatch(likePostInPostAndReplyPage({ postId, user: authenticatedUser })); // for the root post in post and reply page
       dispatch(likePost({ postId, user: authenticatedUser })); // for feed's optimistic update
       dispatch(likePostReply({ postId, user: authenticatedUser })); // for post and reply page
@@ -198,19 +191,26 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
   }
 
   // gets the users' image unique url who replied on a certain post
-  function getUserImageUrls(): string[] {
+  function getUserImageUrls(post: Post) {
     const imageUrls: string[] = [];
-
+    const maxImages = 3
+  
     for (const reply of post.children) {
-      if (!reply?.creator?.displayed_picture) break;
-
-      if (!imageUrls.includes(reply?.creator?.displayed_picture?.url)) {
-        imageUrls.push(reply?.creator?.displayed_picture?.url);
+      const imageUrl = reply.creator?.displayed_picture?.url ?? userDefaultProfileImage;
+      if (imageUrl) {
+        if (!imageUrls.includes(imageUrl)) {
+          imageUrls.push(imageUrl);
+        }
+  
+        if (imageUrls.length === maxImages) {
+          break;
+        }
       }
-      if (imageUrls.length > 3) break;
     }
+  
     return imageUrls;
   }
+  
 
   function openEditPostModal(): void {
     dispatch(setPostToEdit(post));
@@ -226,6 +226,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
     showToast("Post link was copied to clipboard");
   }
 
+  // the will only show if the post has a reply a children and this component is not a root post in post and reply page
   function shouldRender(): boolean {
     return post?.children.length > 0 && !isRootPost;
   }
@@ -347,18 +348,18 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
           {shouldRender() && (
             <div
               className={`h-[30px] w-[39px] ${
-                getUserImageUrls().length >= 2
+                getUserImageUrls(post).length >= 2
                   ? "relative pb-6"
                   : "flex items-center justify-center"
               }`}
             >
-              {getUserImageUrls().map((imageUrl, index) => (
+              {getUserImageUrls(post).map((imageUrl, index) => (
                 <img
                   key={index}
                   src={imageUrl}
                   alt=""
                   className={`object-cover rounded-full 
-                  ${bubbleStyleUserImageWhoReplied(index, getUserImageUrls())}`}
+                  ${bubbleStyleUserImageWhoReplied(index, getUserImageUrls(post))}`}
                 />
               ))}
             </div>
@@ -421,7 +422,7 @@ const ThreadAndRepostCard: FC<IPostAndRepostCard> = ({
                 <p className="text-sm text-lightText">Replying to @{replyingTo}</p>
               </div>}
 
-              <p className="text-sm text-[#ffffff] tracking-wide whitespace-pre-wrap break-words w-[320px] sm:w-[490px]">
+              <p className="text-sm text-[#ffffff] tracking-wide whitespace-pre-wrap break-words w-[250px] sm:w-[490px]">
                 {post.content}
               </p>
             </Link>

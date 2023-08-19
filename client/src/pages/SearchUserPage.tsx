@@ -20,9 +20,9 @@ const SearchUserPage = () => {
   useDocumentTitle("Threads Clone");
   const dispatch = useAppDispatch()
 
-  const handleUsername = (e: ChangeEvent<HTMLInputElement>) => {
+  function handleUsername(e: ChangeEvent<HTMLInputElement>){
     setSearch({ user: e.target.value });
-  };
+  }
 
   // will automatically search whenever the user stops typing
   useEffect(() => {
@@ -36,10 +36,10 @@ const SearchUserPage = () => {
       }
     }
     getUsers();
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounceSearchTerm]);
 
+  // will set the users in the redux store whenever the usersQuery changes
   useEffect(() => {
     if(usersQuery){
       dispatch(setUsers(usersQuery))

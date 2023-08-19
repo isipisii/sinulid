@@ -3,7 +3,7 @@ import { setPosts } from "../features/post/postSlice";
 import { useLazyGetPostsQuery } from "../services/postApi";
 import { useAppDispatch, useAppSelector } from "../features/app/hooks";
 import Feed from "../components/Feed";
-import CreateAndEditPostForm from "../components/form/CreateAndEditPostForm";
+import CreateAndEditPostForm from "../components/forms/CreateAndEditPostForm";
 import { useLazyGetUserPostsAndRepostsQuery } from "../services/authAndUserApi";
 import { setUserPostsAndReposts } from "../features/user/userProfileSlice";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -22,7 +22,7 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
   const { user: authenticatedUser } = useAppSelector((state) => state.auth);
   useDocumentTitle("Threads Clone");
 
-  // gets the user reposts and posts in this component so that is this page rendered, then we can easily identify the post that has been reposted
+  // gets the user reposts and posts in this component so that if this page rendered, then we can easily identify the post that has been reposted
   useEffect(() => {
     async function getUserRepostsAndPosts(): Promise<void> {
       if (!authenticatedUser) return;
@@ -45,7 +45,8 @@ const Home: FC<IHome> = ({ getUserInfo }) => {
     getPostsAndRepostsQuery,
     authenticatedUser,
   ]);
-  
+
+
   // get the user info  and posts once rendered
   useEffect(() => {
     async function getPosts() {

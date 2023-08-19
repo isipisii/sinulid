@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { IoIosArrowBack } from "react-icons/io";
 import { useGetSinglePostQuery } from "../services/postApi";
 
-import CreatePostForm from "../components/form/CreateAndEditPostForm";
+import CreatePostForm from "../components/forms/CreateAndEditPostForm";
 import PostToReplyCard from "../components/cards/PostToReplyCard";
 import { RotatingLines } from "react-loader-spinner";
 

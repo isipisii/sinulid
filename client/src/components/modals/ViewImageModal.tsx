@@ -14,8 +14,8 @@ const ViewImageModal: FC = () => {
         <p  className="top-5 right-5 text-[#525151] text-[1.2rem] md:text-[1.5rem] absolute p-2 md:p-3 font-thin rounded-full bg-[#252424ce] hover:bg-[#424141ba] cursor-pointer" onClick={() => dispatch(setImageUrl(""))}>
           <IoMdClose />
         </p>
-        <div className="max-w-[100vw] md:max-w-[70vw] max-h-[100vh] ">
-          <img src={viewImage} alt="post image" className='w-full h-auto mx-auto'/>
+        <div className="max-w-[100vw] md:max-w-[70vw] max-h-[100vh] md:h-[100vh]">
+          <img src={viewImage} alt="post image" className='w-full h-full mx-auto'/>
         </div>
       </div>
       }
